@@ -1,0 +1,564 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Text.RegularExpressions;
+
+namespace PathLib
+{
+    // https://pathlib.readthedocs.org/en/latest/
+    // http://www.dotnetperls.com/path
+    /// <summary>
+    /// Base class containing common IPurePath code.
+    /// </summary>
+    public abstract class PurePath : IPurePath
+    {
+        /// <summary>
+        /// A string representing the operating system's "current directory"
+        /// identifier.
+        /// </summary>
+        public const string CurrentDirectoryIdentifier = ".";
+
+        /// <summary>
+        /// A string representing the operating system's "parent directory"
+        /// identifier.
+        /// </summary>
+        public const string ParentDirectoryIdentifier = "..";
+
+        /// <summary>
+        /// A char representing the character delimiting extensions
+        /// from filenames.
+        /// </summary>
+        public const char ExtensionDelimiter = '.';
+
+        /// <summary>
+        /// A string representing the character delimiting drives from the
+        /// remaining path.
+        /// </summary>
+        public const char DriveDelimiter = ':';
+
+        private static readonly string[] PathSeparatorsForNormalization = 
+            new[] {"/", @"\"};
+
+        // Drive + Root + Dirname + Basename + Extension
+        /// <summary>
+        /// The raw, unmodified path passed in to the constructor (if
+        /// available).
+        /// </summary>
+        protected readonly string RawPath;
+
+        #region Factories
+
+        /// <summary>
+        /// Factory method do create a new PurePath instance based upon
+        /// the current operating system.
+        /// </summary>
+        /// <param name="paths"></param>
+        /// <returns></returns>
+        public static PurePath Create(params string[] paths)
+        {
+            var p = Environment.OSVersion.Platform;
+            // http://mono.wikia.com/wiki/Detecting_the_execution_platform
+            // 128 required for early versions of Mono
+            if (p == PlatformID.Unix || p == PlatformID.MacOSX || (int)p == 128)
+            {
+                return new PurePosixPath(paths);
+            }
+            return new PureNtPath(paths);
+        }
+
+        #endregion
+
+        #region ctors
+
+        /// <summary>
+        /// Create a path in the current working directory.
+        /// </summary>
+        protected PurePath()
+        {
+            RawPath = CurrentDirectoryIdentifier;
+
+            Drive = "";
+            Root = "";
+            Dirname = CurrentDirectoryIdentifier;
+            Basename = "";
+            Extension = "";
+        }
+
+        /// <summary>
+        /// Create a path by joining the given path strings.
+        /// </summary>
+        /// <param name="paths">Paths to combine.</param>
+        protected PurePath(params string[] paths)
+        {
+            if (paths.Length > 1)
+            {
+                var components = LinqBridge.ToArray(
+                    LinqBridge.Select(paths, p => 
+                        PurePathFactory(NormalizeSeparators(p))));
+                var path = JoinInternal(components);
+                RawPath = path.ToString();
+                Assimilate(path);
+            }
+            else if(paths.Length == 1)
+            {
+                RawPath = NormalizeSeparators(paths[0]);
+                Drive = "";
+                Root = "";
+                Dirname = "";
+                Basename = "";
+                Extension = "";
+            }
+        }
+
+        /// <summary>
+        /// Create a new PurePath from the specified components.
+        /// </summary>
+        /// <param name="drive"></param>
+        /// <param name="root"></param>
+        /// <param name="dirname"></param>
+        /// <param name="basename"></param>
+        /// <param name="extension"></param>
+        protected PurePath(
+            string drive, 
+            string root, 
+            string dirname, 
+            string basename, 
+            string extension)
+        {
+            Drive = drive ?? "";
+            Root = root ?? "";
+            Dirname = dirname ?? "";
+            Basename = basename ?? "";
+            Extension = extension ?? "";
+        }
+
+        /// <summary>
+        /// Create a path by joining the given IPurePaths.
+        /// </summary>
+        /// <param name="paths">Paths to combine.</param>
+        protected PurePath(params IPurePath[] paths)
+        {
+            Assimilate(JoinInternal(paths));
+        }
+
+        private void Assimilate(IPurePath path)
+        {
+            Drive = path.Drive ?? "";
+            Root = path.Root ?? "";
+            Dirname = path.Dirname ?? "";
+            Basename = path.Basename ?? "";
+            Extension = path.Extension ?? "";
+        }
+
+        #endregion
+
+        #region Basic components of path
+
+        /// <inheritdoc/>
+        public string Drive { get; protected set; }
+
+        /// <inheritdoc/>
+        public string Root { get; protected set; }
+
+        /// <inheritdoc/>
+        public string Dirname { get; protected set; }
+
+        /// <inheritdoc/>
+        public string Basename { get; protected set; }
+
+        /// <inheritdoc/>
+        public string Extension { get; protected set; }
+
+        #endregion
+
+        /// <inheritdoc/>
+        public string Anchor { get { return Drive + Root; } }
+
+        /// <inheritdoc/>
+        public string Filename { get { return Basename + Extension; } }
+
+        /// <inheritdoc/>
+        public string[] Extensions
+        {
+            get
+            {
+                var parts = Filename.Split(ExtensionDelimiter);
+                var ret = new string[parts.Length - 1];
+                for (var i = 0; i < ret.Length; i++)
+                {
+                    ret[i] = ExtensionDelimiter + parts[i + 1];
+                }
+                return ret;
+            }
+        }
+
+        /// <inheritdoc/>
+        public IEnumerable<string> Parts
+        {
+            get 
+            {
+                return _cachedParts ?? (_cachedParts = BuildPartsArray());
+            }
+        }
+        private IEnumerable<string> _cachedParts;
+
+        /// <inheritdoc/>
+        private IEnumerable<string> BuildPartsArray()
+        {
+            if (Anchor != String.Empty)
+            {
+                yield return Anchor;
+            }
+
+            foreach (var part in Dirname.Split(
+                new []{PathSeparator}, StringSplitOptions.RemoveEmptyEntries))
+            {
+                yield return part;
+            }
+
+            if (Filename != string.Empty)
+            {
+                yield return Filename;
+            }
+        }
+
+        private string _cachedPosix;
+        /// <inheritdoc/>
+        public string AsPosix()
+        {
+            return _cachedPosix ?? (_cachedPosix = ToString().Replace(@"\", "/"));
+        }
+
+        /// <inheritdoc/>
+        public IPurePath Join(params string[] paths)
+        {
+            return Join(
+                LinqBridge.ToArray(
+                    LinqBridge.Select(paths, PurePathFactory)));
+        }
+
+        /// <inheritdoc/>
+        public IPurePath Join(params IPurePath[] paths)
+        {
+            return JoinInternal(
+                LinqBridge.ToArray(
+                    LinqBridge.Concat(new[] { this }, paths)));
+        }
+
+        private IPurePath JoinInternal(IEnumerable<string> paths)
+        {
+            return JoinInternal(
+                LinqBridge.ToArray(
+                    LinqBridge.Select(paths, PurePathFactory)));
+        }
+        
+        private IPurePath JoinInternal(IPurePath[] paths)
+        {
+            var path = PathUtils.Combine(
+                LinqBridge.AsEnumerable(paths), PathSeparator);
+
+            if (path.Drive == String.Empty)
+            {
+                // Need to retain the last drive since the Combine chops off
+                // the drive if an absolute path comes along later.
+                var drive = LinqBridge.LastOrDefault(
+                    LinqBridge.Select(
+                        LinqBridge.Where(paths, p => p.Drive != String.Empty),
+                        p => p.Drive));
+                if (drive != null)
+                {
+                    path = PurePathFactoryFromComponents(path, drive);
+                }
+            }
+
+            return path;
+        }
+
+        private string NormalizeSeparators(string path)
+        {
+            foreach (var separator in PathSeparatorsForNormalization)
+            {
+                path = path.Replace(separator, PathSeparator);
+            }
+            return path;
+        }
+
+        /// <inheritdoc/>
+        protected void Normalize(IPurePath path)
+        {
+            if (path.Dirname.Length <= 0) return;
+
+            // Remove extra slashes (eg. foo///bar => foo/bar)
+            // Leave initial double-slash (e.g. UNC paths)
+            var newDirname = Regex.Replace(path.Dirname,
+                                           Regex.Escape(PathSeparator) + "{2,}",
+                                           PathSeparator);
+            
+            // Remove single dots (eg. foo/./bar => foo/bar)
+            newDirname = Regex.Replace(newDirname, String.Format(
+                "({0}{1}({0}|$))+", Regex.Escape(PathSeparator),
+                Regex.Escape(CurrentDirectoryIdentifier)),
+                                       @"$2");
+
+            if (newDirname != path.Dirname)
+            {
+                Assimilate(PurePathFactoryFromComponents(path, dirname: newDirname));
+            }
+        }
+
+        /// <inheritdoc/>
+        public IPurePath Parent()
+        {
+            return Parent(1);
+        }
+
+        /// <inheritdoc/>
+        public IPurePath Parent(int nthParent)
+        {
+            return LinqBridge.FirstOrDefault(
+                LinqBridge.Skip(Parents(), nthParent - 1));
+        }
+
+        /// <inheritdoc/>
+        public IEnumerable<IPurePath> Parents()
+        {
+            var maxPathLength = LinqBridge.Count(Parts) - 1;  // Don't return self as a parent
+            for (var i = maxPathLength; i > 0; i--)
+            {
+                yield return PurePathFactory(
+                    JoinInternal(
+                        LinqBridge.Take(Parts, i))
+                    .ToString());
+            }
+        }
+
+        /// <inheritdoc/>
+        public Uri AsUri()
+        {
+            if (!IsAbsolute())
+            {
+                throw new InvalidOperationException(
+                    "Cannot create a URI from a relative path.");
+            }
+            return new Uri("file://" + AsPosix());
+        }
+
+        /// <inheritdoc/>
+        public IPurePath RelativeTo(IPurePath parent)
+        {
+            if (parent.Drive != Drive || parent.Root != Root)
+            {
+                throw new ArgumentException(String.Format(
+                    "'{0}' does not start with '{1}'", this, parent));
+            }
+            var thisDirname = Dirname.Split(PathSeparator[0]).GetEnumerator();
+            var parentDirname = parent.Dirname.Split(PathSeparator[0]).GetEnumerator();
+            while (parentDirname.MoveNext())
+            {
+                thisDirname.MoveNext();
+                if (parentDirname.Current != thisDirname.Current)
+                {
+                    throw new ArgumentException(String.Format(
+                        "'{0}' does not start with '{1}'", this, parent));
+                }
+            }
+            var builder = new StringBuilder();
+            while (thisDirname.MoveNext())
+            {
+                builder.Append(thisDirname.Current);
+            }
+            return PurePathFactoryFromComponents(
+                null, null, null, builder.ToString(), Basename, Extension);
+        }
+
+        /// <inheritdoc/>
+        public bool IsFile()
+        {
+            return HasComponents(PathComponent.Filename) && 
+                !HasComponents(PathComponent.All & ~PathComponent.Filename);
+        }
+
+        /// <inheritdoc/>
+        public bool IsDir()
+        {
+            return HasComponents(PathComponent.All & ~PathComponent.Filename) && 
+                !HasComponents(PathComponent.Filename);
+        }
+
+        /// <inheritdoc/>
+        public IPurePath WithDirname(string newBasename)
+        {
+            return PurePathFactoryFromComponents(this, basename: newBasename);
+        }
+
+        /// <inheritdoc/>
+        public IPurePath WithExtension(string newExtension)
+        {
+            var fname = PurePathFactory(newExtension);
+            // Allows setting the extension with or without the '.'
+            if (fname.HasComponents(PathComponent.All & 
+                ~(PathComponent.Basename | PathComponent.Extension)))
+            {
+                throw new InvalidPathException(newExtension,
+                    "Path must contain only extension.");
+            }
+            return PurePathFactoryFromComponents(this,
+                extension: fname.HasComponents(PathComponent.Basename)
+                    ? ExtensionDelimiter + fname.Basename 
+                    : fname.Extension);
+        }
+
+        /// <inheritdoc/>
+        public IPurePath WithFilename(string newFilename)
+        {
+            if (Filename == String.Empty)
+            {
+                throw new NotSupportedException(
+                    "Current path must contain a filename to change. If" +
+                    "current path is a directory, use Join() instead.");
+            }
+            var fname = PurePathFactory(newFilename);
+            if (fname.HasComponents(PathComponent.All & ~PathComponent.Filename))
+            {
+                throw new ArgumentException(
+                    "New filename parameter must contain only basename and/or extension.",
+                    "newFilename");
+            }
+            return PurePathFactoryFromComponents(this,
+                basename: fname.Basename, extension: fname.Extension);
+        }
+
+        /// <inheritdoc/>
+        public bool HasComponents(PathComponent components)
+        {
+            if ((components & PathComponent.Drive) == PathComponent.Drive
+                && Drive != String.Empty)
+            {
+                return true;
+            }
+            if ((components & PathComponent.Root) == PathComponent.Root
+                && Root != String.Empty)
+            {
+                return true;
+            }
+            if ((components & PathComponent.Dirname) == PathComponent.Dirname
+                && Dirname != String.Empty)
+            {
+                return true;
+            }
+            if ((components & PathComponent.Basename) == PathComponent.Basename
+                && Basename != String.Empty)
+            {
+                return true;
+            }
+            if ((components & PathComponent.Extension) == PathComponent.Extension
+                && Extension != String.Empty)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        /// <inheritdoc/>
+        public string GetComponents(PathComponent components)
+        {
+            var builder = new StringBuilder();
+            
+            if ((components & PathComponent.Drive) == PathComponent.Drive)
+            {
+                builder.Append(Drive);
+            }
+            if ((components & PathComponent.Root) == PathComponent.Root)
+            {
+                builder.Append(Root);
+            }
+            string path = null;
+            if ((components & PathComponent.Dirname) == PathComponent.Dirname)
+            {
+                path = Dirname;
+            }
+            if ((components & PathComponent.Basename) == PathComponent.Basename
+                && Basename != String.Empty)
+            {
+                path = !String.IsNullOrEmpty(path) 
+                    ? PathUtils.Combine(path, Basename, PathSeparator) 
+                    : Basename;
+            }
+            if ((components & PathComponent.Extension) == PathComponent.Extension)
+            {
+                path += Extension;
+            }
+            if (path != null)
+            {
+                builder.Append(path);
+            }
+            return builder.ToString();
+        }
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            return GetComponents(PathComponent.All);
+        }
+
+        /// <inheritdoc/>
+        protected abstract string PathSeparator { get; }
+
+        /// <inheritdoc/>
+        public bool IsAbsolute()
+        {
+            return !String.IsNullOrEmpty(Anchor);
+        }
+
+        /// <inheritdoc/>
+        public abstract bool IsReserved();
+
+        // Matching is case-insensitive on NT machines.
+        // http://stackoverflow.com/questions/6907720/need-to-perform-wildcard-etc-search-on-a-string-using-regex/16488364#16488364
+        /// <inheritdoc/>
+        public abstract bool Match(string pattern);
+
+        /// <inheritdoc/>
+        public abstract IPurePath NormCase();
+
+        /// <summary>
+        /// Create an instance of your own IPurePath implementation
+        /// when given the path to use.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        protected abstract IPurePath PurePathFactory(string path);
+
+        /// <inheritdoc/>
+        protected IPurePath PurePathFactoryFromComponents(
+            IPurePath original, 
+            string drive = null, 
+            string root = null, 
+            string dirname = null, 
+            string basename = null, 
+            string extension = null)
+        {
+            return PurePathFactoryFromComponents(
+                drive ?? original.Drive,
+                root ?? original.Root,
+                dirname ?? original.Dirname,
+                basename ?? original.Basename,
+                extension ?? original.Extension);
+        }
+
+        /// <inheritdoc/>
+        protected abstract IPurePath PurePathFactoryFromComponents(
+            string drive,
+            string root,
+            string dirname,
+            string basename,
+            string extension);
+
+        /// <inheritdoc/>
+        public IPurePath Relative()
+        {
+            return PurePathFactoryFromComponents(
+                this, String.Empty, String.Empty);
+        }
+    }
+}
