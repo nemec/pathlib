@@ -10,7 +10,7 @@ namespace PathLib.UnitTest
         [TestMethod]
         public void CreatePath_WithEmptyPath_AllPartsAreNonNull()
         {
-            var path = new PurePosixPath("");
+            var path = new PureNtPath("");
 
             Assert.IsNotNull(path.Drive);
             Assert.IsNotNull(path.Root);
@@ -18,6 +18,13 @@ namespace PathLib.UnitTest
             Assert.IsNotNull(path.Basename);
             Assert.IsNotNull(path.Extension);
             CollectionAssert.AllItemsAreNotNull(path.Parts.ToList());
+        }
+        [TestMethod]
+        public void CreatePath_WithFilename_StoresFilename()
+        {
+            var path = new PureNtPath(".");
+
+            Assert.AreEqual(".", path.Filename);
         }
 
         [TestMethod]
@@ -307,22 +314,6 @@ namespace PathLib.UnitTest
             var expected = new PureNtPath(@"C:\users\nemec");
 
             var actual = first + second;
-
-            Assert.AreEqual(expected, actual);
-        }
-
-        [TestMethod]
-        public void Join_WithFilename_CorrectlyJoinsPaths()
-        {
-            const string first = @"C:\Users\nemecd\prg\Concentra.Crawler\HP.Concentra.Crawler\bin\Release";
-            const string second = "ConcentraCrawler.exe";
-
-            var expected =
-                new PureNtPath(
-                    @"C:\Users\nemecd\prg\Concentra.Crawler\HP.Concentra.Crawler\bin\Release\ConcentraCrawler.exe");
-
-            var path = new PureNtPath(first);
-            var actual = path.Join(second);
 
             Assert.AreEqual(expected, actual);
         }

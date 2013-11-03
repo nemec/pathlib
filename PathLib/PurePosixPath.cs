@@ -123,11 +123,16 @@ namespace PathLib
 
         private string ParseDirname(string remainingPath)
         {
+            // Hardcode special dirs
+            if (remainingPath == "." || remainingPath == "..")
+            {
+                return remainingPath;
+            }
             var idx = remainingPath.LastIndexOf(PathSeparator,
                 StringComparison.CurrentCulture);
             return idx > 1
                 ? remainingPath.Substring(0, idx + 1)
-                : remainingPath;
+                : "";
         }
 
         private static string ParseBasename(string remainingPath)

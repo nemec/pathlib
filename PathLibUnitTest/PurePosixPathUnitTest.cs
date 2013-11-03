@@ -20,7 +20,7 @@ namespace PathLib.UnitTest
         }
 
         [TestMethod]
-        public void CreatePath_WithFilename_CreatesRelativePathWithFilename()
+        public void CreatePath_WithCurrentDir_CreatesRelativePathWithDirname()
         {
             // Arrange
 
@@ -28,7 +28,19 @@ namespace PathLib.UnitTest
             var path = new PurePosixPath();
 
             // Assert
-            Assert.AreEqual(".", path.AsPosix());
+            Assert.AreEqual(".", path.Dirname);
+        }
+
+        [TestMethod]
+        public void CreatePath_WithFilename_StoresPathInFilename()
+        {
+            // Arrange
+
+            // Act
+            var path = new PurePosixPath("file.txt");
+
+            // Assert
+            Assert.AreEqual("file.txt", path.Filename);
         }
 
         [TestMethod]

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices;
+using System.Text;
 
 namespace PathLib
 {
@@ -78,5 +80,49 @@ namespace PathLib
         {
             throw new NotImplementedException();
         }
+
+        /// <summary>
+        /// Return a path that uses the short "8.3" form of the
+        /// filename. (e.g. DOCUME~2.docx) 
+        /// </summary>
+        /// <returns></returns>
+        public NtPath ToShortPath()
+        {
+            var oldPath = PurePath.ToString();
+            var newPath = new StringBuilder(255);
+            if (GetShortPathName(oldPath, newPath, newPath.Capacity) == 0)
+            {
+                return this;
+            }
+            return new NtPath(PurePath.WithFilename(newPath.ToString()).ToString());
+        }
+
+        /// <summary>
+        /// Convert a path that uses the short 8.3 name (e.g. DOCUME~2.docx)
+        /// into its long path.
+        /// </summary>
+        /// <returns></returns>
+        public NtPath ToLongPath()
+        {
+            var oldPath = PurePath.ToString();
+            var newPath = new StringBuilder(255);
+            if (GetLongPathName(oldPath, newPath, newPath.Capacity) == 0)
+            {
+                return this;
+            }
+            return new NtPath(PurePath.WithFilename(newPath.ToString()).ToString());
+        }
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
+        private static extern int GetLongPathName(
+            [MarshalAs(UnmanagedType.LPStr)] string path,
+            [MarshalAs(UnmanagedType.LPStr)] StringBuilder longPath,
+            int longPathLength);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
+        private static extern int GetShortPathName(
+            [MarshalAs(UnmanagedType.LPStr)] string path,
+            [MarshalAs(UnmanagedType.LPStr)] StringBuilder shortPath,
+            int longPathLength);
     }
 }

@@ -188,6 +188,17 @@ namespace PathLib.UnitTest
         }
 
         [TestMethod]
+        public void Join_WithEmptyPathAsInitial_CreatesPathEqualToSecondPath()
+        {
+            var path = new PurePosixPath();
+            var expected = new PurePosixPath(@"\Users\nemecd\tmp\testfiles");
+
+            var joined = path.Join(@"\Users\nemecd\tmp\testfiles");
+
+            Assert.AreEqual(expected, joined);
+        }
+
+        [TestMethod]
         public void GetParent_WithAParent_ReturnsTheParent()
         {
             var path = new PureNtPath(@"C:\Users\nemec");
