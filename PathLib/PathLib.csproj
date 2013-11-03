@@ -38,6 +38,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Converters\PureNtPathConverter.cs" />
     <Compile Include="FileAccessUtils.cs" />
     <Compile Include="InvalidPathException.cs" />
     <Compile Include="IPath.cs" />

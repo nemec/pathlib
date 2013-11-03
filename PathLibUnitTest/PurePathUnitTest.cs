@@ -1,5 +1,7 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
+using System.Xml.Serialization;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace PathLib.UnitTest
@@ -443,6 +445,24 @@ namespace PathLib.UnitTest
             var actual = path.IsFile();
 
             Assert.AreEqual(expected, actual);
+        }
+
+        [XmlRoot]
+        public class XmlDeserialize
+        {
+            [XmlElement]
+            public PureNtPath Folder { get; set; }
+        }
+
+        [TestMethod]
+        public void XmlDeserialize_WithPathAsStringElement_DeserializesIntoType()
+        {
+            const string pathXml = @"<XmlDeserialize><Folder>c:\users\nemec</Folder></XmlDeserialize>";
+            var obj = (XmlDeserialize)new XmlSerializer(typeof (XmlDeserialize))
+                .Deserialize(new StringReader(pathXml));
+            var expected = new PureNtPath(@"c:\users\nemec");
+
+            Assert.AreEqual(expected, obj.Folder);
         }
     }
 }

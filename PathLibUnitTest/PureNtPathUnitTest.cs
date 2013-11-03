@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -316,6 +317,17 @@ namespace PathLib.UnitTest
             var actual = first + second;
 
             Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void TypeConverter_FromString_CreatesPath()
+        {
+            const string str = @"c:\users\nemec";
+            var converter = TypeDescriptor.GetConverter(typeof (PureNtPath));
+            var path = (PureNtPath)converter.ConvertFrom(str);
+
+            Assert.IsNotNull(path);
+            Assert.AreEqual(str, path.ToString());
         }
     }
 }

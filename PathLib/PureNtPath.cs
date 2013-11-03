@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.IO;
 
 namespace PathLib
@@ -8,6 +9,7 @@ namespace PathLib
     /// treats paths as case insensitive.
     /// http://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx
     /// </summary>
+    [TypeConverter(typeof(Converters.PureNtPathConverter))]
     public class PureNtPath : PurePath, IEquatable<PureNtPath>
     {
         private readonly string[] _reservedPaths =

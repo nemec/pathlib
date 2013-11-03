@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Xml.Serialization;
 
 namespace PathLib
 {
@@ -10,7 +11,7 @@ namespace PathLib
     /// <summary>
     /// Base class containing common IPurePath code.
     /// </summary>
-    public abstract class PurePath : IPurePath
+    public abstract class PurePath : IPurePath, IXmlSerializable
     {
         /// <summary>
         /// A string representing the operating system's "current directory"
@@ -140,6 +141,10 @@ namespace PathLib
             Assimilate(JoinInternal(paths));
         }
 
+        /// <summary>
+        /// Replace the current path components with the given path's.
+        /// </summary>
+        /// <param name="path"></param>
         private void Assimilate(IPurePath path)
         {
             Drive = path.Drive ?? "";
@@ -416,8 +421,8 @@ namespace PathLib
             var fname = PurePathFactory(newFilename);
             if (fname.HasComponents(PathComponent.All & ~PathComponent.Filename))
             {
-                throw new ArgumentException(
-                    "New filename parameter must contain only basename and/or extension.",
+                throw new ArgumentException(String.Format(
+                    "New filename '{0}' must contain only basename and/or extension.", newFilename),
                     "newFilename");
             }
             return PurePathFactoryFromComponents(this,
@@ -558,5 +563,28 @@ namespace PathLib
             return PurePathFactoryFromComponents(
                 this, String.Empty, String.Empty);
         }
+
+        #region Xml Serialization
+
+        public System.Xml.Schema.XmlSchema GetSchema()
+        {
+            return null;
+        }
+
+        public virtual void ReadXml(System.Xml.XmlReader reader)
+        {
+            var path = PurePathFactory(reader.ReadString());
+            reader.ReadEndElement();
+
+            Assimilate(path);
+        }
+
+        public void WriteXml(System.Xml.XmlWriter writer)
+        {
+            writer.WriteString(ToString());
+            writer.WriteEndElement();
+        }
+
+        #endregion
     }
 }
