@@ -34,7 +34,9 @@ namespace PathLib
         {
             IPurePath lastAbsolute = null;
             var dirnameBuilder = new StringBuilder();
-            var lastPart = "";
+            var lastPartStr = "";
+            IPurePath lastPart  = null;
+
             foreach (var path in paths)
             {
                 if (path.ToString() == String.Empty)
@@ -42,23 +44,33 @@ namespace PathLib
                     continue;
                 }
 
-                if (lastAbsolute == null || path.IsAbsolute())
+                // Does not use IsAbsolute in order to retain compatibility
+                // with Path.Combine: Path.Combine("c:\\windows", "d:dir") 
+                // returns "d:dir" despite the fact that it's a relative path.
+                if (lastAbsolute == null || !String.IsNullOrEmpty(path.Anchor))
                 {
                     dirnameBuilder.Length = 0;
                     lastAbsolute = path;
                 }
-                else if (dirnameBuilder.Length > 0 && !lastPart.EndsWith(separator))
+                else if (dirnameBuilder.Length > 0 && !lastPartStr.EndsWith(separator))
                 {
                     dirnameBuilder.Append(separator);
                 }
                 dirnameBuilder.Append(
                     path.GetComponents(
                         PathComponent.Dirname | PathComponent.Filename));
-                lastPart = path.ToString();
+                lastPart = path;
+                lastPartStr = path.ToString();
             }
-            return lastAbsolute == null 
-                ? null
-                : lastAbsolute.WithDirname(dirnameBuilder.ToString());
+            if (lastAbsolute == null)
+            {
+                return null;
+            }
+            var filenameLen = lastPart.Filename.Length;
+            dirnameBuilder.Remove(dirnameBuilder.Length - filenameLen, filenameLen);
+            return lastAbsolute
+                .WithDirname(dirnameBuilder.ToString())
+                .WithFilename(lastPart.Filename);
         }
     }
 }

@@ -46,6 +46,36 @@ namespace PathLib.UnitTest
         }
 
         [TestMethod]
+        [ExpectedException(typeof(InvalidPathException))]
+        public void CreatePath_WhereDirnameContainsReservedCharacter_ThrowsException()
+        {
+            // Arrange
+            #pragma warning disable 168
+            var expected = new PureNtPath(@"C:\use<rs\illegal.txt");
+            #pragma warning restore 168
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(InvalidPathException))]
+        public void CreatePath_WhereBasenameContainsReservedCharacter_ThrowsException()
+        {
+            // Arrange
+            #pragma warning disable 168
+            var expected = new PureNtPath(@"C:\users\illegal>char.txt");
+            #pragma warning restore 168
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(InvalidPathException))]
+        public void CreatePath_WhereExtensionContainsReservedCharacter_ThrowsException()
+        {
+            // Arrange
+            #pragma warning disable 168
+            var expected = new PureNtPath(@"C:\users\illegal.tx<>t");
+            #pragma warning restore 168
+        }
+
+        [TestMethod]
         public void PathEquality_UsingNtPaths_ComparesCaseInsensitive()
         {
             // Arrange
@@ -148,6 +178,19 @@ namespace PathLib.UnitTest
 
             // Assert
             Assert.AreEqual(@"c:", actual);
+        }
+
+        [TestMethod]
+        public void IsAbsolute_WithDriveAndNoRoot_ReturnsFalse()
+        {
+            // Arrange
+            var path = new PureNtPath("c:some/share/foo.txt");
+
+            // Act
+            var actual = path.IsAbsolute();
+
+            // Assert
+            Assert.AreEqual(false, actual);
         }
 
         [TestMethod]
@@ -264,6 +307,22 @@ namespace PathLib.UnitTest
             var expected = new PureNtPath(@"C:\users\nemec");
 
             var actual = first + second;
+
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void Join_WithFilename_CorrectlyJoinsPaths()
+        {
+            const string first = @"C:\Users\nemecd\prg\Concentra.Crawler\HP.Concentra.Crawler\bin\Release";
+            const string second = "ConcentraCrawler.exe";
+
+            var expected =
+                new PureNtPath(
+                    @"C:\Users\nemecd\prg\Concentra.Crawler\HP.Concentra.Crawler\bin\Release\ConcentraCrawler.exe");
+
+            var path = new PureNtPath(first);
+            var actual = path.Join(second);
 
             Assert.AreEqual(expected, actual);
         }

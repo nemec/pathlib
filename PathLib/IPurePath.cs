@@ -190,7 +190,6 @@ namespace PathLib
 
         /// <summary>
         /// Returns a new path with filename changed.
-        /// Fails if the path is a directory.
         /// </summary>
         /// <param name="newFilename"></param>
         /// <returns></returns>

@@ -308,7 +308,7 @@ namespace PathLib.UnitTest
         {
             var expected = new PureNtPath(@"nemec\file.txt");
 
-            var parent = new PureNtPath(@"\users\");
+            var parent = new PureNtPath(@"c:\users\");
             var path = new PureNtPath(@"c:\users\nemec\file.txt");
 
             var actual = path.RelativeTo(parent);
@@ -319,7 +319,7 @@ namespace PathLib.UnitTest
         [TestMethod]
         public void RelativeTo_WithParent_IsAbsoluteIsFalse()
         {
-            var parent = new PureNtPath(@"\Program Files\");
+            var parent = new PureNtPath(@"c:\users\");
             var path = new PureNtPath(@"c:\users\nemec\file.txt");
 
             path.RelativeTo(parent);
@@ -339,29 +339,19 @@ namespace PathLib.UnitTest
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
+        public void RelativeTo_WithParentContainingPartialFilename_ThrowsException()
+        {
+            var parent = new PureNtPath(@"c:\users\nemec\file");
+            var path = new PureNtPath(@"c:\users\nemec\file.txt");
+
+            path.RelativeTo(parent);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
         public void RelativeTo_WithParentLackingDrive_ThrowsException()
         {
             var parent = new PureNtPath(@"\users\");
-            var path = new PureNtPath(@"c:\users\nemec\file.txt");
-
-            path.RelativeTo(parent);
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public void RelativeTo_WithParentHavingFilename_ThrowsException()
-        {
-            var parent = new PureNtPath(@"c:\users\file");
-            var path = new PureNtPath(@"c:\users\nemec\file.txt");
-
-            path.RelativeTo(parent);
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public void RelativeTo_WithParentHavingExtension_ThrowsException()
-        {
-            var parent = new PureNtPath(@"c:\users\.xml");
             var path = new PureNtPath(@"c:\users\nemec\file.txt");
 
             path.RelativeTo(parent);

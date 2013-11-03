@@ -6,14 +6,20 @@ namespace PathLib
     /// <summary>
     /// Represents an NT path. Uses the backslash for a separator and
     /// treats paths as case insensitive.
+    /// http://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx
     /// </summary>
     public class PureNtPath : PurePath, IEquatable<PureNtPath>
     {
-        private readonly string[] _reservedPaths = new[]
+        private readonly string[] _reservedPaths =
             {
                 "CON", "PRN", "AUX", "NUL",
                 "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
                 "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"
+            };
+
+        private readonly string[] _reservedCharacters =
+            {
+                "<", ">", "|"
             };
 
         #region ctors
@@ -80,6 +86,8 @@ namespace PathLib
                 return;
             }
 
+            ThrowIfReservedCharactersUsed(path);
+
             Drive = ParseDrive(path);
             Root = ParseRoot(path);
 
@@ -89,7 +97,6 @@ namespace PathLib
             }
 
             path = path.Substring(Drive.Length + Root.Length);
-
             Dirname = ParseDirname(path);
             path = path.Substring(Dirname.Length);
 
@@ -107,6 +114,21 @@ namespace PathLib
             Extension = ParseExtension(path);
 
             Normalize(this);
+        }
+
+        private void ThrowIfReservedCharactersUsed(params string[] paths)
+        {
+            foreach (var path in paths)
+            {
+                foreach (var ch in _reservedCharacters)
+                {
+                    if (path.Contains(ch))
+                    {
+                        throw new InvalidPathException(RawPath, String.Format(
+                            "Path contains reserved character '{0}'.", ch));
+                    }
+                }
+            }
         }
 
         /// <inheritdoc/>
@@ -287,7 +309,7 @@ namespace PathLib
         public override bool Equals(object other)
         {
             var obj = other as PureNtPath;
-            return obj != null && Equals(other);
+            return obj != null && Equals(obj);
         }
 
         /// <inheritdoc/>

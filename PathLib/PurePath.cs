@@ -36,8 +36,7 @@ namespace PathLib
         /// </summary>
         public const char DriveDelimiter = ':';
 
-        private static readonly string[] PathSeparatorsForNormalization = 
-            new[] {"/", @"\"};
+        private static readonly string[] PathSeparatorsForNormalization = {"/", @"\"};
 
         // Drive + Root + Dirname + Basename + Extension
         /// <summary>
@@ -351,12 +350,15 @@ namespace PathLib
                 throw new ArgumentException(String.Format(
                     "'{0}' does not start with '{1}'", this, parent));
             }
-            var thisDirname = Dirname.Split(PathSeparator[0]).GetEnumerator();
-            var parentDirname = parent.Dirname.Split(PathSeparator[0]).GetEnumerator();
+
+            var thisDirname = Dirname
+                .Split(PathSeparator[0]).GetEnumerator();
+            var parentDirname = parent.Relative().ToString()
+                .Split(PathSeparator[0]).GetEnumerator();
             while (parentDirname.MoveNext())
             {
-                thisDirname.MoveNext();
-                if (parentDirname.Current != thisDirname.Current)
+                if (!thisDirname.MoveNext() ||
+                    !Equals(parentDirname.Current, thisDirname.Current))
                 {
                     throw new ArgumentException(String.Format(
                         "'{0}' does not start with '{1}'", this, parent));
@@ -386,9 +388,9 @@ namespace PathLib
         }
 
         /// <inheritdoc/>
-        public IPurePath WithDirname(string newBasename)
+        public IPurePath WithDirname(string newDirname)
         {
-            return PurePathFactoryFromComponents(this, basename: newBasename);
+            return PurePathFactoryFromComponents(this, dirname: newDirname);
         }
 
         /// <inheritdoc/>
@@ -411,12 +413,6 @@ namespace PathLib
         /// <inheritdoc/>
         public IPurePath WithFilename(string newFilename)
         {
-            if (Filename == String.Empty)
-            {
-                throw new NotSupportedException(
-                    "Current path must contain a filename to change. If" +
-                    "current path is a directory, use Join() instead.");
-            }
             var fname = PurePathFactory(newFilename);
             if (fname.HasComponents(PathComponent.All & ~PathComponent.Filename))
             {
@@ -507,7 +503,9 @@ namespace PathLib
         /// <inheritdoc/>
         public bool IsAbsolute()
         {
-            return !String.IsNullOrEmpty(Anchor);
+            // Does not use anchor because "C:path\foo.txt"
+            // counts as a relative path in a different drive.
+            return !String.IsNullOrEmpty(Root);
         }
 
         /// <inheritdoc/>
@@ -539,11 +537,11 @@ namespace PathLib
             string extension = null)
         {
             return PurePathFactoryFromComponents(
-                drive ?? original.Drive,
-                root ?? original.Root,
-                dirname ?? original.Dirname,
-                basename ?? original.Basename,
-                extension ?? original.Extension);
+                drive ?? (original != null ? original.Drive : ""),
+                root ?? (original != null ? original.Root : ""),
+                dirname ?? (original != null ? original.Dirname : ""),
+                basename ?? (original != null ? original.Basename : ""),
+                extension ?? (original != null ? original.Extension : ""));
         }
 
         /// <inheritdoc/>
