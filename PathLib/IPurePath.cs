@@ -65,20 +65,6 @@ namespace PathLib
         string AsPosix();
 
         /// <summary>
-        /// Returns true if the given path contains only a filename
-        /// (basename + extension).
-        /// </summary>
-        /// <returns></returns>
-        bool IsFile();
-
-        /// <summary>
-        /// Returns true if the given path lacks a filename
-        /// (basename + extension).
-        /// </summary>
-        /// <returns></returns>
-        bool IsDir();
-
-        /// <summary>
         /// Returns true if the given path is absolute.
         /// </summary>
         /// <returns></returns>

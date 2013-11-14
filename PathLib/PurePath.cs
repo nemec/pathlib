@@ -379,20 +379,6 @@ namespace PathLib
         }
 
         /// <inheritdoc/>
-        public bool IsFile()
-        {
-            return HasComponents(PathComponent.Filename) && 
-                !HasComponents(PathComponent.All & ~PathComponent.Filename);
-        }
-
-        /// <inheritdoc/>
-        public bool IsDir()
-        {
-            return HasComponents(PathComponent.All & ~PathComponent.Filename) && 
-                !HasComponents(PathComponent.Filename);
-        }
-
-        /// <inheritdoc/>
         public IPurePath WithDirname(string newDirname)
         {
             return PurePathFactoryFromComponents(this, dirname: newDirname);

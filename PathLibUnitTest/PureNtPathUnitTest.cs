@@ -20,12 +20,21 @@ namespace PathLib.UnitTest
             Assert.IsNotNull(path.Extension);
             CollectionAssert.AllItemsAreNotNull(path.Parts.ToList());
         }
+
         [TestMethod]
-        public void CreatePath_WithFilename_StoresFilename()
+        public void CreatePath_WithCurrentDirectory_StoresAsDirname()
         {
             var path = new PureNtPath(".");
 
             Assert.AreEqual(".", path.Filename);
+        }
+
+        [TestMethod]
+        public void CreatePath_WithFilename_StoresFilename()
+        {
+            var path = new PureNtPath("file.txt");
+
+            Assert.AreEqual("file.txt", path.Filename);
         }
 
         [TestMethod]
@@ -241,8 +250,10 @@ namespace PathLib.UnitTest
         }
 
         [TestMethod]
-        public void GetFilename_WithPathEndingInSlash_ReturnsEmptyString()
+        public void GetFilename_WithPathEndingInSlash_ReturnsLastPathComponent()
         {
+            // POSIX spec drops the trailing slash
+
             // Arrange
             var path = new PureNtPath("some/path/");
 
@@ -250,7 +261,7 @@ namespace PathLib.UnitTest
             var actual = path.Filename;
 
             // Assert
-            Assert.AreEqual(@"", actual);
+            Assert.AreEqual(@"path", actual);
         }
 
         [TestMethod]

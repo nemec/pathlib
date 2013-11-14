@@ -99,16 +99,17 @@ namespace PathLib
             }
 
             path = path.Substring(Drive.Length + Root.Length);
-            Dirname = ParseDirname(path);
-            path = path.Substring(Dirname.Length);
 
             // Remove trailing slash
             // This is what Python's pathlib does, but I don't think it's
             // necessarily required by spec
-            if (Dirname.EndsWith(PathSeparator))
+            if (path.EndsWith(PathSeparator))
             {
-                Dirname = Dirname.Substring(0, Dirname.Length - 1);
+                path = path.TrimEnd(PathSeparator.ToCharArray());
             }
+
+            Dirname = ParseDirname(path);
+            path = path.Substring(Dirname.Length);
 
             Basename = ParseBasename(path);
             path = path.Substring(Basename.Length);
@@ -179,7 +180,9 @@ namespace PathLib
         private static string ParseBasename(string remainingPath)
         {
             return !String.IsNullOrEmpty(remainingPath)
-                ? Path.GetFileNameWithoutExtension(remainingPath)
+                ? remainingPath != "."  // Special case for current dir.
+                    ? Path.GetFileNameWithoutExtension(remainingPath)
+                    : "."
                 : "";
         }
 
