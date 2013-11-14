@@ -92,9 +92,8 @@ namespace PathLib
         {
             if (paths.Length > 1)
             {
-                var components = LinqBridge.ToArray(
-                    LinqBridge.Select(paths, p => 
-                        PurePathFactory(NormalizeSeparators(p))));
+                var components = LinqBridge.Select(paths, p => 
+                        PurePathFactory(NormalizeSeparators(p)));
                 var path = JoinInternal(components);
                 RawPath = path.ToString();
                 Assimilate(path);
@@ -236,30 +235,27 @@ namespace PathLib
         /// <inheritdoc/>
         public IPurePath Join(params string[] paths)
         {
-            return Join(
-                LinqBridge.ToArray(
+            return JoinInternal(
+                LinqBridge.Concat(
+                    new[] { this },
                     LinqBridge.Select(paths, PurePathFactory)));
         }
 
         /// <inheritdoc/>
         public IPurePath Join(params IPurePath[] paths)
         {
-            return JoinInternal(
-                LinqBridge.ToArray(
-                    LinqBridge.Concat(new[] { this }, paths)));
+            return JoinInternal(LinqBridge.Concat(new[] { this }, paths));
         }
 
         private IPurePath JoinInternal(IEnumerable<string> paths)
         {
-            return JoinInternal(
-                LinqBridge.ToArray(
-                    LinqBridge.Select(paths, PurePathFactory)));
+            return JoinInternal(LinqBridge.Select(paths, PurePathFactory));
         }
         
-        private IPurePath JoinInternal(IPurePath[] paths)
+        private IPurePath JoinInternal(IEnumerable<IPurePath> paths)
         {
-            var path = PathUtils.Combine(
-                LinqBridge.AsEnumerable(paths), PathSeparator);
+            var pathsList = new List<IPurePath>(paths);
+            var path = PathUtils.Combine(pathsList, PathSeparator);
 
             if (path.Drive == String.Empty)
             {
@@ -267,7 +263,7 @@ namespace PathLib
                 // the drive if an absolute path comes along later.
                 var drive = LinqBridge.LastOrDefault(
                     LinqBridge.Select(
-                        LinqBridge.Where(paths, p => p.Drive != String.Empty),
+                        LinqBridge.Where(pathsList, p => p.Drive != String.Empty),
                         p => p.Drive));
                 if (drive != null)
                 {

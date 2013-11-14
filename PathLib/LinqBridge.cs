@@ -108,42 +108,6 @@ namespace PathLib
             }
         }
 
-        public static TSource[] ToArray<TSource>(IEnumerable<TSource> source)
-        {
-            TSource[] array;
-            var collection = source as ICollection<TSource>;
-            if (collection != null)
-            {
-                if (collection.Count == 0)
-                    return EmptyOf<TSource>.Arr;
-
-                array = new TSource[collection.Count];
-                collection.CopyTo(array, 0);
-                return array;
-            }
-
-            var pos = 0;
-            array = EmptyOf<TSource>.Arr;
-            foreach (var element in source)
-            {
-                if (pos == array.Length)
-                {
-                    if (pos == 0)
-                        array = new TSource[4];
-                    else
-                        Array.Resize(ref array, pos * 2);
-                }
-
-                array[pos++] = element;
-            }
-
-            if (pos != array.Length)
-                Array.Resize(ref array, pos);
-
-            return array;
-
-        }
-
         public static IEnumerable<T> Take<T>(IEnumerable<T> source, int count)
         {
             if (count <= 0) yield break;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 
@@ -238,8 +239,8 @@ namespace PathLib
             }
 
             // Resolve symlinks before comparing
-            var parent = LinqBridge.ToArray(first.NormCase().Parts);
-            var child = LinqBridge.ToArray(second.NormCase().Parts);
+            var parent = new List<string>(first.NormCase().Parts);
+            var child = new List<string>(second.NormCase().Parts);
 
             // Parent must be shorter than child
             if (LinqBridge.Count(parent) >= LinqBridge.Count(child))
