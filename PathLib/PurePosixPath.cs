@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 
 namespace PathLib
 {
@@ -7,7 +6,7 @@ namespace PathLib
     /// Represents a POSIX path. Uses the slash as a directory separator
     /// and treats paths as case sensitive.
     /// </summary>
-    public class PurePosixPath : PurePath, IEquatable<PurePosixPath>
+    public class PurePosixPath : PurePath<PurePosixPath>, IEquatable<PurePosixPath>
     {
         #region ctors
 
@@ -102,13 +101,13 @@ namespace PathLib
         }
 
         /// <inheritdoc/>
-        protected override IPurePath PurePathFactory(string path)
+        protected override PurePosixPath PurePathFactory(string path)
         {
             return new PurePosixPath(path);
         }
 
         /// <inheritdoc/>
-        protected override IPurePath PurePathFactoryFromComponents(string drive, string root, string dirname, string basename, string extension)
+        protected override PurePosixPath PurePathFactoryFromComponents(string drive, string root, string dirname, string basename, string extension)
         {
             return new PurePosixPath(drive, root, dirname, basename, extension);
         }
@@ -135,19 +134,19 @@ namespace PathLib
                 : "";
         }
 
-        private static string ParseBasename(string remainingPath)
+        private string ParseBasename(string remainingPath)
         {
             return !String.IsNullOrEmpty(remainingPath)
                 ? remainingPath != "."  // Special case for current dir.
-                    ? Path.GetFileNameWithoutExtension(remainingPath)
+                    ? PathUtils.GetFileNameWithoutExtension(remainingPath, PathSeparator)
                     : "."
                 : "";
         }
 
-        private static string ParseExtension(string remainingPath)
+        private string ParseExtension(string remainingPath)
         {
             return !String.IsNullOrEmpty(remainingPath)
-                ? Path.GetExtension(remainingPath)
+                ? PathUtils.GetExtension(remainingPath, PathSeparator)
                 : "";
         }
 
@@ -319,7 +318,7 @@ namespace PathLib
         }
 
         /// <inheritdoc/>
-        public override IPurePath NormCase()
+        public override PurePosixPath NormCase()
         {
             return this;
         }

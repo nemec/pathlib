@@ -3,14 +3,63 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 
+// Certain path methods adapted from Mono source to use 
+// specific directory separator: System.IO.Path.cs
+//
+// Copyright (C) 2004-2005 Novell, Inc (http://www.novell.com)
+//
+// Permission is hereby granted, free of charge, to any person obtaining
+// a copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so, subject to
+// the following conditions:
+//
+// The above copyright notice and this permission notice shall be
+// included in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
 namespace PathLib
 {
-    internal static class PathUtils
+    public static class PathUtils
     {
-        public static bool Glob(string pattern, string haystack, bool fullMatch = false)
+        /// <summary>
+        /// A string representing the operating system's "current directory"
+        /// identifier.
+        /// </summary>
+        public const string CurrentDirectoryIdentifier = ".";
+        /// <summary>
+        /// A string representing the operating system's "parent directory"
+        /// identifier.
+        /// </summary>
+        public const string ParentDirectoryIdentifier = "..";
+        /// <summary>
+        /// A char representing the character delimiting extensions
+        /// from filenames.
+        /// </summary>
+        public const char ExtensionDelimiter = '.';
+        /// <summary>
+        /// A string representing the character delimiting drives from the
+        /// remaining path.
+        /// </summary>
+        public const char DriveDelimiter = ':';
+        internal static readonly string[] PathSeparatorsForNormalization = {
+            "/",
+            @"\"
+        };
+
+        internal static bool Glob(string pattern, string haystack, bool fullMatch = false)
         {
             var rx = Regex.Escape(pattern).Replace(@"\*", "[^/]*?").Replace(@"\?", "[^/]") + "$";
-            if (fullMatch)
+            if(fullMatch)
             {
                 rx = "^" + rx;
             }
@@ -19,27 +68,27 @@ namespace PathLib
 
         internal static string Combine(string path1, string path2, string separator)
         {
-            if (path2.StartsWith(separator))
+            if(path2.StartsWith(separator))
             {
                 return path2;
             }
-            if (path1.EndsWith(separator))
+            if(path1.EndsWith(separator))
             {
                 return path1 + path2;
             }
             return path1 + separator + path2;
         }
 
-        public static IPurePath Combine(IEnumerable<IPurePath> paths, string separator)
+        internal static IPurePath Combine(IEnumerable<IPurePath> paths, string separator)
         {
             IPurePath lastAbsolute = null;
             var dirnameBuilder = new StringBuilder();
             var lastPartStr = "";
-            IPurePath lastPart  = null;
+            IPurePath lastPart = null;
 
             foreach (var path in paths)
             {
-                if (path.ToString() == String.Empty)
+                if(path.ToString() == String.Empty)
                 {
                     continue;
                 }
@@ -47,22 +96,22 @@ namespace PathLib
                 // Does not use IsAbsolute in order to retain compatibility
                 // with Path.Combine: Path.Combine("c:\\windows", "d:dir") 
                 // returns "d:dir" despite the fact that it's a relative path.
-                if (lastAbsolute == null || !String.IsNullOrEmpty(path.Anchor))
+                if(lastAbsolute == null || !String.IsNullOrEmpty(path.Anchor))
                 {
                     dirnameBuilder.Length = 0;
                     lastAbsolute = path;
                 }
-                else if (dirnameBuilder.Length > 0 && !lastPartStr.EndsWith(separator))
+                else if(dirnameBuilder.Length > 0 && !lastPartStr.EndsWith(separator))
                 {
                     dirnameBuilder.Append(separator);
                 }
                 dirnameBuilder.Append(
                     path.GetComponents(
-                        PathComponent.Dirname | PathComponent.Filename));
+                    PathComponent.Dirname | PathComponent.Filename));
                 lastPart = path;
                 lastPartStr = path.ToString();
             }
-            if (lastAbsolute == null)
+            if(lastAbsolute == null)
             {
                 return null;
             }
@@ -72,5 +121,214 @@ namespace PathLib
                 .WithDirname(dirnameBuilder.ToString())
                 .WithFilename(lastPart.Filename);
         }
+        #region System.IO.Path replacements
+        public static string GetPathRoot(string path, string separator)
+        {
+            if(!IsPathRooted(path, separator))
+            {
+                return String.Empty;
+            }
+            if(separator.Length != 1)
+            {
+                throw new ArgumentException("Separator must be one character", "separator");
+            }
+
+            if(separator == "/")
+            {
+                // UNIX
+                return path[0] == separator[0] ? separator : String.Empty;
+            }
+            else
+            {
+                // Windows
+                int len = 2;
+
+                if(path.Length == 1 && path[0] == separator[0])
+                {
+                    return separator;
+                }
+                else if(path.Length < 2)
+                {
+                    return String.Empty;
+                }
+
+                if(path[0] == separator[0] && path[1] == separator[0])
+                {
+                    // UNC: \\server or \\server\share
+                    // Get server
+                    while(len < path.Length && path[len] != separator[0])
+                        len++;
+
+                    // Get share
+                    if(len < path.Length)
+                    {
+                        len++;
+                        while(len < path.Length && path[len] != separator[0])
+                            len++;
+                    }
+                    return separator + separator + path.Substring(2, len - 2);
+                }
+                else if(path[0] == separator[0])
+                {
+                    // path starts with '\' or '/'
+                    return separator;
+                }
+                else if(path[1] == DriveDelimiter)
+                {
+                    // C:\folder
+                    if(path.Length >= 3 && path[2] == separator[0])
+                        len++;
+                }
+                return path.Substring(0, len);
+            }
+        }
+
+        public static bool IsPathRooted(string path, string separator)
+        {
+            if(path == null || path.Length == 0)
+            {
+                return false;
+            }
+            if(separator.Length != 1)
+            {
+                throw new ArgumentException("Separator must be one character", "separator");
+            }
+
+            char c = path[0];
+            return (c == separator[0] ||
+                (path.Length > 1 && path[1] == DriveDelimiter));
+        }
+
+        public static string GetDirectoryName(string path, string separator)
+        {
+            if(path == null || GetPathRoot(path, separator) == path)
+            {
+                return null;
+            }
+            if(separator.Length != 1)
+            {
+                throw new ArgumentException("Separator must be one character", "separator");
+            }
+
+            int nLast = path.LastIndexOf(separator);
+            if(nLast == 0)
+            {
+                nLast++;
+            }
+
+            if(nLast > 0)
+            {
+                string ret = path.Substring(0, nLast);
+                int l = ret.Length;
+
+                if(l >= 2 && separator[0] == '\\' && ret[l - 1] == DriveDelimiter)
+                {
+                    return ret + separator;
+                }
+                else if(l == 1 && separator[0] == '\\' && path.Length >= 2 && path[nLast] == DriveDelimiter)
+                {
+                    return ret + DriveDelimiter;
+                }
+                else
+                {
+                    return ret;
+                }
+            }
+            return String.Empty;
+        }
+
+        public static string ChangeExtension(string path, string extension, string separator)
+        {
+            if(path == null)
+                return null;
+
+            int iExt = findExtension(path, separator);
+
+            if(extension == null)
+            {
+                return iExt < 0 ? path : path.Substring(0, iExt);
+            }
+            else if(extension.Length == 0)
+            {
+                return iExt < 0 ? path + '.' : path.Substring(0, iExt + 1);
+            }
+            else if(path.Length != 0)
+            {
+                if(extension.Length > 0 && extension[0] != '.')
+                {
+                    extension = "." + extension;
+                }
+            }
+            else
+            {
+                extension = String.Empty;
+            }
+
+            if(iExt < 0)
+            {
+                return path + extension;
+            }
+            else if(iExt > 0)
+            {
+                string temp = path.Substring(0, iExt);
+                return temp + extension;
+            }
+
+            return extension;
+        }
+
+        public static string GetFileName(string path, string separator)
+        {
+            if(path == null || path.Length == 0)
+                return path;
+
+            int nLast = path.LastIndexOf(separator);
+            if(nLast >= 0)
+            {
+                return path.Substring(nLast + 1);
+            }
+
+            return path;
+        }
+
+        public static string GetFileNameWithoutExtension(string path, string separator)
+        {
+            return ChangeExtension(GetFileName(path, separator), null, separator);
+        }
+
+        public static string GetExtension(string path, string separator)
+        {
+            if(path == null)
+            {
+                return null;
+            }
+
+            int iExt = findExtension(path, separator);
+
+            if(iExt > -1)
+            {
+                if(iExt < path.Length - 1)
+                {
+                    return path.Substring(iExt);
+                }
+            }
+            return string.Empty;
+        }
+
+        private static int findExtension(string path, string separator)
+        {
+            // method should return the index of the path extension
+            // start or -1 if no valid extension
+            if(path != null)
+            {
+                int iLastDot = path.LastIndexOf('.');
+                int iLastSep = path.LastIndexOf(separator);
+
+                if(iLastDot > iLastSep)
+                    return iLastDot;
+            }
+            return -1;
+        }
+        #endregion
     }
 }

@@ -11,33 +11,9 @@ namespace PathLib
     /// <summary>
     /// Base class containing common IPurePath code.
     /// </summary>
-    public abstract class PurePath : IPurePath, IXmlSerializable
+    public abstract class PurePath<TPath> : IPurePath<TPath>, IXmlSerializable
+        where TPath : PurePath<TPath>
     {
-        /// <summary>
-        /// A string representing the operating system's "current directory"
-        /// identifier.
-        /// </summary>
-        public const string CurrentDirectoryIdentifier = ".";
-
-        /// <summary>
-        /// A string representing the operating system's "parent directory"
-        /// identifier.
-        /// </summary>
-        public const string ParentDirectoryIdentifier = "..";
-
-        /// <summary>
-        /// A char representing the character delimiting extensions
-        /// from filenames.
-        /// </summary>
-        public const char ExtensionDelimiter = '.';
-
-        /// <summary>
-        /// A string representing the character delimiting drives from the
-        /// remaining path.
-        /// </summary>
-        public const char DriveDelimiter = ':';
-
-        private static readonly string[] PathSeparatorsForNormalization = {"/", @"\"};
 
         // Drive + Root + Dirname + Basename + Extension
         /// <summary>
@@ -54,7 +30,7 @@ namespace PathLib
         /// </summary>
         /// <param name="paths"></param>
         /// <returns></returns>
-        public static PurePath Create(params string[] paths)
+        public static IPurePath Create(params string[] paths)
         {
             var p = Environment.OSVersion.Platform;
             // http://mono.wikia.com/wiki/Detecting_the_execution_platform
@@ -75,11 +51,11 @@ namespace PathLib
         /// </summary>
         protected PurePath()
         {
-            RawPath = CurrentDirectoryIdentifier;
+            RawPath = PathUtils.CurrentDirectoryIdentifier;
 
             Drive = "";
             Root = "";
-            Dirname = CurrentDirectoryIdentifier;
+            Dirname = PathUtils.CurrentDirectoryIdentifier;
             Basename = "";
             Extension = "";
         }
@@ -129,6 +105,7 @@ namespace PathLib
             Dirname = dirname ?? "";
             Basename = basename ?? "";
             Extension = extension ?? "";
+            RawPath = null; // Initialization is finished
         }
 
         /// <summary>
@@ -138,6 +115,7 @@ namespace PathLib
         protected PurePath(params IPurePath[] paths)
         {
             Assimilate(JoinInternal(paths));
+            RawPath = null; // Initialization is finished
         }
 
         /// <summary>
@@ -173,9 +151,22 @@ namespace PathLib
         public string Extension { get; protected set; }
 
         #endregion
-
+        
         /// <inheritdoc/>
         public string Anchor { get { return Drive + Root; } }
+
+        /// <inheritdoc/>
+        public string Directory 
+        { 
+            get 
+            {
+                if(!String.IsNullOrEmpty(Dirname))
+                {
+                    return Anchor + Dirname;
+                }
+                return String.Empty;
+            } 
+        }
 
         /// <inheritdoc/>
         public string Filename { get { return Basename + Extension; } }
@@ -185,11 +176,11 @@ namespace PathLib
         {
             get
             {
-                var parts = Filename.Split(ExtensionDelimiter);
+                var parts = Filename.Split(PathUtils.ExtensionDelimiter);
                 var ret = new string[parts.Length - 1];
                 for (var i = 0; i < ret.Length; i++)
                 {
-                    ret[i] = ExtensionDelimiter + parts[i + 1];
+                    ret[i] = PathUtils.ExtensionDelimiter + parts[i + 1];
                 }
                 return ret;
             }
@@ -233,29 +224,45 @@ namespace PathLib
         }
 
         /// <inheritdoc/>
-        public IPurePath Join(params string[] paths)
+        public IPurePath<TPath> Join(params string[] paths)
         {
             return JoinInternal(
                 LinqBridge.Concat(
-                    new[] { this },
+                    new[] { (TPath)this },
                     LinqBridge.Select(paths, PurePathFactory)));
         }
 
+		IPurePath IPurePath.Join(params string[] paths)
+		{
+			return Join(paths);
+		}
+
         /// <inheritdoc/>
-        public IPurePath Join(params IPurePath[] paths)
+        public IPurePath<TPath> Join(params IPurePath[] paths)
         {
             return JoinInternal(LinqBridge.Concat(new[] { this }, paths));
         }
 
-        private IPurePath JoinInternal(IEnumerable<string> paths)
+        IPurePath IPurePath.Join(params IPurePath[] paths)
+        {
+            return Join(paths);
+        }
+
+        private TPath JoinInternal(IEnumerable<string> paths)
         {
             return JoinInternal(LinqBridge.Select(paths, PurePathFactory));
         }
         
-        private IPurePath JoinInternal(IEnumerable<IPurePath> paths)
+        private TPath JoinInternal(IEnumerable<TPath> paths)
+        {
+            return JoinInternal(LinqBridge.Select(paths, p => (IPurePath)p));
+        }
+
+        private TPath JoinInternal(IEnumerable<IPurePath> paths)
         {
             var pathsList = new List<IPurePath>(paths);
-            var path = PathUtils.Combine(pathsList, PathSeparator);
+            var path = PurePathFactoryFromComponents(
+                PathUtils.Combine(pathsList, PathSeparator));
 
             if (path.Drive == String.Empty)
             {
@@ -276,7 +283,7 @@ namespace PathLib
 
         private string NormalizeSeparators(string path)
         {
-            foreach (var separator in PathSeparatorsForNormalization)
+            foreach (var separator in PathUtils.PathSeparatorsForNormalization)
             {
                 path = path.Replace(separator, PathSeparator);
             }
@@ -284,7 +291,7 @@ namespace PathLib
         }
 
         /// <inheritdoc/>
-        protected void Normalize(IPurePath path)
+        protected void Normalize(IPurePath<TPath> path)
         {
             if (path.Dirname.Length <= 0) return;
 
@@ -297,7 +304,7 @@ namespace PathLib
             // Remove single dots (eg. foo/./bar => foo/bar)
             newDirname = Regex.Replace(newDirname, String.Format(
                 "({0}{1}({0}|$))+", Regex.Escape(PathSeparator),
-                Regex.Escape(CurrentDirectoryIdentifier)),
+                Regex.Escape(PathUtils.CurrentDirectoryIdentifier)),
                                        @"$2");
 
             if (newDirname != path.Dirname)
@@ -307,20 +314,30 @@ namespace PathLib
         }
 
         /// <inheritdoc/>
-        public IPurePath Parent()
+        public TPath Parent()
         {
             return Parent(1);
         }
 
+        IPurePath IPurePath.Parent()
+        {
+            return Parent();
+        }
+
         /// <inheritdoc/>
-        public IPurePath Parent(int nthParent)
+        public TPath Parent(int nthParent)
         {
             return LinqBridge.FirstOrDefault(
                 LinqBridge.Skip(Parents(), nthParent - 1));
         }
 
+        IPurePath IPurePath.Parent(int nthParent)
+        {
+            return Parent(nthParent);
+        }
+
         /// <inheritdoc/>
-        public IEnumerable<IPurePath> Parents()
+        public IEnumerable<TPath> Parents()
         {
             var maxPathLength = LinqBridge.Count(Parts) - 1;  // Don't return self as a parent
             for (var i = maxPathLength; i > 0; i--)
@@ -330,6 +347,11 @@ namespace PathLib
                         LinqBridge.Take(Parts, i))
                     .ToString());
             }
+        }
+
+        IEnumerable<IPurePath> IPurePath.Parents()
+        {
+            return LinqBridge.Select(Parents(), p => (IPurePath)p);
         }
 
         /// <inheritdoc/>
@@ -344,7 +366,7 @@ namespace PathLib
         }
 
         /// <inheritdoc/>
-        public IPurePath RelativeTo(IPurePath parent)
+        public TPath RelativeTo(IPurePath parent)
         {
             if (parent.Drive != Drive || parent.Root != Root)
             {
@@ -374,14 +396,24 @@ namespace PathLib
                 null, null, null, builder.ToString(), Basename, Extension);
         }
 
+        IPurePath IPurePath.RelativeTo(IPurePath parent)
+        {
+            return RelativeTo(parent);
+        }
+
         /// <inheritdoc/>
-        public IPurePath WithDirname(string newDirname)
+        public TPath WithDirname(string newDirname)
         {
             return PurePathFactoryFromComponents(this, dirname: newDirname);
         }
 
+        IPurePath IPurePath.WithDirname(string newDirname)
+        {
+            return WithDirname(newDirname);
+        }
+
         /// <inheritdoc/>
-        public IPurePath WithExtension(string newExtension)
+        public TPath WithExtension(string newExtension)
         {
             var fname = PurePathFactory(newExtension);
             // Allows setting the extension with or without the '.'
@@ -393,12 +425,17 @@ namespace PathLib
             }
             return PurePathFactoryFromComponents(this,
                 extension: fname.HasComponents(PathComponent.Basename)
-                    ? ExtensionDelimiter + fname.Basename 
+                                                 ? PathUtils.ExtensionDelimiter + fname.Basename 
                     : fname.Extension);
         }
 
+        IPurePath IPurePath.WithExtension(string newExtension)
+        {
+            return WithExtension(newExtension);
+        }
+
         /// <inheritdoc/>
-        public IPurePath WithFilename(string newFilename)
+        public TPath WithFilename(string newFilename)
         {
             var fname = PurePathFactory(newFilename);
             if (fname.HasComponents(PathComponent.All & ~PathComponent.Filename))
@@ -409,6 +446,11 @@ namespace PathLib
             }
             return PurePathFactoryFromComponents(this,
                 basename: fname.Basename, extension: fname.Extension);
+        }
+
+        IPurePath IPurePath.WithFilename(string newFilename)
+        {
+            return WithFilename(newFilename);
         }
 
         /// <inheritdoc/>
@@ -504,7 +546,12 @@ namespace PathLib
         public abstract bool Match(string pattern);
 
         /// <inheritdoc/>
-        public abstract IPurePath NormCase();
+        public abstract TPath NormCase();
+
+        IPurePath IPurePath.NormCase()
+        {
+            return NormCase();
+        }
 
         /// <summary>
         /// Create an instance of your own IPurePath implementation
@@ -512,10 +559,10 @@ namespace PathLib
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
-        protected abstract IPurePath PurePathFactory(string path);
+        protected abstract TPath PurePathFactory(string path);
 
         /// <inheritdoc/>
-        protected IPurePath PurePathFactoryFromComponents(
+        protected TPath PurePathFactoryFromComponents(
             IPurePath original, 
             string drive = null, 
             string root = null, 
@@ -532,7 +579,7 @@ namespace PathLib
         }
 
         /// <inheritdoc/>
-        protected abstract IPurePath PurePathFactoryFromComponents(
+        protected abstract TPath PurePathFactoryFromComponents(
             string drive,
             string root,
             string dirname,
@@ -540,10 +587,15 @@ namespace PathLib
             string extension);
 
         /// <inheritdoc/>
-        public IPurePath Relative()
+        public TPath Relative()
         {
             return PurePathFactoryFromComponents(
                 this, String.Empty, String.Empty);
+        }
+
+        IPurePath IPurePath.Relative()
+        {
+            return Relative();
         }
 
         #region Xml Serialization

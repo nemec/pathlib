@@ -10,9 +10,16 @@ namespace PathLib
     public interface IPurePath
     {
         /// <summary>
-        /// Get the path's directory name (between the root and the file).
+        /// Get the path's directory (between the root and the file).
         /// </summary>
         string Dirname { get; }
+
+        /// <summary>
+        /// Get the path's full directory name (including root). For
+        /// those expecting a similar output as
+        /// <see cref="System.IO.GetDirectoryName"/>.
+        /// </summary>
+        string Directory { get; }
 
         /// <summary>
         /// Get the path's filename (basename + extension).
@@ -204,4 +211,86 @@ namespace PathLib
         /// <returns></returns>
         string GetComponents(PathComponent components);
     }
+
+	public interface IPurePath<TPath> : IPurePath
+		where TPath : IPurePath
+	{
+
+        /// <summary>
+        /// Join the current path with the provided paths, in turn.
+        /// </summary>
+        /// <param name="paths"></param>
+        /// <returns></returns>
+        new IPurePath<TPath> Join(params string[] paths);
+
+        /// <summary>
+        /// Join the current path with the provided paths, in turn.
+        /// </summary>
+        /// <param name="paths"></param>
+        /// <returns></returns>
+        new IPurePath<TPath> Join(params IPurePath[] paths);
+
+		/// <summary>
+		/// Normalize the case of the path. On case-insensitive platforms,
+		/// will return the path lowercased, otherwise the path is returned
+		/// unchanged.
+		/// </summary>
+		/// <returns></returns>
+		new TPath NormCase();
+
+		/// <summary>
+		/// Returns the parent directory of the current path.
+		/// </summary>
+		/// <returns></returns>
+		new TPath Parent();
+
+		/// <summary>
+		/// Returns the nth parent directory of the current path.
+		/// </summary>
+		/// <param name="nthParent"></param>
+		/// <returns></returns>
+		new TPath Parent(int nthParent);
+
+		/// <summary>
+		/// Iterate over the path's parents from most to least specific.
+		/// </summary>
+		/// <returns></returns>
+		new IEnumerable<TPath> Parents();
+
+		/// <summary>
+		/// Return the page stripped of its drive and root, if any.
+		/// </summary>
+		/// <returns></returns>
+		new TPath Relative();
+
+		/// <summary>
+		/// Compute a version of this path relative to the
+		/// path represented by "parent".
+		/// </summary>
+		/// <param name="parent"></param>
+		/// <returns></returns>
+		new TPath RelativeTo(IPurePath parent);
+
+		/// <summary>
+		/// Returns a new path with the directory name changed.
+		/// The drive, root, and filename all stay the same.
+		/// </summary>
+		/// <param name="newDirName"></param>
+		/// <returns></returns>
+		new TPath WithDirname(string newDirName);
+
+		/// <summary>
+		/// Returns a new path with filename changed.
+		/// </summary>
+		/// <param name="newFilename"></param>
+		/// <returns></returns>
+		new TPath WithFilename(string newFilename);
+
+		/// <summary>
+		/// Changes the extension of the current path.
+		/// </summary>
+		/// <param name="newExtension"></param>
+		/// <returns></returns>
+		new TPath WithExtension(string newExtension);
+	}
 }

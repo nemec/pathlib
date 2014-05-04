@@ -34,7 +34,7 @@ namespace PathLib
             foreach (var part in PurePath.Parts)
             {
                 // TODO join parts and check for symlink
-                if (part == String.Format("{0}{0}", PathLib.PurePath.CurrentDirectoryIdentifier))
+                if (part == String.Format("{0}{0}", PathUtils.CurrentDirectoryIdentifier))
                 {
                     parts.Pop();
                     continue;

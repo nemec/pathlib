@@ -31,15 +31,8 @@ namespace PathLib.Converters
         {
             if (value is string)
             {
-                try
-                {
-                    var path = new PureNtPath(value as string);
-                    return true;
-                }
-                catch (InvalidPathException)
-                {
-                    return false;
-                }
+				PureNtPath path;
+				return PureNtPath.TryParse(value as string, out path);
             }
             return base.IsValid(context, value);
         }

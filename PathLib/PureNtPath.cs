@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 
 namespace PathLib
 {
@@ -11,7 +10,7 @@ namespace PathLib
     /// http://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx
     /// </summary>
     [TypeConverter(typeof(Converters.PureNtPathConverter))]
-    public class PureNtPath : PurePath, IEquatable<PureNtPath>
+    public class PureNtPath : PurePath<PureNtPath>, IEquatable<PureNtPath>
     {
         private readonly string[] _reservedPaths =
             {
@@ -88,6 +87,7 @@ namespace PathLib
                 Normalize(this);
                 return;
             }
+            //path = path.Replace('\\', '/');  // Mono only accepts forward slashes. Maybe implement the system-specific path methods myself.
 
             ThrowIfReservedCharactersUsed(path);
 
@@ -135,8 +135,22 @@ namespace PathLib
             }
         }
 
+		public static bool TryParse(string path, out PureNtPath result)
+		{
+			try
+			{
+				result = new PureNtPath(path);
+				return true;
+			}
+			catch(InvalidPathException)
+			{
+				result = null;
+				return false;
+			}
+		}
+
         /// <inheritdoc/>
-        protected override IPurePath PurePathFactory(string path)
+        protected override PureNtPath PurePathFactory(string path)
         {
             return new PureNtPath(path);
         }
@@ -153,7 +167,7 @@ namespace PathLib
         {
             return String.IsNullOrEmpty(path)
                 ? String.Empty
-                : Path.GetPathRoot(path).TrimEnd(PathSeparator[0]);
+                : PathUtils.GetPathRoot(path, PathSeparator).TrimEnd(PathSeparator[0]);
         }
 
         private string ParseRoot(string path)
@@ -163,7 +177,7 @@ namespace PathLib
                 return String.Empty;
             }
 
-            var root = Path.GetPathRoot(path);
+            var root = PathUtils.GetPathRoot(path, PathSeparator);
             if (root.StartsWith(PathSeparator))
             {
                 return PathSeparator;
@@ -173,24 +187,24 @@ namespace PathLib
                        : "";
         }
 
-        private static string ParseDirname(string remainingPath)
+        private string ParseDirname(string remainingPath)
         {
-            return Path.GetDirectoryName(remainingPath) ?? "";
+            return PathUtils.GetDirectoryName(remainingPath, PathSeparator) ?? "";
         }
 
-        private static string ParseBasename(string remainingPath)
+        private string ParseBasename(string remainingPath)
         {
             return !String.IsNullOrEmpty(remainingPath)
                 ? remainingPath != "."  // Special case for current dir.
-                    ? Path.GetFileNameWithoutExtension(remainingPath)
+                    ? PathUtils.GetFileNameWithoutExtension(remainingPath, PathSeparator)
                     : "."
                 : "";
         }
 
-        private static string ParseExtension(string remainingPath)
+        private string ParseExtension(string remainingPath)
         {
             return !String.IsNullOrEmpty(remainingPath)
-                ? Path.GetExtension(remainingPath)
+                ? PathUtils.GetExtension(remainingPath, PathSeparator)
                 : "";
         }
 
@@ -380,7 +394,7 @@ namespace PathLib
         }
 
         /// <inheritdoc/>
-        public override IPurePath NormCase()
+        public override PureNtPath NormCase()
         {
             return new PureNtPath(
                 Drive.ToLowerInvariant(),
@@ -391,7 +405,7 @@ namespace PathLib
         }
 
         /// <inheritdoc/>
-        protected override IPurePath PurePathFactoryFromComponents(string drive, string root, string dirname, string basename, string extension)
+        protected override PureNtPath PurePathFactoryFromComponents(string drive, string root, string dirname, string basename, string extension)
         {
             return new PureNtPath(drive, root, dirname, basename, extension);
         }
