@@ -291,7 +291,7 @@ namespace PathLib
         }
 
         /// <inheritdoc/>
-        protected void Normalize(IPurePath<TPath> path)
+        internal void Normalize(IPurePath<TPath> path)
         {
             if (path.Dirname.Length <= 0) return;
 
@@ -600,11 +600,13 @@ namespace PathLib
 
         #region Xml Serialization
 
+        /// <inheritdoc/>
         public System.Xml.Schema.XmlSchema GetSchema()
         {
             return null;
         }
 
+        /// <inheritdoc/>
         public virtual void ReadXml(System.Xml.XmlReader reader)
         {
             var path = PurePathFactory(reader.ReadString());
@@ -613,6 +615,7 @@ namespace PathLib
             Assimilate(path);
         }
 
+        /// <inheritdoc/>
         public void WriteXml(System.Xml.XmlWriter writer)
         {
             writer.WriteString(ToString());

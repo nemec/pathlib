@@ -27,8 +27,13 @@ using System.Text.RegularExpressions;
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
+
 namespace PathLib
 {
+    /// <summary>
+    /// General utilities and separator-agnostic replacements for
+    /// System.IO.Path methods.
+    /// </summary>
     public static class PathUtils
     {
         /// <summary>
@@ -36,16 +41,19 @@ namespace PathLib
         /// identifier.
         /// </summary>
         public const string CurrentDirectoryIdentifier = ".";
+
         /// <summary>
         /// A string representing the operating system's "parent directory"
         /// identifier.
         /// </summary>
         public const string ParentDirectoryIdentifier = "..";
+
         /// <summary>
         /// A char representing the character delimiting extensions
         /// from filenames.
         /// </summary>
         public const char ExtensionDelimiter = '.';
+
         /// <summary>
         /// A string representing the character delimiting drives from the
         /// remaining path.
@@ -121,7 +129,20 @@ namespace PathLib
                 .WithDirname(dirnameBuilder.ToString())
                 .WithFilename(lastPart.Filename);
         }
+
+
         #region System.IO.Path replacements
+        // ReSharper disable CSharpWarnings::CS1591
+        // ReSharper disable StringLastIndexOfIsCultureSpecific.1
+        // ReSharper disable RedundantIfElseBlock
+        // ReSharper disable InconsistentNaming
+
+        /// <summary>
+        /// Returns the root portion of the given path.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="separator"></param>
+        /// <returns></returns>
         public static string GetPathRoot(string path, string separator)
         {
             if(!IsPathRooted(path, separator))
@@ -183,9 +204,15 @@ namespace PathLib
             }
         }
 
+        /// <summary>
+        /// Tests if the given path contains a root.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="separator"></param>
+        /// <returns></returns>
         public static bool IsPathRooted(string path, string separator)
         {
-            if(path == null || path.Length == 0)
+            if(string.IsNullOrEmpty(path))
             {
                 return false;
             }
@@ -199,6 +226,12 @@ namespace PathLib
                 (path.Length > 1 && path[1] == DriveDelimiter));
         }
 
+        /// <summary>
+        /// Returns the directory path of a file path.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="separator"></param>
+        /// <returns></returns>
         public static string GetDirectoryName(string path, string separator)
         {
             if(path == null || GetPathRoot(path, separator) == path)
@@ -237,6 +270,13 @@ namespace PathLib
             return String.Empty;
         }
 
+        /// <summary>
+        /// Changes the extension of a file path.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="extension"></param>
+        /// <param name="separator"></param>
+        /// <returns></returns>
         public static string ChangeExtension(string path, string extension, string separator)
         {
             if(path == null)
@@ -277,9 +317,15 @@ namespace PathLib
             return extension;
         }
 
+        /// <summary>
+        /// Returns the name and extension parts of the given path.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="separator"></param>
+        /// <returns></returns>
         public static string GetFileName(string path, string separator)
         {
-            if(path == null || path.Length == 0)
+            if(string.IsNullOrEmpty(path))
                 return path;
 
             int nLast = path.LastIndexOf(separator);
@@ -291,11 +337,23 @@ namespace PathLib
             return path;
         }
 
+        /// <summary>
+        /// Returns the name and of the given path, minus the extension.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="separator"></param>
+        /// <returns></returns>
         public static string GetFileNameWithoutExtension(string path, string separator)
         {
             return ChangeExtension(GetFileName(path, separator), null, separator);
         }
 
+        /// <summary>
+        /// Returns the extension of the given path.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="separator"></param>
+        /// <returns></returns>
         public static string GetExtension(string path, string separator)
         {
             if(path == null)
@@ -329,6 +387,12 @@ namespace PathLib
             }
             return -1;
         }
+
+
+        // ReSharper restore InconsistentNaming
+        // ReSharper restore RedundantIfElseBlock
+        // ReSharper restore StringLastIndexOfIsCultureSpecific.1
+        // ReSharper restore CSharpWarnings::CS1591
         #endregion
     }
 }

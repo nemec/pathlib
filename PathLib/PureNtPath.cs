@@ -135,6 +135,7 @@ namespace PathLib
             }
         }
 
+        /// <inheritdoc/>
 		public static bool TryParse(string path, out PureNtPath result)
 		{
 			try

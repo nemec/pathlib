@@ -17,7 +17,7 @@ namespace PathLib
         /// <summary>
         /// Get the path's full directory name (including root). For
         /// those expecting a similar output as
-        /// <see cref="System.IO.GetDirectoryName"/>.
+        /// <see cref="System.IO.Path.GetDirectoryName"/>.
         /// </summary>
         string Directory { get; }
 
@@ -212,7 +212,11 @@ namespace PathLib
         string GetComponents(PathComponent components);
     }
 
-	public interface IPurePath<TPath> : IPurePath
+    /// <summary>
+    /// Pure paths do not implement any IO operations and may be
+    /// used cross-platform.
+    /// </summary>
+    public interface IPurePath<TPath> : IPurePath
 		where TPath : IPurePath
 	{
 
