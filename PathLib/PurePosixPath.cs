@@ -15,7 +15,6 @@ namespace PathLib
         /// </summary>
         public PurePosixPath()
         {
-            Initialize();
         }
 
         /// <summary>
@@ -23,9 +22,8 @@ namespace PathLib
         /// </summary>
         /// <param name="paths">Paths to combine.</param>
         public PurePosixPath(params string[] paths)
-            : base(paths)
+            : base(new PosixParser(), paths)
         {
-            Initialize();
         }
 
         /// <summary>
@@ -35,69 +33,70 @@ namespace PathLib
         public PurePosixPath(params IPurePath[] paths)
             : base(paths)
         {
-            Initialize();
         }
 
         /// <inheritdoc/>
         protected PurePosixPath(string drive, string root, string dirname, string basename, string extension)
             : base(drive, root, dirname, basename, extension)
         {
-            Initialize();
         }
 
         #endregion
 
-        private void Initialize()
+        private class PosixParser : IPathParser
         {
-            var path = RawPath;
+            private const string PathSeparator = "/";
 
-            if (path == null)
+            public string ParseDrive(string remainingPath)
             {
-                return;
+                return null;
             }
 
-            Drive = String.Empty;
-
-            // Special case in POSIX pathname resolution
-            // http://pubs.opengroup.org/onlinepubs/009695399/basedefs/xbd_chap04.html#tag_04_11
-            if (path.StartsWith(PathSeparator + PathSeparator) &&
-                (path.Length <= 2 || ("" + path[2]) != PathSeparator))
+            public string ParseRoot(string remainingPath)
             {
-                Root = PathSeparator + PathSeparator;
-            }
-            else if (path.StartsWith(PathSeparator))
-            {
-                Root = PathSeparator;
-            }
-            else
-            {
-                Root = String.Empty;
+                // Special case in POSIX pathname resolution
+                // http://pubs.opengroup.org/onlinepubs/009695399/basedefs/xbd_chap04.html#tag_04_11
+                if (remainingPath.StartsWith(PathSeparator + PathSeparator) &&
+                    (remainingPath.Length <= 2 || ("" + remainingPath[2]) != PathSeparator))
+                {
+                    return PathSeparator + PathSeparator;
+                }
+                return remainingPath.StartsWith(PathSeparator) 
+                    ? PathSeparator 
+                    : null;
             }
 
-            if (Drive.Length + Root.Length >= path.Length)
+            public string ParseDirname(string remainingPath)
             {
-                return;
+                // Hardcode special dirs
+                if (remainingPath == "." || remainingPath == "..")
+                {
+                    return remainingPath;
+                }
+                return PathUtils.GetDirectoryName(remainingPath, PathSeparator);
             }
 
-            path = path.Substring(Drive.Length + Root.Length);
-
-            // Remove trailing slash
-            // This is what Python's pathlib does, but I don't think it's
-            // necessarily required by spec
-            if (path.EndsWith(PathSeparator))
+            public string ParseBasename(string remainingPath)
             {
-                path = path.TrimEnd(PathSeparator.ToCharArray());
+                return !String.IsNullOrEmpty(remainingPath)
+                    ? remainingPath != PathUtils.CurrentDirectoryIdentifier
+                        ? PathUtils.GetFileNameWithoutExtension(remainingPath, PathSeparator)
+                            : PathUtils.CurrentDirectoryIdentifier
+                    : null;
             }
 
-            Dirname = ParseDirname(path);
-            path = path.Substring(Dirname.Length);
+            public string ParseExtension(string remainingPath)
+            {
+                return !String.IsNullOrEmpty(remainingPath)
+                    ? PathUtils.GetExtension(remainingPath, PathSeparator)
+                    : null;
+            }
 
-            Basename = ParseBasename(path);
-            path = path.Substring(Basename.Length);
-
-            Extension = ParseExtension(path);
-
-            Normalize(this);
+            public bool ReservedCharactersInPath(string path, out char reservedCharacter)
+            {
+                reservedCharacter = default(char);
+                return false;
+            }
         }
 
         /// <inheritdoc/>
@@ -117,40 +116,6 @@ namespace PathLib
         {
             get { return "/"; }
         }
-
-        #region Parsing Initializers
-
-        private string ParseDirname(string remainingPath)
-        {
-            // Hardcode special dirs
-            if (remainingPath == "." || remainingPath == "..")
-            {
-                return remainingPath;
-            }
-            var idx = remainingPath.LastIndexOf(PathSeparator,
-                StringComparison.CurrentCulture);
-            return idx > 1
-                ? remainingPath.Substring(0, idx + 1)
-                : "";
-        }
-
-        private string ParseBasename(string remainingPath)
-        {
-            return !String.IsNullOrEmpty(remainingPath)
-                ? remainingPath != "."  // Special case for current dir.
-                    ? PathUtils.GetFileNameWithoutExtension(remainingPath, PathSeparator)
-                    : "."
-                : "";
-        }
-
-        private string ParseExtension(string remainingPath)
-        {
-            return !String.IsNullOrEmpty(remainingPath)
-                ? PathUtils.GetExtension(remainingPath, PathSeparator)
-                : "";
-        }
-
-        #endregion
 
         #region Equality Members
 

@@ -17,19 +17,168 @@ namespace PathLib.UnitTest
 
         // TODO empty path changes to '.'
 
+        private class MockParser : IPathParser
+        {
+            private readonly char[] _reservedCharacters =
+            {
+                '<', '>', '|'
+            };
+
+            private string PathSeparator { get; set; }
+
+            public MockParser(string pathSeparator)
+            {
+                PathSeparator = pathSeparator;
+            }
+
+            public string ParseDrive(string path)
+            {
+                return !String.IsNullOrEmpty(path)
+                    ? PathUtils.GetPathRoot(path, PathSeparator).TrimEnd(PathSeparator[0])
+                    : null;
+            }
+
+            public string ParseRoot(string path)
+            {
+                if (String.IsNullOrEmpty(path))
+                {
+                    return null;
+                }
+
+                var root = PathUtils.GetPathRoot(path, PathSeparator);
+                if (root.StartsWith(PathSeparator))
+                {
+                    return PathSeparator;
+                }
+                return root.EndsWith(PathSeparator)
+                           ? PathSeparator
+                           : null;
+            }
+
+            public string ParseDirname(string remainingPath)
+            {
+                return PathUtils.GetDirectoryName(remainingPath, PathSeparator) ?? "";
+            }
+
+            public string ParseBasename(string remainingPath)
+            {
+                return !String.IsNullOrEmpty(remainingPath)
+                    ? remainingPath != PathUtils.CurrentDirectoryIdentifier
+                        ? PathUtils.GetFileNameWithoutExtension(remainingPath, PathSeparator)
+                            : PathUtils.CurrentDirectoryIdentifier
+                    : null;
+            }
+
+            public string ParseExtension(string remainingPath)
+            {
+                return !String.IsNullOrEmpty(remainingPath)
+                    ? PathUtils.GetExtension(remainingPath, PathSeparator)
+                    : null;
+            }
+
+            public bool ReservedCharactersInPath(string path, out char reservedCharacter)
+            {
+                foreach (var ch in _reservedCharacters)
+                {
+                    if (path.IndexOf(ch) >= 0)
+                    {
+                        reservedCharacter = ch;
+                        return true;
+                    }
+                }
+                reservedCharacter = default(char);
+                return false;
+            }
+        }
+
+        private class MockPath : PurePath<MockPath>
+        {
+            public MockPath()
+            { }
+
+            public MockPath(params IPurePath[] paths)
+                : base(paths)
+            { }
+
+            public MockPath(params string[] paths)
+                : base(new MockParser(@"\"), paths)
+            { }
+
+            public MockPath(string drive, string root, string dirname, string basename, string extension)
+                : base(drive, root, dirname, basename, extension)
+            { }
+
+            protected override string PathSeparator
+            {
+                get { return @"\"; }
+            }
+
+            public override bool Equals(object otherObj)
+            {
+                var other = otherObj as MockPath;
+                if (other == null)
+                {
+                    return false;
+                }
+                return Drive == other.Drive &&
+                       Root == other.Root &&
+                       Dirname == other.Dirname &&
+                       Basename == other.Basename &&
+                       Extension == other.Extension;
+            }
+
+            public override int GetHashCode()
+            {
+                return (Drive ?? "").GetHashCode() +
+                       (Root ?? "").GetHashCode() +
+                       (Dirname ?? "").GetHashCode() +
+                       (Basename ?? "").GetHashCode() +
+                       (Extension ?? "").GetHashCode();
+            }
+
+            public override bool IsReserved()
+            {
+                throw new NotImplementedException(
+                    "A mock should not be used to test this.");
+            }
+
+            public override bool Match(string pattern)
+            {
+                throw new NotImplementedException(
+                    "A mock should not be used to test this.");
+            }
+
+            public override MockPath NormCase()
+            {
+                throw new NotImplementedException(
+                    "A mock should not be used to test this.");
+            }
+
+            protected override MockPath PurePathFactory(string path)
+            {
+                return new MockPath(new [] {path});
+            }
+
+            protected override MockPath PurePathFactoryFromComponents(
+                string drive, string root, string dirname, string basename, string extension)
+            {
+                return new MockPath(drive, root, dirname, basename, extension);
+            }
+        }
+
         [TestMethod]
         public void Constructor_WithSameInput_CreatesEqualPaths()
         {
-            var path1 = new PureNtPath(@"a\b");
-            var path2 = new PureNtPath(@"a\b");
+            var path1 = new MockPath(@"a\b");
+            var path2 = new MockPath(@"a\b");
 
             Assert.AreEqual(path1, path2);
         }
         [TestMethod]
         public void Constructor_WithSameInputAndDifferentSeparator_CreatesEqualPaths()
         {
-            var path1 = new PureNtPath(@"a\b");
-            var path2 = new PureNtPath(@"a/b");
+            var path1 = new MockPath(@"a\b");
+            var path2 = new MockPath(@"a/b");
 
             Assert.AreEqual(path1, path2);
         }
@@ -37,7 +186,7 @@ namespace PathLib.UnitTest
         [TestMethod]
         public void Constructor_WithDriveLetterAndRoot_DoesNotDropTrailingSlash()
         {
-            var path1 = new PureNtPath(@"C:\");
+            var path1 = new MockPath(@"C:\");
             const string expected = @"\";
 
             Assert.AreEqual(expected, path1.Root);
@@ -46,7 +195,7 @@ namespace PathLib.UnitTest
         [TestMethod]
         public void Constructor_WithOnlyDriveLetter_HasNoRoot()
         {
-            var path1 = new PureNtPath(@"C:");
+            var path1 = new MockPath(@"C:");
             const string expected = "";
 
             Assert.AreEqual(expected, path1.Root);
@@ -55,8 +204,8 @@ namespace PathLib.UnitTest
         [TestMethod]
         public void Constructor_WithJoiningPaths_CreatesEqualPaths()
         {
-            var expected = new PureNtPath(@"a\b");
-            var actual = new PureNtPath("a", "b");
+            var expected = new MockPath(@"a\b");
+            var actual = new MockPath("a", "b");
             
             Assert.AreEqual(expected, actual);
         }
@@ -64,8 +213,8 @@ namespace PathLib.UnitTest
         [TestMethod]
         public void Constructor_WithOneContainingTrailingSlash_CreatesEqualPaths()
         {
-            var expected = new PureNtPath(@"a\b");
-            var actual = new PureNtPath(@"a", @"b\");
+            var expected = new MockPath(@"a\b");
+            var actual = new MockPath(@"a", @"b\");
             
             Assert.AreEqual(expected, actual);
         }
@@ -73,8 +222,8 @@ namespace PathLib.UnitTest
         [TestMethod]
         public void Constructor_WithBothContainingTrailingSlash_CreatesEqualPaths()
         {
-            var expected = new PureNtPath(@"a\b");
-            var actual = new PureNtPath(@"a\", @"b\");
+            var expected = new MockPath(@"a\b");
+            var actual = new MockPath(@"a\", @"b\");
 
             Assert.AreEqual(expected, actual);
         }
@@ -82,8 +231,8 @@ namespace PathLib.UnitTest
         [TestMethod]
         public void Constructor_WithOneContainingEmptyComponent_CreatesEqualPaths()
         {
-            var expected = new PureNtPath(@"a\\b\");
-            var actual = new PureNtPath(@"a\b");
+            var expected = new MockPath(@"a\\b\");
+            var actual = new MockPath(@"a\b");
             
             Assert.AreEqual(expected, actual);
         }
@@ -91,8 +240,8 @@ namespace PathLib.UnitTest
         [TestMethod]
         public void Constructor_WithEmptyComponentAtBeginning_LeavesEmptyComponentOut()
         {
-            var expected = new PureNtPath(@"a\b");
-            var actual = new PureNtPath("", "a", "b");
+            var expected = new MockPath(@"a\b");
+            var actual = new MockPath("", "a", "b");
             
             Assert.AreEqual(expected, actual);
         }
@@ -100,8 +249,8 @@ namespace PathLib.UnitTest
         [TestMethod]
         public void Constructor_WithEmptyComponentInMiddle_LeavesEmptyComponentOut()
         {
-            var expected = new PureNtPath(@"a\b");
-            var actual = new PureNtPath("a", "", "b");
+            var expected = new MockPath(@"a\b");
+            var actual = new MockPath("a", "", "b");
             
             Assert.AreEqual(expected, actual);
         }
@@ -109,8 +258,8 @@ namespace PathLib.UnitTest
         [TestMethod]
         public void Constructor_WithAbsoluteComponentInMiddle_DropsComponentBeforeAbsoluteComponent()
         {
-            var expected = new PureNtPath(@"\b\c");
-            var actual = new PureNtPath(@"a", @"\b", @"c");
+            var expected = new MockPath(@"\b\c");
+            var actual = new MockPath(@"a", @"\b", @"c");
             
             Assert.AreEqual(expected, actual);
         }
@@ -118,8 +267,8 @@ namespace PathLib.UnitTest
         [TestMethod]
         public void Constructor_WithAbsoluteAndEmptyComponent_DropsComponentBeforeAbsoluteComponent()
         {
-            var expected = new PureNtPath(@"\b\c");
-            var actual = new PureNtPath(@"a", @"\b\\", @"c");
+            var expected = new MockPath(@"\b\c");
+            var actual = new MockPath(@"a", @"\b\\", @"c");
             
             Assert.AreEqual(expected, actual);
         }
@@ -127,8 +276,8 @@ namespace PathLib.UnitTest
         [TestMethod]
         public void Constructor_WithEmptyComponentAtEnd_LeavesEmptyComponentOut()
         {
-            var expected = new PureNtPath(@"a\b");
-            var actual = new PureNtPath("a", "b", "");
+            var expected = new MockPath(@"a\b");
+            var actual = new MockPath("a", "b", "");
             
             Assert.AreEqual(expected, actual);
         }
@@ -136,8 +285,8 @@ namespace PathLib.UnitTest
         [TestMethod]
         public void Constructor_WithOnePathRelative_PathsAreNotEqual()
         {
-            var expected = new PureNtPath(@"a\b");
-            var actual = new PureNtPath(@"\a\b");
+            var expected = new MockPath(@"a\b");
+            var actual = new MockPath(@"\a\b");
             
             Assert.AreNotEqual(expected, actual);
         }
@@ -145,8 +294,8 @@ namespace PathLib.UnitTest
         [TestMethod]
         public void Constructor_WithDifferentPaths_PathsAreNotEqual()
         {
-            var path1 = new PureNtPath(@"a");
-            var path2 = new PureNtPath(@"a\b");
+            var path1 = new MockPath(@"a");
+            var path2 = new MockPath(@"a\b");
 
             Assert.AreNotEqual(path1, path2);
         }
@@ -154,7 +303,7 @@ namespace PathLib.UnitTest
         [TestMethod]
         public void GetRoot_WithUncShare_ReturnsUncRoot()
         {
-            var path = new PureNtPath(@"\\some\share");
+            var path = new MockPath(@"\\some\share");
             const string expected = @"\";
 
             Assert.AreEqual(expected, path.Root);
@@ -163,7 +312,7 @@ namespace PathLib.UnitTest
         [TestMethod]
         public void GetRoot_WithLocalRoot_ReturnsRoot()
         {
-            var path = new PureNtPath(@"c:\ProgramFiles\");
+            var path = new MockPath(@"c:\ProgramFiles\");
             const string expected = @"\";
 
             Assert.AreEqual(expected, path.Root);
@@ -172,7 +321,7 @@ namespace PathLib.UnitTest
         [TestMethod]
         public void GetRoot_WithRelativePathOnDrive_ReturnsEmptyRoot()
         {
-            var path = new PureNtPath(@"c:ProgramFiles\");
+            var path = new MockPath(@"c:ProgramFiles\");
             const string expected = "";
 
             Assert.AreEqual(expected, path.Root);
@@ -181,8 +330,8 @@ namespace PathLib.UnitTest
         [TestMethod]
         public void Join_WithAnotherPath_CreatesPathEqualToCombinedPath()
         {
-            var path = new PureNtPath(@"a");
-            var expected = new PureNtPath(@"a\b");
+            var path = new MockPath(@"a");
+            var expected = new MockPath(@"a\b");
 
             var joined = path.Join("b");
 
@@ -203,9 +352,9 @@ namespace PathLib.UnitTest
         [TestMethod]
         public void GetParent_WithAParent_ReturnsTheParent()
         {
-            var path = new PureNtPath(@"C:\Users\nemec");
+            var path = new MockPath(@"C:\Users\nemec");
 
-            var expected = new PureNtPath(@"C:\Users");
+            var expected = new MockPath(@"C:\Users");
 
             var actual = path.Parent();
 
@@ -215,9 +364,9 @@ namespace PathLib.UnitTest
         [TestMethod]
         public void GetParents_WithAParent_ReturnsTheParent()
         {
-            var path = new PureNtPath(@"C:\nemec");
+            var path = new MockPath(@"C:\nemec");
 
-            var expected = new PureNtPath(@"C:\");
+            var expected = new MockPath(@"C:\");
 
             var parents = path.Parents().GetEnumerator();
             parents.MoveNext();
@@ -229,12 +378,12 @@ namespace PathLib.UnitTest
         [TestMethod]
         public void GetParents_WithMultipleParents_ReturnsTheParentsFromMostToLeastSpecific()
         {
-            var path = new PureNtPath(@"C:\users\nemec");
+            var path = new MockPath(@"C:\users\nemec");
 
             var expected = new[]
                 {
-                    new PureNtPath(@"C:\users"),
-                    new PureNtPath(@"C:\")
+                    new MockPath(@"C:\users"),
+                    new MockPath(@"C:\")
                 };
 
             Assert.IsTrue(expected.SequenceEqual(path.Parents()));
@@ -243,7 +392,7 @@ namespace PathLib.UnitTest
         [TestMethod]
         public void GetParents_WithAParent_DoesNotReturnSelf()
         {
-            var path = new PureNtPath(@"C:\nemec");
+            var path = new MockPath(@"C:\nemec");
 
             var parents = path.Parents();
 
@@ -254,7 +403,7 @@ namespace PathLib.UnitTest
         public void GetExtension_WithSingleExtension_ReturnsThatExtension()
         {
             const string expected = ".txt";
-            var path = new PureNtPath(@"c:\users\nemec\file.txt");
+            var path = new MockPath(@"c:\users\nemec\file.txt");
 
             var actual = path.Extension;
 
@@ -265,7 +414,7 @@ namespace PathLib.UnitTest
         public void GetExtension_WithMultipleExtensions_ReturnsLastExtension()
         {
             const string expected = ".gz";
-            var path = new PureNtPath(@"c:\users\nemec\file.txt.tar.gz");
+            var path = new MockPath(@"c:\users\nemec\file.txt.tar.gz");
 
             var actual = path.Extension;
 
@@ -276,7 +425,7 @@ namespace PathLib.UnitTest
         public void GetExtensions_WithMultipleExtensions_ReturnsExtensionsInOrder()
         {
             var expected = new [] {".txt", ".tar", ".gz"};
-            var path = new PureNtPath(@"c:\users\nemec\file.txt.tar.gz");
+            var path = new MockPath(@"c:\users\nemec\file.txt.tar.gz");
 
             var actual = path.Extensions;
 
@@ -286,8 +435,8 @@ namespace PathLib.UnitTest
         [TestMethod]
         public void WithExtension_WithOneExtensionPrependedWithDot_ReturnsPathWithNewExtension()
         {
-            var expected = new PureNtPath(@"c:\users\nemec\file.xml");
-            var path = new PureNtPath(@"c:\users\nemec\file.txt");
+            var expected = new MockPath(@"c:\users\nemec\file.xml");
+            var path = new MockPath(@"c:\users\nemec\file.txt");
 
             var actual = path.WithExtension(".xml");
 
@@ -297,8 +446,8 @@ namespace PathLib.UnitTest
         [TestMethod]
         public void WithExtension_WithMultipleExtensionPrependedWithDot_ReturnsPathWithNewLastExtension()
         {
-            var expected = new PureNtPath(@"c:\users\nemec\file.tar.xml");
-            var path = new PureNtPath(@"c:\users\nemec\file.tar.txt");
+            var expected = new MockPath(@"c:\users\nemec\file.tar.xml");
+            var path = new MockPath(@"c:\users\nemec\file.tar.txt");
 
             var actual = path.WithExtension(".xml");
 
@@ -306,10 +455,10 @@ namespace PathLib.UnitTest
         }
 
         [TestMethod]
-        public void WithExtension_WithMultipleExtensionAndNoDot_ReturnsPathWithNewLastExtension()
+        public void WithExtension_WithNoExtension_ReturnsPathWithNewExtension()
         {
-            var expected = new PureNtPath(@"c:\users\nemec\file.xml");
-            var path = new PureNtPath(@"c:\users\nemec\file.txt");
+            var expected = new MockPath(@"c:\users\nemec\file.xml");
+            var path = new MockPath(@"c:\users\nemec\file");
 
             var actual = path.WithExtension("xml");
 
@@ -319,10 +468,10 @@ namespace PathLib.UnitTest
         [TestMethod]
         public void RelativeTo_WithParent_ReturnsRelativePath()
         {
-            var expected = new PureNtPath(@"nemec\file.txt");
+            var expected = new MockPath(@"nemec\file.txt");
 
-            var parent = new PureNtPath(@"c:\users\");
-            var path = new PureNtPath(@"c:\users\nemec\file.txt");
+            var parent = new MockPath(@"c:\users\");
+            var path = new MockPath(@"c:\users\nemec\file.txt");
 
             var actual = path.RelativeTo(parent);
 
@@ -332,8 +481,8 @@ namespace PathLib.UnitTest
         [TestMethod]
         public void RelativeTo_WithParent_IsAbsoluteIsFalse()
         {
-            var parent = new PureNtPath(@"c:\users\");
-            var path = new PureNtPath(@"c:\users\nemec\file.txt");
+            var parent = new MockPath(@"c:\users\");
+            var path = new MockPath(@"c:\users\nemec\file.txt");
 
             path.RelativeTo(parent);
 
@@ -344,8 +493,8 @@ namespace PathLib.UnitTest
         [ExpectedException(typeof(ArgumentException))]
         public void RelativeTo_WithParentInDifferentDir_ThrowsException()
         {
-            var parent = new PureNtPath(@"\Program Files\");
-            var path = new PureNtPath(@"c:\users\nemec\file.txt");
+            var parent = new MockPath(@"\Program Files\");
+            var path = new MockPath(@"c:\users\nemec\file.txt");
 
             path.RelativeTo(parent);
         }
@@ -354,8 +503,8 @@ namespace PathLib.UnitTest
         [ExpectedException(typeof(ArgumentException))]
         public void RelativeTo_WithParentContainingPartialFilename_ThrowsException()
         {
-            var parent = new PureNtPath(@"c:\users\nemec\file");
-            var path = new PureNtPath(@"c:\users\nemec\file.txt");
+            var parent = new MockPath(@"c:\users\nemec\file");
+            var path = new MockPath(@"c:\users\nemec\file.txt");
 
             path.RelativeTo(parent);
         }
@@ -364,8 +513,8 @@ namespace PathLib.UnitTest
         [ExpectedException(typeof(ArgumentException))]
         public void RelativeTo_WithParentLackingDrive_ThrowsException()
         {
-            var parent = new PureNtPath(@"\users\");
-            var path = new PureNtPath(@"c:\users\nemec\file.txt");
+            var parent = new MockPath(@"\users\");
+            var path = new MockPath(@"c:\users\nemec\file.txt");
 
             path.RelativeTo(parent);
         }
@@ -373,30 +522,12 @@ namespace PathLib.UnitTest
         [TestMethod]
         public void AsUri_WithPath_ReturnsAUri()
         {
-            var path = new PureNtPath(@"C:\nemec");
+            var path = new MockPath(@"C:\nemec");
             var expected = new Uri("file://C:/nemec");
 
             var actual = path.AsUri();
 
             Assert.AreEqual(expected, actual);
-        }
-
-        [XmlRoot]
-        public class XmlDeserialize
-        {
-            [XmlElement]
-            public PureNtPath Folder { get; set; }
-        }
-
-        [TestMethod]
-        public void XmlDeserialize_WithPathAsStringElement_DeserializesIntoType()
-        {
-            const string pathXml = @"<XmlDeserialize><Folder>c:\users\nemec</Folder></XmlDeserialize>";
-            var obj = (XmlDeserialize)new XmlSerializer(typeof (XmlDeserialize))
-                .Deserialize(new StringReader(pathXml));
-            var expected = new PureNtPath(@"c:\users\nemec");
-
-            Assert.AreEqual(expected, obj.Folder);
         }
     }
 }

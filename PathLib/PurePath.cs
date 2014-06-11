@@ -16,11 +16,6 @@ namespace PathLib
     {
 
         // Drive + Root + Dirname + Basename + Extension
-        /// <summary>
-        /// The raw, unmodified path passed in to the constructor (if
-        /// available).
-        /// </summary>
-        protected readonly string RawPath;
 
         #region Factories
 
@@ -51,8 +46,6 @@ namespace PathLib
         /// </summary>
         protected PurePath()
         {
-            RawPath = PathUtils.CurrentDirectoryIdentifier;
-
             Drive = "";
             Root = "";
             Dirname = PathUtils.CurrentDirectoryIdentifier;
@@ -63,26 +56,37 @@ namespace PathLib
         /// <summary>
         /// Create a path by joining the given path strings.
         /// </summary>
+        /// <param name="parser">Parses parts out of a path.</param>
         /// <param name="paths">Paths to combine.</param>
-        protected PurePath(params string[] paths)
+        protected PurePath(IPathParser parser, params string[] paths)
         {
+            string rawPath = null;
             if (paths.Length > 1)
             {
                 var components = LinqBridge.Select(paths, p => 
                         PurePathFactory(NormalizeSeparators(p)));
                 var path = JoinInternal(components);
-                RawPath = path.ToString();
+                rawPath = path.ToString();
                 Assimilate(path);
             }
-            else if(paths.Length == 1)
+            else if (paths.Length == 1)
             {
-                RawPath = NormalizeSeparators(paths[0]);
+                rawPath = NormalizeSeparators(paths[0]);
                 Drive = "";
                 Root = "";
                 Dirname = "";
                 Basename = "";
                 Extension = "";
             }
+            else  // no paths
+            {
+                Drive = "";
+                Root = "";
+                Dirname = PathUtils.CurrentDirectoryIdentifier;
+                Basename = "";
+                Extension = "";
+            }
+            Initialize(rawPath, parser);
         }
 
         /// <summary>
@@ -105,7 +109,6 @@ namespace PathLib
             Dirname = dirname ?? "";
             Basename = basename ?? "";
             Extension = extension ?? "";
-            RawPath = null; // Initialization is finished
         }
 
         /// <summary>
@@ -115,7 +118,6 @@ namespace PathLib
         protected PurePath(params IPurePath[] paths)
         {
             Assimilate(JoinInternal(paths));
-            RawPath = null; // Initialization is finished
         }
 
         /// <summary>
@@ -129,6 +131,48 @@ namespace PathLib
             Dirname = path.Dirname ?? "";
             Basename = path.Basename ?? "";
             Extension = path.Extension ?? "";
+        }
+
+        private void Initialize(string rawPath, IPathParser parser)
+        {
+            if (rawPath == null)
+            {
+                return;
+            }
+            char reservedCharacter;
+            if (parser.ReservedCharactersInPath(rawPath, out reservedCharacter))
+            {
+                throw new InvalidPathException(rawPath, String.Format(
+                    "Path contains reserved character '{0}'.", reservedCharacter));
+            }
+
+            Drive = parser.ParseDrive(rawPath) ?? "";
+            Root = parser.ParseRoot(rawPath) ?? "";
+
+            if (Drive.Length + Root.Length >= rawPath.Length)
+            {
+                return;
+            }
+
+            rawPath = rawPath.Substring(Drive.Length + Root.Length);
+
+            // Remove trailing slash
+            // This is what Python's pathlib does, but I don't think it's
+            // necessarily required by spec
+            if (rawPath.EndsWith(PathSeparator))
+            {
+                rawPath = rawPath.TrimEnd(PathSeparator.ToCharArray());
+            }
+
+            Dirname = parser.ParseDirname(rawPath) ?? "";
+            rawPath = rawPath.Substring(Dirname.Length);
+
+            Basename = parser.ParseBasename(rawPath) ?? "";
+            rawPath = rawPath.Substring(Basename.Length);
+
+            Extension = parser.ParseExtension(rawPath) ?? "";
+
+            Normalize();
         }
 
         #endregion
@@ -291,13 +335,13 @@ namespace PathLib
         }
 
         /// <inheritdoc/>
-        internal void Normalize(IPurePath<TPath> path)
+        private void Normalize()
         {
-            if (path.Dirname.Length <= 0) return;
+            if (Dirname.Length <= 0) return;
 
             // Remove extra slashes (eg. foo///bar => foo/bar)
             // Leave initial double-slash (e.g. UNC paths)
-            var newDirname = Regex.Replace(path.Dirname,
+            var newDirname = Regex.Replace(Dirname,
                                            Regex.Escape(PathSeparator) + "{2,}",
                                            PathSeparator);
             
@@ -307,10 +351,7 @@ namespace PathLib
                 Regex.Escape(PathUtils.CurrentDirectoryIdentifier)),
                                        @"$2");
 
-            if (newDirname != path.Dirname)
-            {
-                Assimilate(PurePathFactoryFromComponents(path, dirname: newDirname));
-            }
+            Dirname = newDirname;
         }
 
         /// <inheritdoc/>

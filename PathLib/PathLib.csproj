@@ -44,6 +44,7 @@
     <Compile Include="FileAccessUtils.cs" />
     <Compile Include="InvalidPathException.cs" />
     <Compile Include="IPath.cs" />
+    <Compile Include="IPathParser.cs" />
     <Compile Include="IPurePath.cs" />
     <Compile Include="LinqBridge.cs" />
     <Compile Include="ConcretePath.cs" />

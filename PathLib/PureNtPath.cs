@@ -19,11 +19,6 @@ namespace PathLib
                 "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"
             };
 
-        private readonly string[] _reservedCharacters =
-            {
-                "<", ">", "|"
-            };
-
         #region ctors
 
         /// <summary>
@@ -33,7 +28,6 @@ namespace PathLib
         /// </summary>
         public PureNtPath()
         {
-            Initialize();
         }
 
         /// <summary>
@@ -43,9 +37,8 @@ namespace PathLib
         /// </summary>
         /// <param name="paths">Paths to combine.</param>
         public PureNtPath(params string[] paths)
-            : base(paths)
+            : base(new NtPathParser(), paths)
         {
-            Initialize();
         }
 
         /// <summary>
@@ -57,7 +50,6 @@ namespace PathLib
         public PureNtPath(params IPurePath[] paths)
             : base(paths)
         {
-            Initialize();
         }
 
         /// <summary>
@@ -73,65 +65,81 @@ namespace PathLib
         protected PureNtPath(string drive, string root, string dirname, string basename, string extension)
             : base(drive, root, dirname, basename, extension)
         {
-            Initialize();
         }
 
         #endregion
 
-        private void Initialize()
+        private class NtPathParser : IPathParser
         {
-            var path = RawPath;
-
-            if (path == null)
+            private readonly char[] _reservedCharacters =
             {
-                Normalize(this);
-                return;
-            }
-            //path = path.Replace('\\', '/');  // Mono only accepts forward slashes. Maybe implement the system-specific path methods myself.
+                '<', '>', '|'
+            };
 
-            ThrowIfReservedCharactersUsed(path);
+            private const string PathSeparator = @"\";
 
-            Drive = ParseDrive(path);
-            Root = ParseRoot(path);
-
-            if (Drive.Length + Root.Length >= path.Length)
+            public string ParseDrive(string remainingPath)
             {
-                return;
+                return !String.IsNullOrEmpty(remainingPath)
+                    ? PathUtils.GetPathRoot(remainingPath, PathSeparator).TrimEnd(PathSeparator[0])
+                    : null;
             }
 
-            path = path.Substring(Drive.Length + Root.Length);
-
-            // Remove trailing slash
-            // This is what Python's pathlib does, but I don't think it's
-            // necessarily required by spec
-            if (path.EndsWith(PathSeparator))
+            public string ParseRoot(string remainingPath)
             {
-                path = path.TrimEnd(PathSeparator.ToCharArray());
+                if (String.IsNullOrEmpty(remainingPath))
+                {
+                    return null;
+                }
+
+                var root = PathUtils.GetPathRoot(remainingPath, PathSeparator);
+                if (root.StartsWith(PathSeparator))
+                {
+                    return PathSeparator;
+                }
+                return root.EndsWith(PathSeparator)
+                           ? PathSeparator
+                           : null;
             }
 
-            Dirname = ParseDirname(path);
-            path = path.Substring(Dirname.Length);
+            public string ParseDirname(string remainingPath)
+            {
+                // Hardcode special dirs
+                if (remainingPath == "." || remainingPath == "..")
+                {
+                    return remainingPath;
+                }
+                return PathUtils.GetDirectoryName(remainingPath, PathSeparator);
+            }
 
-            Basename = ParseBasename(path);
-            path = path.Substring(Basename.Length);
+            public string ParseBasename(string remainingPath)
+            {
+                return !String.IsNullOrEmpty(remainingPath)
+                    ? remainingPath != PathUtils.CurrentDirectoryIdentifier
+                        ? PathUtils.GetFileNameWithoutExtension(remainingPath, PathSeparator)
+                            : PathUtils.CurrentDirectoryIdentifier
+                    : null;
+            }
 
-            Extension = ParseExtension(path);
+            public string ParseExtension(string remainingPath)
+            {
+                return !String.IsNullOrEmpty(remainingPath)
+                    ? PathUtils.GetExtension(remainingPath, PathSeparator)
+                    : null;
+            }
 
-            Normalize(this);
-        }
-
-        private void ThrowIfReservedCharactersUsed(params string[] paths)
-        {
-            foreach (var path in paths)
+            public bool ReservedCharactersInPath(string path, out char reservedCharacter)
             {
                 foreach (var ch in _reservedCharacters)
                 {
-                    if (path.Contains(ch))
+                    if (path.IndexOf(ch) >= 0)
                     {
-                        throw new InvalidPathException(RawPath, String.Format(
-                            "Path contains reserved character '{0}'.", ch));
+                        reservedCharacter = ch;
+                        return true;
                     }
                 }
+                reservedCharacter = default (char);
+                return false;
             }
         }
 
@@ -163,51 +171,6 @@ namespace PathLib
         }
 
         #region Parsing Initializers
-
-        private string ParseDrive(string path)
-        {
-            return String.IsNullOrEmpty(path)
-                ? String.Empty
-                : PathUtils.GetPathRoot(path, PathSeparator).TrimEnd(PathSeparator[0]);
-        }
-
-        private string ParseRoot(string path)
-        {
-            if (String.IsNullOrEmpty(path))
-            {
-                return String.Empty;
-            }
-
-            var root = PathUtils.GetPathRoot(path, PathSeparator);
-            if (root.StartsWith(PathSeparator))
-            {
-                return PathSeparator;
-            }
-            return root.EndsWith(PathSeparator)
-                       ? PathSeparator
-                       : "";
-        }
-
-        private string ParseDirname(string remainingPath)
-        {
-            return PathUtils.GetDirectoryName(remainingPath, PathSeparator) ?? "";
-        }
-
-        private string ParseBasename(string remainingPath)
-        {
-            return !String.IsNullOrEmpty(remainingPath)
-                ? remainingPath != "."  // Special case for current dir.
-                    ? PathUtils.GetFileNameWithoutExtension(remainingPath, PathSeparator)
-                    : "."
-                : "";
-        }
-
-        private string ParseExtension(string remainingPath)
-        {
-            return !String.IsNullOrEmpty(remainingPath)
-                ? PathUtils.GetExtension(remainingPath, PathSeparator)
-                : "";
-        }
 
         #endregion
 

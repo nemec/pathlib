@@ -1,6 +1,8 @@
 ﻿using System;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
+using System.Xml.Serialization;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace PathLib.UnitTest
@@ -26,7 +28,7 @@ namespace PathLib.UnitTest
         {
             var path = new PureNtPath(".");
 
-            Assert.AreEqual(".", path.Filename);
+            Assert.AreEqual(".", path.Dirname);
         }
 
         [TestMethod]
@@ -339,6 +341,26 @@ namespace PathLib.UnitTest
 
             Assert.IsNotNull(path);
             Assert.AreEqual(str, path.ToString());
+        }
+
+
+
+        [XmlRoot]
+        public class XmlDeserialize
+        {
+            [XmlElement]
+            public PureNtPath Folder { get; set; }
+        }
+
+        [TestMethod]
+        public void XmlDeserialize_WithPathAsStringElement_DeserializesIntoType()
+        {
+            const string pathXml = @"<XmlDeserialize><Folder>c:\users\nemec</Folder></XmlDeserialize>";
+            var obj = (XmlDeserialize)new XmlSerializer(typeof(XmlDeserialize))
+                .Deserialize(new StringReader(pathXml));
+            var expected = new PureNtPath(@"c:\users\nemec");
+
+            Assert.AreEqual(expected, obj.Folder);
         }
     }
 }

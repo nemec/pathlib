@@ -89,6 +89,11 @@ namespace PathLib
 
         internal static IPurePath Combine(IEnumerable<IPurePath> paths, string separator)
         {
+            if (String.IsNullOrEmpty(separator))
+            {
+                throw new ArgumentException(
+                    "Separator cannot be empty or null.", "separator");
+            }
             IPurePath lastAbsolute = null;
             var dirnameBuilder = new StringBuilder();
             var lastPartStr = "";
@@ -125,8 +130,11 @@ namespace PathLib
             }
             var filenameLen = lastPart.Filename.Length;
             dirnameBuilder.Remove(dirnameBuilder.Length - filenameLen, filenameLen);
+
             return lastAbsolute
-                .WithDirname(dirnameBuilder.ToString())
+                .WithDirname(dirnameBuilder
+                    .ToString()
+                    .TrimEnd(separator[0]))
                 .WithFilename(lastPart.Filename);
         }
 
@@ -251,6 +259,11 @@ namespace PathLib
 
             if(nLast > 0)
             {
+                // Trim multiple separators in a row
+                while (nLast - 1 >= 0 && path[nLast - 1] == separator[0])
+                {
+                    nLast--;
+                }
                 string ret = path.Substring(0, nLast);
                 int l = ret.Length;
 
