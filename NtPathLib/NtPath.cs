@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 
 namespace PathLib
 {
-    public class NtPath : ConcretePath
+    [TypeConverter(typeof(NtPathConverter))]
+    public class NtPath : ConcretePath<NtPath>
     {
         public NtPath(params string[] paths)
             : base(new PureNtPath(paths))
@@ -25,26 +27,43 @@ namespace PathLib
         /// on that disk.
         /// http://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx
         /// </summary>
-        private IPath _cachedResolve;
-        public override IPath Resolve()
+        private NtPath _cachedResolve;
+        public override NtPath Resolve()
         {
             if (_cachedResolve != null) return _cachedResolve;
 
-            var parts = new Stack<string>();
+            var parts = new List<string>();
             foreach (var part in PurePath.Parts)
             {
                 // TODO join parts and check for symlink
-                if (part == String.Format("{0}{0}", PathUtils.CurrentDirectoryIdentifier))
+                if (parts.Count != 0 && 
+                    part == String.Format("{0}{0}", PathUtils.CurrentDirectoryIdentifier))
                 {
-                    parts.Pop();
+                    if (parts.Count == 1 && 
+                        parts[0] == PurePath.Anchor)
+                    {
+                        // Don't jump up past the drive
+                        continue;
+                    }
+                    parts.RemoveAt(parts.Count - 1);
                     continue;
                 }
-                parts.Push(part);
+                parts.Add(part);
+
+                var partial = new NtPath(parts.ToArray());
+                if (partial.IsSymlink())
+                {
+                    var newPath = SymbolicLink.GetTarget(partial.ToString());
+                    parts.Clear();
+                    parts.Add(partial.PurePath.Parent()
+                        .Join(newPath)
+                        .ToString());
+                }
             }
             return (_cachedResolve = new NtPath(parts.ToArray()));
         }
 
-        protected override IPath PathFactory(params string[] paths)
+        protected override NtPath PathFactory(params string[] paths)
         {
             return new NtPath(paths);
         }
@@ -78,7 +97,7 @@ namespace PathLib
 
         public override bool IsSymlink()
         {
-            throw new NotImplementedException();
+            return SymbolicLink.Exists(PurePath.ToString());
         }
 
         /// <summary>
@@ -124,5 +143,10 @@ namespace PathLib
             [MarshalAs(UnmanagedType.LPStr)] string path,
             [MarshalAs(UnmanagedType.LPStr)] StringBuilder shortPath,
             int longPathLength);
+
+        public override string ToString()
+        {
+            return PurePath.ToString();
+        }
     }
 }

@@ -39,6 +39,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="NtPath.cs" />
+    <Compile Include="NtPathConverter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReparsePoints.cs" />
   </ItemGroup>

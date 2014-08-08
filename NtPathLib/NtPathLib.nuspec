@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>NtPathLib Alpha Release</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <licenseUrl>https://github.com/nemec/pathlib/blob/master/LICENSE.txt</licenseUrl>
+    <projectUrl>https://github.com/nemec/pathlib</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>$description$</description>
+    <releaseNotes>
+      0.1.0 Initial alpha release.
+    </releaseNotes>
+    <copyright>Copyright 2014</copyright>
+    <tags>path directory</tags>
+  </metadata>
+</package>

@@ -9,10 +9,11 @@ namespace PathLib
     /// <summary>
     /// Base class for common methods in concrete paths.
     /// </summary>
-    public abstract class ConcretePath : IPath
+    public abstract class ConcretePath<TPath> : IPath<TPath>
+        where TPath : IPath
     {
         /// <inheritdoc/>
-        protected readonly IPurePath PurePath;
+        public readonly IPurePath PurePath;
 
         /// <inheritdoc/>
         protected ConcretePath(IPurePath purePath)
@@ -21,13 +22,24 @@ namespace PathLib
         }
 
         /// <inheritdoc/>
-        public IEnumerable<IPath> Glob(string pattern)
+        public IEnumerable<TPath> Glob(string pattern)
         {
             if (!IsDir())
             {
                 throw new ArgumentException("Glob may only be called on directories.");
             }
-            throw new NotImplementedException();
+            foreach (var path in ListDir())
+            {
+                if (PathUtils.Glob(pattern, path.ToString()))
+                {
+                    yield return path;
+                }
+            }
+        }
+
+        IEnumerable<IPath> IPath.Glob(string pattern)
+        {
+            return LinqBridge.Select(Glob(pattern), p => (IPath)p);
         }
 
         /// <inheritdoc/>
@@ -58,22 +70,46 @@ namespace PathLib
         }
 
         /// <inheritdoc/>
-        public bool IsDir()
-        {
-            return Directory.Exists(PurePath.AsPosix());
-        }
-
-        /// <inheritdoc/>
         public bool IsFile()
         {
             return File.Exists(PurePath.AsPosix());
         }
 
         /// <inheritdoc/>
-        protected abstract IPath PathFactory(params string[] path);
+        public bool IsDir()
+        {
+            return Directory.Exists(PurePath.AsPosix());
+        }
 
         /// <inheritdoc/>
-        public abstract IPath Resolve();
+        public IEnumerable<TPath> ListDir()
+        {
+            if (!IsDir())
+            {
+                throw new ConstraintException("Path object must be a directory.");
+            }
+            foreach (var directory in Directory.GetFileSystemEntries(PurePath.ToString()))
+            {
+                yield return PathFactory(PurePath.Filename, directory);
+            }
+        }
+
+        /// <inheritdoc/>
+        IEnumerable<IPath> IPath.ListDir()
+        {
+            return LinqBridge.Select(ListDir(), p => (IPath)p);
+        }
+
+        /// <inheritdoc/>
+        protected abstract TPath PathFactory(params string[] path);
+
+        /// <inheritdoc/>
+        public abstract TPath Resolve();
+
+        IPath IPath.Resolve()
+        {
+            return Resolve();
+        }
 
         /// <inheritdoc/>
         public abstract bool IsSymlink();
@@ -115,30 +151,6 @@ namespace PathLib
         public Stream Open(FileMode mode)
         {
             return File.Open(PurePath.AsPosix(), mode);
-        }
-
-        /// <summary>
-        /// Path objects of the directory's contents.
-        /// </summary>
-        /// <exception cref="ConstraintException">
-        /// Thrown if path does not represent a directory.
-        /// </exception>
-        /// <returns></returns>
-        public IEnumerator<IPath> GetEnumerator()
-        {
-            if(!IsDir())
-            {
-                throw new ConstraintException("Path object must be a directory.");
-            }
-            foreach (var directory in Directory.GetFileSystemEntries(PurePath.ToString()))
-            {
-                yield return PathFactory(PurePath.Filename, directory);
-            }
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
         }
     }
 }

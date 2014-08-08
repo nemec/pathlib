@@ -9,7 +9,7 @@ namespace PathLib
     /// should not be used on any platform but the one
     /// they were designed for.
     /// </summary>
-    public interface IPath : IEnumerable<IPath>
+    public interface IPath
     {
         /// <summary>
         /// Returns information about the path.
@@ -53,6 +53,12 @@ namespace PathLib
         /// <returns></returns>
         bool IsDir();
 
+        /// <summary>
+        /// List the files in the directory.
+        /// </summary>
+        /// <returns></returns>
+        IEnumerable<IPath> ListDir();
+            
         /// <summary>
         /// Make the path absolute, resolving any symlinks. Returns a
         /// new path.
@@ -100,5 +106,37 @@ namespace PathLib
         /// <param name="mode"></param>
         /// <returns></returns>
         Stream Open(FileMode mode);
+    }
+
+
+    /// <summary>
+    /// IPath implementations are platform dependent and
+    /// should not be used on any platform but the one
+    /// they were designed for.
+    /// </summary>
+    /// <typeparam name="TPath"></typeparam>
+    public interface IPath<TPath> : IPath
+        where TPath : IPath
+    {
+        /// <summary>
+        /// Glob the given pattern in the directory 
+        /// </summary>
+        /// <exception cref="ArgumentException">Glob was called on a file.</exception>
+        /// <param name="pattern"></param>
+        /// <returns></returns>
+        new IEnumerable<TPath> Glob(string pattern);
+        
+        /// <summary>
+        /// List the files in the directory.
+        /// </summary>
+        /// <returns></returns>
+        new IEnumerable<TPath> ListDir();
+
+        /// <summary>
+        /// Make the path absolute, resolving any symlinks. Returns a
+        /// new path.
+        /// </summary>
+        /// <returns></returns>
+        new TPath Resolve();
     }
 }
