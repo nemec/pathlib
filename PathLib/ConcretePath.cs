@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
@@ -22,7 +21,7 @@ namespace PathLib
         }
 
         /// <inheritdoc/>
-        public IEnumerable<TPath> Glob(string pattern)
+        public IEnumerable<TPath> ListDir(string pattern)
         {
             if (!IsDir())
             {
@@ -37,9 +36,9 @@ namespace PathLib
             }
         }
 
-        IEnumerable<IPath> IPath.Glob(string pattern)
+        IEnumerable<IPath> IPath.ListDir(string pattern)
         {
-            return LinqBridge.Select(Glob(pattern), p => (IPath)p);
+            return LinqBridge.Select(ListDir(pattern), p => (IPath)p);
         }
 
         /// <inheritdoc/>
@@ -152,5 +151,8 @@ namespace PathLib
         {
             return File.Open(PurePath.AsPosix(), mode);
         }
+
+        /// <inheritdoc/>
+        public abstract IDisposable SetCurrentDirectory();
     }
 }

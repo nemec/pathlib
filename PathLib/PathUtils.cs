@@ -138,6 +138,51 @@ namespace PathLib
                 .WithFilename(lastPart.Filename);
         }
 
+        /// <summary>
+        /// Removes all parent directory components. Disallows combining
+        /// with absolute paths.
+        /// </summary>
+        /// <param name="base"></param>
+        /// <param name="toJoin"></param>
+        /// <param name="separator"></param>
+        /// <param name="combined"></param>
+        /// <returns></returns>
+        internal static bool TrySafeCombine(
+            IPurePath @base, IPurePath toJoin, string separator, out string combined)
+        {
+            var joinParts = new List<string>();
+            foreach (var part in toJoin.Parts)
+            {
+                if (part == toJoin.Anchor)
+                {
+                    continue;
+                }
+                var normalized = part.Normalize(NormalizationForm.FormKC);
+                if (normalized == ParentDirectoryIdentifier)
+                {
+                    if (joinParts.Count > 0)
+                    {
+                        joinParts.RemoveAt(joinParts.Count - 1);
+                    }
+                    else  // attempted parent dir
+                    {
+                        combined = null;
+                        return false;
+                    }
+                }
+                else
+                {
+                    joinParts.Add(part);
+                }
+            }
+
+            var parts = new List<string>(@base.Parts);
+            parts.AddRange(joinParts);
+
+            combined = String.Join(separator, parts.ToArray());
+            return true;
+        }
+
 
         #region System.IO.Path replacements
         // ReSharper disable CSharpWarnings::CS1591
@@ -395,8 +440,12 @@ namespace PathLib
                 int iLastDot = path.LastIndexOf('.');
                 int iLastSep = path.LastIndexOf(separator);
 
-                if(iLastDot > iLastSep)
+                if (iLastDot > iLastSep &&
+                    !(path.Length == 0 && iLastDot == 0) && 
+                    !(path.Length == 2 && iLastDot == 1 && path[0] == '.'))  // . and .. are not extensions
+                {
                     return iLastDot;
+                }
             }
             return -1;
         }

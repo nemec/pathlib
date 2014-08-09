@@ -350,6 +350,54 @@ namespace PathLib.UnitTest
         }
 
         [TestMethod]
+        public void SafeJoin_WithRelative_CreatesPathEqualToCombinedPath()
+        {
+            var path = new MockPath(@"a");
+            var expected = new MockPath(@"a\b");
+
+            MockPath joined;
+            Assert.IsTrue(path.TrySafeJoin("b", out joined));
+
+            Assert.AreEqual(expected, joined);
+        }
+
+        [TestMethod]
+        public void SafeJoin_WithRelativeParentTraversal_FailsJoin()
+        {
+            var path = new MockPath(@"a");
+
+            MockPath joined;
+            Assert.IsFalse(path.TrySafeJoin("..", out joined));
+        }
+
+        [TestMethod]
+        public void SafeJoin_WithComplexRelativeParentTraversal_FailsJoin()
+        {
+            var path = new MockPath(@"a");
+
+            MockPath joined;
+            Assert.IsFalse(path.TrySafeJoin(@"b\c\d\..\f\..\..\..\g\..\..", out joined));
+        }
+
+        [TestMethod]
+        public void SafeJoin_WithSiblingRelativeParentTraversal_FailsJoin()
+        {
+            var path = new MockPath(@"a");
+
+            MockPath joined;
+            Assert.IsFalse(path.TrySafeJoin(@"..\c\d", out joined));
+        }
+
+        [TestMethod]
+        public void SafeJoin_WithSiblinStartsWithTraversal_FailsJoin()
+        {
+            var path = new MockPath(@"a");
+
+            MockPath joined;
+            Assert.IsFalse(path.TrySafeJoin(@"..\ab\d", out joined));
+        }
+
+        [TestMethod]
         public void GetParent_WithAParent_ReturnsTheParent()
         {
             var path = new MockPath(@"C:\Users\nemec");

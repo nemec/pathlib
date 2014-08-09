@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -10,6 +9,8 @@ namespace PathLib
     [TypeConverter(typeof(NtPathConverter))]
     public class NtPath : ConcretePath<NtPath>
     {
+        private const string ExtendedLengthPrefix = @"\\?\";
+
         public NtPath(params string[] paths)
             : base(new PureNtPath(paths))
         {
@@ -32,35 +33,25 @@ namespace PathLib
         {
             if (_cachedResolve != null) return _cachedResolve;
 
-            var parts = new List<string>();
-            foreach (var part in PurePath.Parts)
+            using (var fs = File.OpenRead(PurePath.ToString()))
             {
-                // TODO join parts and check for symlink
-                if (parts.Count != 0 && 
-                    part == String.Format("{0}{0}", PathUtils.CurrentDirectoryIdentifier))
+                if (fs.SafeFileHandle == null)
                 {
-                    if (parts.Count == 1 && 
-                        parts[0] == PurePath.Anchor)
-                    {
-                        // Don't jump up past the drive
-                        continue;
-                    }
-                    parts.RemoveAt(parts.Count - 1);
-                    continue;
+                    return this;
                 }
-                parts.Add(part);
+                var builder = new StringBuilder(512);
+                GetFinalPathNameByHandle(fs.SafeFileHandle.DangerousGetHandle(),
+                    builder, builder.Capacity, 0);
+                var newPath = builder.ToString();
 
-                var partial = new NtPath(parts.ToArray());
-                if (partial.IsSymlink())
+                if (newPath.StartsWith(ExtendedLengthPrefix) &&
+                    !PurePath.ToString().StartsWith(ExtendedLengthPrefix))
                 {
-                    var newPath = SymbolicLink.GetTarget(partial.ToString());
-                    parts.Clear();
-                    parts.Add(partial.PurePath.Parent()
-                        .Join(newPath)
-                        .ToString());
+                    newPath = newPath.Substring(ExtendedLengthPrefix.Length);
                 }
+                return (_cachedResolve = new NtPath(newPath));
             }
-            return (_cachedResolve = new NtPath(parts.ToArray()));
+
         }
 
         protected override NtPath PathFactory(params string[] paths)
@@ -77,7 +68,7 @@ namespace PathLib
             }
 
             // http://www.delorie.com/gnu/docs/glibc/libc_284.html
-            var info = new FileInfo(PurePath.AsPosix());
+            var info = new FileInfo(PurePath.ToString());
             var stat = new StatInfo
             {
                 Size = info.Length,
@@ -97,7 +88,33 @@ namespace PathLib
 
         public override bool IsSymlink()
         {
-            return SymbolicLink.Exists(PurePath.ToString());
+            ReparsePoint rep;
+            return ReparsePoint.TryCreate(PurePath.ToString(), out rep) 
+                && rep.Tag == ReparsePoint.TagType.SymbolicLink;
+        }
+
+        public override IDisposable SetCurrentDirectory()
+        {
+            return new CurrentDirectorySetter(ToString());
+        }
+
+        private class CurrentDirectorySetter : IDisposable
+        {
+            private readonly string _oldCwd;
+            private readonly string _newCwd;
+
+            public CurrentDirectorySetter(string newCwd)
+            {
+                _oldCwd = Environment.CurrentDirectory;
+                Environment.CurrentDirectory = _newCwd = newCwd;
+            }
+            public void Dispose()
+            {
+                if (Environment.CurrentDirectory == _newCwd)
+                {
+                    Environment.CurrentDirectory = _oldCwd;
+                }
+            }
         }
 
         /// <summary>
@@ -143,6 +160,11 @@ namespace PathLib
             [MarshalAs(UnmanagedType.LPStr)] string path,
             [MarshalAs(UnmanagedType.LPStr)] StringBuilder shortPath,
             int longPathLength);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        static extern int GetFinalPathNameByHandle(
+            IntPtr handle, [In, Out] StringBuilder path, int bufLen, int flags);
+
 
         public override string ToString()
         {

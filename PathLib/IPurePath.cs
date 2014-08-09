@@ -100,6 +100,30 @@ namespace PathLib
         IPurePath Join(params IPurePath[] paths);
 
         /// <summary>
+        /// Join the current path with the provided path. In addition,
+        /// the joined path is not allowed to traverse outside the directory
+        /// of the original path. After combining, the result is checked to 
+        /// ensure the first N characters (where N is the length of the
+        /// original path) is byte-for-byte equal to the original.
+        /// </summary>
+        /// <param name="relativePath"></param>
+        /// <param name="joined"></param>
+        /// <returns></returns>
+        bool TrySafeJoin(string relativePath, out IPurePath joined);
+
+        /// <summary>
+        /// Join the current path with the provided path. In addition,
+        /// the joined path is not allowed to traverse outside the directory
+        /// of the original path. After combining, the result is checked to 
+        /// ensure the first N characters (where N is the length of the
+        /// original path) is byte-for-byte equal to the original.
+        /// </summary>
+        /// <param name="relativePath"></param>
+        /// <param name="joined"></param>
+        /// <returns></returns>
+        bool TrySafeJoin(IPurePath relativePath, out IPurePath joined);
+
+        /// <summary>
         /// <para>
         /// Test whether the path matches the given
         /// glob pattern (* and ? are wildcards).
@@ -233,6 +257,30 @@ namespace PathLib
         /// <param name="paths"></param>
         /// <returns></returns>
         new IPurePath<TPath> Join(params IPurePath[] paths);
+
+        /// <summary>
+        /// Join the current path with the provided path. In addition,
+        /// the joined path is not allowed to traverse outside the directory
+        /// of the original path. After combining, the result is checked to 
+        /// ensure the first N characters (where N is the length of the
+        /// original path) is byte-for-byte equal to the original.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="joined"></param>
+        /// <returns></returns>
+        bool TrySafeJoin(string path, out TPath joined);
+
+        /// <summary>
+        /// Join the current path with the provided path. In addition,
+        /// the joined path is not allowed to traverse outside the directory
+        /// of the original path. After combining, the result is checked to 
+        /// ensure the first N characters (where N is the length of the
+        /// original path) is byte-for-byte equal to the original.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="joined"></param>
+        /// <returns></returns>
+        bool TrySafeJoin(IPurePath path, out TPath joined);
 
 		/// <summary>
 		/// Normalize the case of the path. On case-insensitive platforms,

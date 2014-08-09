@@ -7,6 +7,7 @@ using System.Xml.Serialization;
 namespace PathLib
 {
     // https://pathlib.readthedocs.org/en/latest/
+    // https://docs.python.org/3/library/pathlib.html#module-pathlib
     // http://www.dotnetperls.com/path
     /// <summary>
     /// Base class containing common IPurePath code.
@@ -172,6 +173,14 @@ namespace PathLib
 
             Extension = parser.ParseExtension(rawPath) ?? "";
 
+            // If filename is just an extension, consider it a "hidden file"
+            // where the leading dot is the filename, not the extension.
+            if (Basename == String.Empty && Extension != String.Empty)
+            {
+                Basename = Extension;
+                Extension = String.Empty;
+            }
+
             Normalize();
         }
 
@@ -325,6 +334,59 @@ namespace PathLib
             return path;
         }
 
+        /// <inheritdoc/>
+        public bool TrySafeJoin(string relativePath, out TPath joined)
+        {
+            var toJoin = PurePathFactory(relativePath);
+            string combined;
+            if (!PathUtils.TrySafeCombine(this, toJoin, PathSeparator, out combined))
+            {
+                joined = null;
+                return false;
+            }
+
+            joined = PurePathFactory(combined);
+            return true;
+        }
+
+        /// <inheritdoc/>
+        public bool TrySafeJoin(IPurePath relativePath, out TPath joined)
+        {
+            string combined;
+            if (!PathUtils.TrySafeCombine(this, relativePath, PathSeparator, out combined))
+            {
+                joined = null;
+                return false;
+            }
+
+            joined = PurePathFactory(combined);
+            return true;
+        }
+
+        bool IPurePath.TrySafeJoin(string relativePath, out IPurePath joined)
+        {
+            TPath subPath;
+            if(TrySafeJoin(relativePath, out subPath))
+            {
+                joined = subPath;
+                return true;
+            }
+            joined = null;
+            return false;
+        }
+
+        bool IPurePath.TrySafeJoin(IPurePath relativePath, out IPurePath joined)
+        {
+            TPath subPath;
+            if (TrySafeJoin(relativePath, out subPath))
+            {
+                joined = subPath;
+                return true;
+            }
+            joined = null;
+            return false;
+        }
+
         private string NormalizeSeparators(string path)
         {
             foreach (var separator in PathUtils.PathSeparatorsForNormalization)
@@ -466,7 +528,9 @@ namespace PathLib
             }
             return PurePathFactoryFromComponents(this,
                 extension: fname.HasComponents(PathComponent.Basename)
-                                                 ? PathUtils.ExtensionDelimiter + fname.Basename 
+                    ? fname.Basename.StartsWith(""+PathUtils.ExtensionDelimiter)
+                        ? fname.Basename
+                        : PathUtils.ExtensionDelimiter + fname.Basename 
                     : fname.Extension);
         }
 

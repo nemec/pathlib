@@ -40,14 +40,6 @@ namespace PathLib
         bool Exists();
 
         /// <summary>
-        /// Glob the given pattern in the directory 
-        /// </summary>
-        /// <exception cref="ArgumentException">Glob was called on a file.</exception>
-        /// <param name="pattern"></param>
-        /// <returns></returns>
-        IEnumerable<IPath> Glob(string pattern);
-
-        /// <summary>
         /// Return true if the path is a directory.
         /// </summary>
         /// <returns></returns>
@@ -58,6 +50,16 @@ namespace PathLib
         /// </summary>
         /// <returns></returns>
         IEnumerable<IPath> ListDir();
+
+        /// <summary>
+        /// Glob the given pattern in the directory 
+        /// </summary>
+        /// <exception cref="ArgumentException">Glob was called on a file.</exception>
+        /// <param name="pattern"></param>
+        /// <returns></returns>
+        IEnumerable<IPath> ListDir(string pattern);
+
+        // TODO OS.Walk
             
         /// <summary>
         /// Make the path absolute, resolving any symlinks. Returns a
@@ -106,6 +108,14 @@ namespace PathLib
         /// <param name="mode"></param>
         /// <returns></returns>
         Stream Open(FileMode mode);
+
+        /// <summary>
+        /// Set the current working directory to this path. Upon dispose,
+        /// resets to the original working directory only if the current
+        /// directory has not been changed in the meantime.
+        /// </summary>
+        /// <returns></returns>
+        IDisposable SetCurrentDirectory();
     }
 
 
@@ -119,18 +129,18 @@ namespace PathLib
         where TPath : IPath
     {
         /// <summary>
+        /// List the files in the directory.
+        /// </summary>
+        /// <returns></returns>
+        new IEnumerable<TPath> ListDir();
+
+        /// <summary>
         /// Glob the given pattern in the directory 
         /// </summary>
         /// <exception cref="ArgumentException">Glob was called on a file.</exception>
         /// <param name="pattern"></param>
         /// <returns></returns>
-        new IEnumerable<TPath> Glob(string pattern);
-        
-        /// <summary>
-        /// List the files in the directory.
-        /// </summary>
-        /// <returns></returns>
-        new IEnumerable<TPath> ListDir();
+        new IEnumerable<TPath> ListDir(string pattern);
 
         /// <summary>
         /// Make the path absolute, resolving any symlinks. Returns a
