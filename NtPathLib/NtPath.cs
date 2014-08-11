@@ -64,6 +64,11 @@ namespace PathLib
             return new NtPath(paths);
         }
 
+        protected override NtPath PathFactory(PureNtPath path)
+        {
+            return new NtPath(path);
+        }
+
         private StatInfo _cachedStat;
         protected override StatInfo Stat(bool flushCache)
         {
