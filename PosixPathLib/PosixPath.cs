@@ -4,9 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PosixPathLib
+namespace PathLib
 {
-    public class Class1
+    public class PosixPath
     {
+        public PosixPath(string path)
+        {
+            
+        }
     }
 }

@@ -21,14 +21,14 @@ namespace WindowsPathUnitTest
         }
 
         [TestMethod]
-        public void IsSymlink_WithJunction_ReturnsTrue()
+        public void IsJunction_WithJunction_ReturnsTrue()
         {
             var ret = TestUtils.CreateJunctionAndTarget(TempFolder);
             var junction = ret.Item2;
             
             var path = new NtPath(junction);
             
-            Assert.IsTrue(path.IsSymlink());
+            Assert.IsTrue(path.IsJunction());
         }
 
         [TestMethod]
@@ -52,6 +52,18 @@ namespace WindowsPathUnitTest
             tmp.Dispose();
 
             Assert.AreEqual(oldCwd, Environment.CurrentDirectory);
+        }
+
+        [TestMethod]
+        public void ExpandUser_WithHomeDir_ExpandsDir()
+        {
+            var path = new NtPath("~/tmp");
+            var expected = new NtPath(
+                Environment.GetEnvironmentVariable("USERPROFILE") + @"\tmp");
+
+            var actual = path.ExpandUser();
+
+            Assert.AreEqual(expected, actual);
         }
 
         [ClassCleanup]

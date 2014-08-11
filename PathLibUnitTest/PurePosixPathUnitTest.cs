@@ -54,7 +54,7 @@ namespace PathLib.UnitTest
             var path = new PurePosixPath(someInitialPath, someSubPath);
 
             // Assert
-            Assert.AreEqual("/home/dan/music", path.AsPosix());
+            Assert.AreEqual("/home/dan/music", path.ToPosix());
         }
 
         [TestMethod]
@@ -68,7 +68,7 @@ namespace PathLib.UnitTest
             var path = new PurePosixPath(paths);
 
             // Assert
-            Assert.AreEqual(expected, path.AsPosix());
+            Assert.AreEqual(expected, path.ToPosix());
         }
 
         [TestMethod]
@@ -82,7 +82,7 @@ namespace PathLib.UnitTest
             var path = new PurePosixPath(paths);
 
             // Assert
-            Assert.AreEqual(expected, path.AsPosix());
+            Assert.AreEqual(expected, path.ToPosix());
         }
 
         [TestMethod]
@@ -96,7 +96,7 @@ namespace PathLib.UnitTest
             var path = new PurePosixPath(paths);
 
             // Assert
-            Assert.AreEqual(expected, path.AsPosix());
+            Assert.AreEqual(expected, path.ToPosix());
         }
 
         [TestMethod]
@@ -110,7 +110,7 @@ namespace PathLib.UnitTest
             var path = new PurePosixPath(paths);
 
             // Assert
-            Assert.AreEqual(expected, path.AsPosix());
+            Assert.AreEqual(expected, path.ToPosix());
         }
 
         [TestMethod]

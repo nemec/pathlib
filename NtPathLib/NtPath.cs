@@ -7,12 +7,17 @@ using System.Text;
 namespace PathLib
 {
     [TypeConverter(typeof(NtPathConverter))]
-    public class NtPath : ConcretePath<NtPath>
+    public class NtPath : ConcretePath<NtPath, PureNtPath>
     {
         private const string ExtendedLengthPrefix = @"\\?\";
 
         public NtPath(params string[] paths)
             : base(new PureNtPath(paths))
+        {
+        }
+
+        public NtPath(PureNtPath path)
+            : base(path)
         {
         }
 
@@ -86,11 +91,35 @@ namespace PathLib
             return stat;
         }
 
+        /// <inheritdoc/>
         public override bool IsSymlink()
         {
             ReparsePoint rep;
             return ReparsePoint.TryCreate(PurePath.ToString(), out rep) 
                 && rep.Tag == ReparsePoint.TagType.SymbolicLink;
+        }
+
+        /// <summary>
+        /// Return true if the path points to a junction. These are distinct
+        /// from symlinks.
+        /// </summary>
+        /// <returns></returns>
+        public bool IsJunction()
+        {
+            ReparsePoint rep;
+            return ReparsePoint.TryCreate(PurePath.ToString(), out rep)
+                   && rep.Tag == ReparsePoint.TagType.JunctionPoint;
+        }
+
+        public override NtPath ExpandUser()
+        {
+            var homeDir = new PureNtPath("~");
+            if (homeDir < PurePath)
+            {
+                var newDir = new PureNtPath(Environment.GetEnvironmentVariable("USERPROFILE"));
+                return new NtPath(newDir.Join(PurePath.RelativeTo(homeDir)));
+            }
+            return this;
         }
 
         public override IDisposable SetCurrentDirectory()
@@ -165,6 +194,113 @@ namespace PathLib
         static extern int GetFinalPathNameByHandle(
             IntPtr handle, [In, Out] StringBuilder path, int bufLen, int flags);
 
+
+        #region Equality Members
+
+        /// <summary>
+        /// Compare two <see cref="PureNtPath"/> for equality.
+        /// Case insensitive.
+        /// </summary>
+        /// <param name="first"></param>
+        /// <param name="second"></param>
+        /// <returns></returns>
+        public static bool operator ==(NtPath first, NtPath second)
+        {
+            return ReferenceEquals(first, null) ?
+                ReferenceEquals(second, null) :
+                first.Equals(second);
+        }
+
+        /// <summary>
+        /// Compare two <see cref="PureNtPath"/> for inequality.
+        /// Case insensitive.
+        /// </summary>
+        /// <param name="first"></param>
+        /// <param name="second"></param>
+        /// <returns></returns>
+        public static bool operator !=(NtPath first, NtPath second)
+        {
+            return !(first == second);
+        }
+
+        /// <summary>
+        /// Return true if <paramref name="first"/> is a parent path
+        /// of <paramref name="second"/>.
+        /// </summary>
+        /// <param name="first"></param>
+        /// <param name="second"></param>
+        /// <returns></returns>
+        public static bool operator <(NtPath first, NtPath second)
+        {
+            return first.PurePath < second.PurePath;
+        }
+
+        /// <summary>
+        /// Return true if <paramref name="second"/> is a parent of
+        /// <paramref name="first"/>.
+        /// </summary>
+        /// <param name="first"></param>
+        /// <param name="second"></param>
+        /// <returns></returns>
+        public static bool operator >(NtPath first, NtPath second)
+        {
+            return second < first;
+        }
+
+        /// <summary>
+        /// Return true if <paramref name="first"/> is equal to or a parent
+        /// of <paramref name="second"/>.
+        /// </summary>
+        /// <param name="first"></param>
+        /// <param name="second"></param>
+        /// <returns></returns>
+        public static bool operator <=(NtPath first, NtPath second)
+        {
+            return first.PurePath <= second.PurePath;
+        }
+
+        /// <summary>
+        /// Return true if <paramref name="second"/> is equal to or a parent
+        /// of <paramref name="first"/>.
+        /// </summary>
+        /// <param name="first"></param>
+        /// <param name="second"></param>
+        /// <returns></returns>
+        public static bool operator >=(NtPath first, NtPath second)
+        {
+            return first.PurePath >= second.PurePath;
+        }
+
+        /// <summary>
+        /// Compare two <see cref="PureNtPath"/> for equality.
+        /// Case insensitive.
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public bool Equals(NtPath other)
+        {
+            return PurePath.Equals(other.PurePath);
+        }
+
+        /// <summary>
+        /// Compare two <see cref="PureNtPath"/> for equality.
+        /// Case insensitive.
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public override bool Equals(object other)
+        {
+            var obj = other as NtPath;
+            return !ReferenceEquals(obj, null) && Equals(obj);
+        }
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            return PurePath.GetHashCode();
+        }
+
+        #endregion
 
         public override string ToString()
         {

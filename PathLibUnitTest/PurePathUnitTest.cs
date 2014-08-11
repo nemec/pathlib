@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml.Serialization;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using PathLib.Utils;
 
 namespace PathLib.UnitTest
 {
@@ -148,7 +150,7 @@ namespace PathLib.UnitTest
                     "A mock should not be used to test this.");
             }
 
-            public override MockPath NormCase()
+            public override MockPath NormCase(CultureInfo currentCulture)
             {
                 throw new NotImplementedException(
                     "A mock should not be used to test this.");
@@ -573,7 +575,7 @@ namespace PathLib.UnitTest
             var path = new MockPath(@"C:\nemec");
             var expected = new Uri("file://C:/nemec");
 
-            var actual = path.AsUri();
+            var actual = path.ToUri();
 
             Assert.AreEqual(expected, actual);
         }

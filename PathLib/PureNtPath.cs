@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
+using PathLib.Utils;
 
 namespace PathLib
 {
@@ -144,19 +146,19 @@ namespace PathLib
         }
 
         /// <inheritdoc/>
-		public static bool TryParse(string path, out PureNtPath result)
-		{
-			try
-			{
-				result = new PureNtPath(path);
-				return true;
-			}
-			catch(InvalidPathException)
-			{
-				result = null;
-				return false;
-			}
-		}
+        public static bool TryParse(string path, out PureNtPath result)
+        {
+            try
+            {
+                result = new PureNtPath(path);
+                return true;
+            }
+            catch(InvalidPathException)
+            {
+                result = null;
+                return false;
+            }
+        }
 
         /// <inheritdoc/>
         protected override PureNtPath PurePathFactory(string path)
@@ -211,7 +213,7 @@ namespace PathLib
         /// <returns></returns>
         public static bool operator <(PureNtPath first, PureNtPath second)
         {
-            if (first == null || second == null)
+            if (ReferenceEquals(first, null) || ReferenceEquals(second, null))
             {
                 return false;
             }
@@ -227,7 +229,7 @@ namespace PathLib
             }
             foreach (var parts in LinqBridge.Zip(parent, child, (p, c) => new [] {p, c}))
             {
-                if (parts[0].ToLowerInvariant() != parts[1].ToLowerInvariant())
+                if (!String.Equals(parts[0], parts[1], StringComparison.InvariantCultureIgnoreCase))
                 {
                     return false;
                 }
@@ -279,9 +281,9 @@ namespace PathLib
         /// <returns></returns>
         public bool Equals(PureNtPath other)
         {
-            return other != null && 
-                NormCase().AsPosix().Equals(
-                    other.NormCase().AsPosix());
+            return !ReferenceEquals(other, null) && 
+                NormCase().ToString().Equals(
+                    other.NormCase().ToString());
         }
 
         /// <summary>
@@ -293,7 +295,7 @@ namespace PathLib
         public override bool Equals(object other)
         {
             var obj = other as PureNtPath;
-            return obj != null && Equals(obj);
+            return !ReferenceEquals(obj, null) && Equals(obj);
         }
 
         /// <inheritdoc/>
@@ -314,7 +316,7 @@ namespace PathLib
         /// <returns></returns>
         public static PureNtPath operator +(PureNtPath first, PureNtPath second)
         {
-            return first.Join(second) as PureNtPath;
+            return first.Join(second);
         }
 
         /// <summary>
@@ -325,7 +327,7 @@ namespace PathLib
         /// <returns></returns>
         public static PureNtPath operator +(PureNtPath first, string second)
         {
-            return first.Join(second) as PureNtPath;
+            return first.Join(second);
         }
 
         #endregion
@@ -352,20 +354,20 @@ namespace PathLib
         public override bool Match(string pattern)
         {
             return PathUtils.Glob(
-                pattern.ToLowerInvariant(), 
-                NormCase().AsPosix(), 
-                IsAbsolute());
+                pattern, 
+                NormCase().ToString(), 
+                IsAbsolute(), true);
         }
 
         /// <inheritdoc/>
-        public override PureNtPath NormCase()
+        public override PureNtPath NormCase(CultureInfo currentCulture)
         {
             return new PureNtPath(
-                Drive.ToLowerInvariant(),
+                Drive.ToLower(currentCulture),
                 Root, 
-                Dirname.ToLowerInvariant(),
-                Basename.ToLowerInvariant(),
-                Extension.ToLowerInvariant());
+                Dirname.ToLower(currentCulture),
+                Basename.ToLower(currentCulture),
+                Extension.ToLower(currentCulture));
         }
 
         /// <inheritdoc/>

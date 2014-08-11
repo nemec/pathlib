@@ -50,7 +50,7 @@ namespace PathLib.UnitTest
             var path = new PureNtPath(paths);
 
             // Assert
-            Assert.AreEqual(expected, path.AsPosix());
+            Assert.AreEqual(expected, path.ToPosix());
         }
 
         [TestMethod]

@@ -41,15 +41,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Converters\PureNtPathConverter.cs" />
-    <Compile Include="FileAccessUtils.cs" />
+    <Compile Include="Utils\FileAccess.cs" />
     <Compile Include="InvalidPathException.cs" />
     <Compile Include="IPath.cs" />
     <Compile Include="IPathParser.cs" />
     <Compile Include="IPurePath.cs" />
-    <Compile Include="LinqBridge.cs" />
+    <Compile Include="Utils\LinqBridge.cs" />
     <Compile Include="ConcretePath.cs" />
     <Compile Include="PathComponent.cs" />
-    <Compile Include="PathUtils.cs" />
+    <Compile Include="Utils\PathUtils.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PureNtPath.cs" />
     <Compile Include="PurePath.cs" />

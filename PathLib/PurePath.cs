@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Serialization;
+using PathLib.Utils;
 
 namespace PathLib
 {
@@ -271,14 +273,15 @@ namespace PathLib
 
         private string _cachedPosix;
         /// <inheritdoc/>
-        public string AsPosix()
+        public string ToPosix()
         {
             return _cachedPosix ?? (_cachedPosix = ToString().Replace(@"\", "/"));
         }
 
         /// <inheritdoc/>
-        public IPurePath<TPath> Join(params string[] paths)
+        public TPath Join(params string[] paths)
         {
+            // TODO optimize for empty paths, return 'this'
             return JoinInternal(
                 LinqBridge.Concat(
                     new[] { (TPath)this },
@@ -291,7 +294,7 @@ namespace PathLib
 		}
 
         /// <inheritdoc/>
-        public IPurePath<TPath> Join(params IPurePath[] paths)
+        public TPath Join(params IPurePath[] paths)
         {
             return JoinInternal(LinqBridge.Concat(new[] { this }, paths));
         }
@@ -458,14 +461,14 @@ namespace PathLib
         }
 
         /// <inheritdoc/>
-        public Uri AsUri()
+        public Uri ToUri()
         {
             if (!IsAbsolute())
             {
                 throw new InvalidOperationException(
                     "Cannot create a URI from a relative path.");
             }
-            return new Uri("file://" + AsPosix());
+            return new Uri("file://" + ToPosix());
         }
 
         /// <inheritdoc/>
@@ -651,11 +654,22 @@ namespace PathLib
         public abstract bool Match(string pattern);
 
         /// <inheritdoc/>
-        public abstract TPath NormCase();
+        public TPath NormCase()
+        {
+            return NormCase(CultureInfo.CurrentCulture);
+        }
+
+        /// <inheritdoc/>
+        public abstract TPath NormCase(CultureInfo currentCulture);
+
+        IPurePath IPurePath.NormCase(CultureInfo currentCulture)
+        {
+            return NormCase(currentCulture);
+        }
 
         IPurePath IPurePath.NormCase()
         {
-            return NormCase();
+            return NormCase(CultureInfo.CurrentCulture);
         }
 
         /// <summary>

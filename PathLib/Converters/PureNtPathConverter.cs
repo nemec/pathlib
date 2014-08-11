@@ -34,8 +34,8 @@ namespace PathLib.Converters
         {
             if (value is string)
             {
-				PureNtPath path;
-				return PureNtPath.TryParse(value as string, out path);
+                PureNtPath path;
+                return PureNtPath.TryParse(value as string, out path);
             }
             return base.IsValid(context, value);
         }

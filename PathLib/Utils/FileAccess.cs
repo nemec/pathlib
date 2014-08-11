@@ -1,5 +1,5 @@
 ﻿
-namespace PathLib
+namespace PathLib.Utils
 {
     internal enum FilePermissionMode
     {
@@ -8,7 +8,7 @@ namespace PathLib
         Executable
     }
 
-    internal static class FileAccessUtils
+    internal static class FileAccess
     {
 
         public static void Chmod(FilePermissionMode user, FilePermissionMode group, FilePermissionMode everyone)

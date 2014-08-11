@@ -33,7 +33,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace PathLib
+#pragma warning disable 1591
+
+namespace PathLib.Utils
 {
     /// <summary>
     /// See https://github.com/mono/mono/blob/master/mcs/class/System.Core/System.Linq/Enumerable.cs

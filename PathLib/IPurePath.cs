@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace PathLib
 {
@@ -69,7 +70,7 @@ namespace PathLib
         /// path (eg. using forward slashes).
         /// </summary>
         /// <returns>Posix string representation of the path.</returns>
-        string AsPosix();
+        string ToPosix();
 
         /// <summary>
         /// Returns true if the given path is absolute.
@@ -148,12 +149,20 @@ namespace PathLib
         IEnumerable<string> Parts { get; }
 
         /// <summary>
+        /// Normalize the case of the path using the current program culture.
+        /// On case-insensitive platforms, will return the path lowercased,
+        /// otherwise the path is returned unchanged.
+        /// </summary>
+        /// <returns></returns>
+        IPurePath NormCase();
+
+        /// <summary>
         /// Normalize the case of the path. On case-insensitive platforms,
         /// will return the path lowercased, otherwise the path is returned
         /// unchanged.
         /// </summary>
         /// <returns></returns>
-        IPurePath NormCase();
+        IPurePath NormCase(CultureInfo currentCulture);
 
         /// <summary>
         /// Returns the parent directory of the current path.
@@ -181,7 +190,7 @@ namespace PathLib
         /// Thrown if attempting to create a URI from a relative path.
         /// </exception>
         /// <returns></returns>
-        Uri AsUri();
+        Uri ToUri();
 
         /// <summary>
         /// Return the page stripped of its drive and root, if any.
@@ -241,22 +250,22 @@ namespace PathLib
     /// used cross-platform.
     /// </summary>
     public interface IPurePath<TPath> : IPurePath
-		where TPath : IPurePath
-	{
+        where TPath : IPurePath
+    {
 
         /// <summary>
         /// Join the current path with the provided paths, in turn.
         /// </summary>
         /// <param name="paths"></param>
         /// <returns></returns>
-        new IPurePath<TPath> Join(params string[] paths);
+        new TPath Join(params string[] paths);
 
         /// <summary>
         /// Join the current path with the provided paths, in turn.
         /// </summary>
         /// <param name="paths"></param>
         /// <returns></returns>
-        new IPurePath<TPath> Join(params IPurePath[] paths);
+        new TPath Join(params IPurePath[] paths);
 
         /// <summary>
         /// Join the current path with the provided path. In addition,
@@ -282,67 +291,75 @@ namespace PathLib
         /// <returns></returns>
         bool TrySafeJoin(IPurePath path, out TPath joined);
 
-		/// <summary>
-		/// Normalize the case of the path. On case-insensitive platforms,
-		/// will return the path lowercased, otherwise the path is returned
-		/// unchanged.
-		/// </summary>
-		/// <returns></returns>
-		new TPath NormCase();
+        /// <summary>
+        /// Normalize the case of the path using the current platform culture. 
+        /// On case-insensitive platforms, will return the path lowercased,
+        /// otherwise the path is returned unchanged.
+        /// </summary>
+        /// <returns></returns>
+        new TPath NormCase();
 
-		/// <summary>
-		/// Returns the parent directory of the current path.
-		/// </summary>
-		/// <returns></returns>
-		new TPath Parent();
+        /// <summary>
+        /// Normalize the case of the path. On case-insensitive platforms,
+        /// will return the path lowercased, otherwise the path is returned
+        /// unchanged.
+        /// </summary>
+        /// <returns></returns>
+        new TPath NormCase(CultureInfo currentCulture);
 
-		/// <summary>
-		/// Returns the nth parent directory of the current path.
-		/// </summary>
-		/// <param name="nthParent"></param>
-		/// <returns></returns>
-		new TPath Parent(int nthParent);
+        /// <summary>
+        /// Returns the parent directory of the current path.
+        /// </summary>
+        /// <returns></returns>
+        new TPath Parent();
 
-		/// <summary>
-		/// Iterate over the path's parents from most to least specific.
-		/// </summary>
-		/// <returns></returns>
-		new IEnumerable<TPath> Parents();
+        /// <summary>
+        /// Returns the nth parent directory of the current path.
+        /// </summary>
+        /// <param name="nthParent"></param>
+        /// <returns></returns>
+        new TPath Parent(int nthParent);
 
-		/// <summary>
-		/// Return the page stripped of its drive and root, if any.
-		/// </summary>
-		/// <returns></returns>
-		new TPath Relative();
+        /// <summary>
+        /// Iterate over the path's parents from most to least specific.
+        /// </summary>
+        /// <returns></returns>
+        new IEnumerable<TPath> Parents();
 
-		/// <summary>
-		/// Compute a version of this path relative to the
-		/// path represented by "parent".
-		/// </summary>
-		/// <param name="parent"></param>
-		/// <returns></returns>
-		new TPath RelativeTo(IPurePath parent);
+        /// <summary>
+        /// Return the page stripped of its drive and root, if any.
+        /// </summary>
+        /// <returns></returns>
+        new TPath Relative();
 
-		/// <summary>
-		/// Returns a new path with the directory name changed.
-		/// The drive, root, and filename all stay the same.
-		/// </summary>
-		/// <param name="newDirName"></param>
-		/// <returns></returns>
-		new TPath WithDirname(string newDirName);
+        /// <summary>
+        /// Compute a version of this path relative to the
+        /// path represented by "parent".
+        /// </summary>
+        /// <param name="parent"></param>
+        /// <returns></returns>
+        new TPath RelativeTo(IPurePath parent);
 
-		/// <summary>
-		/// Returns a new path with filename changed.
-		/// </summary>
-		/// <param name="newFilename"></param>
-		/// <returns></returns>
-		new TPath WithFilename(string newFilename);
+        /// <summary>
+        /// Returns a new path with the directory name changed.
+        /// The drive, root, and filename all stay the same.
+        /// </summary>
+        /// <param name="newDirName"></param>
+        /// <returns></returns>
+        new TPath WithDirname(string newDirName);
 
-		/// <summary>
-		/// Changes the extension of the current path.
-		/// </summary>
-		/// <param name="newExtension"></param>
-		/// <returns></returns>
-		new TPath WithExtension(string newExtension);
-	}
+        /// <summary>
+        /// Returns a new path with filename changed.
+        /// </summary>
+        /// <param name="newFilename"></param>
+        /// <returns></returns>
+        new TPath WithFilename(string newFilename);
+
+        /// <summary>
+        /// Changes the extension of the current path.
+        /// </summary>
+        /// <param name="newExtension"></param>
+        /// <returns></returns>
+        new TPath WithExtension(string newExtension);
+    }
 }

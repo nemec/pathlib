@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Globalization;
+using PathLib.Utils;
 
 namespace PathLib
 {
@@ -57,7 +59,7 @@ namespace PathLib
                 // Special case in POSIX pathname resolution
                 // http://pubs.opengroup.org/onlinepubs/009695399/basedefs/xbd_chap04.html#tag_04_11
                 if (remainingPath.StartsWith(PathSeparator + PathSeparator) &&
-                    (remainingPath.Length <= 2 || ("" + remainingPath[2]) != PathSeparator))
+                    (remainingPath.Length <= 2 || (remainingPath[2]) != PathSeparator[0]))
                 {
                     return PathSeparator + PathSeparator;
                 }
@@ -157,7 +159,7 @@ namespace PathLib
         /// <returns></returns>
         public static bool operator <(PurePosixPath first, PurePosixPath second)
         {
-            if (first == null || second == null)
+            if (ReferenceEquals(first, null) || ReferenceEquals(second, null))
             {
                 return false;
             }
@@ -167,7 +169,8 @@ namespace PathLib
                 return false;
             }
 
-            foreach (var parts in LinqBridge.Zip(first.Parts, second.Parts, (p, c) => new[]{p, c}))
+            foreach (var parts in LinqBridge.Zip(
+                first.Parts, second.Parts, (p, c) => new[]{p, c}))
             {
                 if (parts[0] != parts[1])
                 {
@@ -221,7 +224,7 @@ namespace PathLib
         /// <returns></returns>
         public bool Equals(PurePosixPath other)
         {
-            return other != null && AsPosix().Equals(other.AsPosix());
+            return other != null && ToPosix().Equals(other.ToPosix());
         }
 
         /// <summary>
@@ -239,7 +242,7 @@ namespace PathLib
         /// <inheritdoc/>
         public override int GetHashCode()
         {
-            return AsPosix().GetHashCode();
+            return ToPosix().GetHashCode();
         }
 
         #endregion
@@ -254,7 +257,7 @@ namespace PathLib
         /// <returns></returns>
         public static PurePosixPath operator +(PurePosixPath first, PurePosixPath second)
         {
-            return first.Join(second) as PurePosixPath;
+            return first.Join(second);
         }
 
         /// <summary>
@@ -265,7 +268,7 @@ namespace PathLib
         /// <returns></returns>
         public static PurePosixPath operator +(PurePosixPath first, string second)
         {
-            return first.Join(second) as PurePosixPath;
+            return first.Join(second);
         }
 
         #endregion
@@ -279,11 +282,11 @@ namespace PathLib
         /// <inheritdoc/>
         public override bool Match(string pattern)
         {
-            return PathUtils.Glob(pattern, AsPosix(), IsAbsolute());
+            return PathUtils.Glob(pattern, ToString(), IsAbsolute());
         }
 
         /// <inheritdoc/>
-        public override PurePosixPath NormCase()
+        public override PurePosixPath NormCase(CultureInfo currentCulture)
         {
             return this;
         }

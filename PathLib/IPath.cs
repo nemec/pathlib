@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 
 namespace PathLib
 {
@@ -110,6 +111,12 @@ namespace PathLib
         Stream Open(FileMode mode);
 
         /// <summary>
+        /// Expand a leading ~ into the user's home directory.
+        /// </summary>
+        /// <returns></returns>
+        IPath ExpandUser();
+
+        /// <summary>
         /// Set the current working directory to this path. Upon dispose,
         /// resets to the original working directory only if the current
         /// directory has not been changed in the meantime.
@@ -148,5 +155,11 @@ namespace PathLib
         /// </summary>
         /// <returns></returns>
         new TPath Resolve();
+
+        /// <summary>
+        /// Expand a leading ~ into the user's home directory.
+        /// </summary>
+        /// <returns></returns>
+        new TPath ExpandUser();
     }
 }

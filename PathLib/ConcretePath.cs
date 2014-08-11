@@ -2,20 +2,22 @@
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
+using PathLib.Utils;
 
 namespace PathLib
 {
     /// <summary>
     /// Base class for common methods in concrete paths.
     /// </summary>
-    public abstract class ConcretePath<TPath> : IPath<TPath>
+    public abstract class ConcretePath<TPath, TPurePath> : IPath<TPath>
         where TPath : IPath
+        where TPurePath : IPurePath
     {
         /// <inheritdoc/>
-        public readonly IPurePath PurePath;
+        public readonly TPurePath PurePath;
 
         /// <inheritdoc/>
-        protected ConcretePath(IPurePath purePath)
+        protected ConcretePath(TPurePath purePath)
         {
             PurePath = purePath;
         }
@@ -71,13 +73,13 @@ namespace PathLib
         /// <inheritdoc/>
         public bool IsFile()
         {
-            return File.Exists(PurePath.AsPosix());
+            return File.Exists(PurePath.ToPosix());
         }
 
         /// <inheritdoc/>
         public bool IsDir()
         {
-            return Directory.Exists(PurePath.AsPosix());
+            return Directory.Exists(PurePath.ToPosix());
         }
 
         /// <inheritdoc/>
@@ -142,14 +144,22 @@ namespace PathLib
             }
             if (!IsDir())
             {
-                Directory.CreateDirectory(PurePath.AsPosix());
+                Directory.CreateDirectory(PurePath.ToPosix());
             }
         }
 
         /// <inheritdoc/>
         public Stream Open(FileMode mode)
         {
-            return File.Open(PurePath.AsPosix(), mode);
+            return File.Open(PurePath.ToString(), mode);
+        }
+
+        /// <inheritdoc/>
+        public abstract TPath ExpandUser();
+
+        IPath IPath.ExpandUser()
+        {
+            return ExpandUser();
         }
 
         /// <inheritdoc/>

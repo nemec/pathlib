@@ -38,6 +38,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Extensions\PathExtensions.cs" />
     <Compile Include="NtPath.cs" />
     <Compile Include="NtPathConverter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
