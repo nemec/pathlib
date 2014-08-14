@@ -8,27 +8,18 @@ using PathLib.Utils;
 
 namespace PathLib
 {
-    // https://pathlib.readthedocs.org/en/latest/
-    // https://docs.python.org/3/library/pathlib.html#module-pathlib
-    // http://www.dotnetperls.com/path
     /// <summary>
-    /// Base class containing common IPurePath code.
+    /// Factory functions for PurePaths
     /// </summary>
-    public abstract class PurePath<TPath> : IPurePath<TPath>, IXmlSerializable
-        where TPath : PurePath<TPath>
+    public static class PurePath
     {
-
-        // Drive + Root + Dirname + Basename + Extension
-
-        #region Factories
-
         /// <summary>
-        /// Factory method do create a new PurePath instance based upon
-        /// the current operating system.
+        /// Factory method to create a new <see cref="PurePath"/> instance
+        /// based upon the current operating system.
         /// </summary>
         /// <param name="paths"></param>
         /// <returns></returns>
-        public static IPurePath Create(params string[] paths)
+        public static IPurePath FromString(params string[] paths)
         {
             var p = Environment.OSVersion.Platform;
             // http://mono.wikia.com/wiki/Detecting_the_execution_platform
@@ -40,7 +31,35 @@ namespace PathLib
             return new PureNtPath(paths);
         }
 
-        #endregion
+        /// <summary>
+        /// Factory method to create a new <see cref="PurePath"/> instance
+        /// based upon the current operating system.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public static IPurePath FromString(string path)
+        {
+            var p = Environment.OSVersion.Platform;
+            // http://mono.wikia.com/wiki/Detecting_the_execution_platform
+            // 128 required for early versions of Mono
+            if (p == PlatformID.Unix || p == PlatformID.MacOSX || (int)p == 128)
+            {
+                return new PurePosixPath(path);
+            }
+            return new PureNtPath(path);
+        }
+    }
+
+    // https://pathlib.readthedocs.org/en/latest/
+    // https://docs.python.org/3/library/pathlib.html#module-pathlib
+    // http://www.dotnetperls.com/path
+    /// <summary>
+    /// Base class containing common IPurePath code.
+    /// </summary>
+    public abstract class PurePath<TPath> : IPurePath<TPath>, IXmlSerializable
+        where TPath : PurePath<TPath>
+    {
+        // Drive + Root + Dirname + Basename + Extension
 
         #region ctors
 
@@ -288,10 +307,10 @@ namespace PathLib
                     LinqBridge.Select(paths, PurePathFactory)));
         }
 
-		IPurePath IPurePath.Join(params string[] paths)
-		{
-			return Join(paths);
-		}
+        IPurePath IPurePath.Join(params string[] paths)
+        {
+            return Join(paths);
+        }
 
         /// <inheritdoc/>
         public TPath Join(params IPurePath[] paths)

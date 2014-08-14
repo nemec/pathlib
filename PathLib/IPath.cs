@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
-using System.Net;
 
 namespace PathLib
 {
@@ -10,7 +10,7 @@ namespace PathLib
     /// should not be used on any platform but the one
     /// they were designed for.
     /// </summary>
-    public interface IPath
+    public interface IPath : IPurePath
     {
         /// <summary>
         /// Returns information about the path.
@@ -111,6 +111,12 @@ namespace PathLib
         Stream Open(FileMode mode);
 
         /// <summary>
+        /// Reads the file and returns its contents in a string.
+        /// </summary>
+        /// <returns></returns>
+        string ReadAsText();
+
+        /// <summary>
         /// Expand a leading ~ into the user's home directory.
         /// </summary>
         /// <returns></returns>
@@ -123,6 +129,46 @@ namespace PathLib
         /// </summary>
         /// <returns></returns>
         IDisposable SetCurrentDirectory();
+
+        #region IPurePath override
+
+        /// <inheritdoc/>
+        new IPath Join(params string[] paths);
+
+        /// <inheritdoc/>
+        new IPath Join(params IPurePath[] paths);
+
+        /// <inheritdoc/>
+        new IPath NormCase();
+
+        /// <inheritdoc/>
+        new IPath NormCase(CultureInfo currentCulture);
+
+        /// <inheritdoc/>
+        new IPath Parent();
+
+        /// <inheritdoc/>
+        new IPath Parent(int nthParent);
+
+        /// <inheritdoc/>
+        new IEnumerable<IPath> Parents();
+
+        /// <inheritdoc/>
+        new IPath Relative();
+
+        /// <inheritdoc/>
+        new IPath RelativeTo(IPurePath parent);
+
+        /// <inheritdoc/>
+        new IPath WithDirname(string newDirName);
+
+        /// <inheritdoc/>
+        new IPath WithFilename(string newFilename);
+
+        /// <inheritdoc/>
+        new IPath WithExtension(string newExtension);
+
+        #endregion
     }
 
 
@@ -132,8 +178,10 @@ namespace PathLib
     /// they were designed for.
     /// </summary>
     /// <typeparam name="TPath"></typeparam>
-    public interface IPath<TPath> : IPath
+    /// <typeparam name="TPurePath"></typeparam>
+    public interface IPath<TPath, TPurePath> : IPath , IPurePath<TPurePath>
         where TPath : IPath
+        where TPurePath : IPurePath
     {
         /// <summary>
         /// List the files in the directory.
@@ -161,5 +209,45 @@ namespace PathLib
         /// </summary>
         /// <returns></returns>
         new TPath ExpandUser();
+
+        #region IPurePath override
+
+        /// <inheritdoc/>
+        new TPath Join(params string[] paths);
+
+        /// <inheritdoc/>
+        new TPath Join(params IPurePath[] paths);
+
+        /// <inheritdoc/>
+        new TPath NormCase();
+
+        /// <inheritdoc/>
+        new TPath NormCase(CultureInfo currentCulture);
+
+        /// <inheritdoc/>
+        new TPath Parent();
+
+        /// <inheritdoc/>
+        new TPath Parent(int nthParent);
+
+        /// <inheritdoc/>
+        new IEnumerable<TPath> Parents();
+
+        /// <inheritdoc/>
+        new TPath Relative();
+
+        /// <inheritdoc/>
+        new TPath RelativeTo(IPurePath parent);
+
+        /// <inheritdoc/>
+        new TPath WithDirname(string newDirName);
+
+        /// <inheritdoc/>
+        new TPath WithFilename(string newFilename);
+
+        /// <inheritdoc/>
+        new TPath WithExtension(string newExtension);
+
+        #endregion
     }
 }

@@ -67,17 +67,14 @@ namespace WindowsPathUnitTest
         }
 
         [TestMethod]
-        public void Join_WithAnotherPath_ReturnsNtPath()
+        public void JoinIPath_WithAnotherPath_ReturnsNtPath()
         {
-            var path = new NtPath(@"C:\tmp");
-            var other = new NtPath(@"C:\tmp");
+            IPath path = new NtPath(@"C:\tmp");
+            IPath other = new NtPath(@"C:\tmp");
 
-            object final = path.Join(other);
+            var final = path.Join(other);
 
-            // Prevent accidentally regressing code...
-            #pragma warning disable 183
             Assert.IsTrue(final is NtPath);
-            #pragma warning restore 183
         }
 
         [ClassCleanup]

@@ -10,9 +10,7 @@ namespace PathLib
     /// <summary>
     /// Base class for common methods in concrete paths.
     /// </summary>
-    public abstract class ConcretePath<TPath, TPurePath> : 
-        IPath<TPath>, 
-        IPurePath<TPurePath> 
+    public abstract class ConcretePath<TPath, TPurePath> : IPath<TPath, TPurePath>
         where TPath : IPath
         where TPurePath : IPurePath<TPurePath>
     {
@@ -161,6 +159,12 @@ namespace PathLib
         }
 
         /// <inheritdoc/>
+        public string ReadAsText()
+        {
+            return File.ReadAllText(PurePath.ToString());
+        }
+
+        /// <inheritdoc/>
         public abstract TPath ExpandUser();
 
         IPath IPath.ExpandUser()
@@ -170,6 +174,71 @@ namespace PathLib
 
         /// <inheritdoc/>
         public abstract IDisposable SetCurrentDirectory();
+
+
+        #region IPurePath -> IPath implementation
+
+        IPath IPath.Join(params string[] paths)
+        {
+            return Join(paths);
+        }
+
+        IPath IPath.Join(params IPurePath[] paths)
+        {
+            return Join(paths);
+        }
+
+        IPath IPath.NormCase()
+        {
+            return NormCase();
+        }
+
+        IPath IPath.NormCase(CultureInfo currentCulture)
+        {
+            return NormCase(currentCulture);
+        }
+
+        IPath IPath.Parent()
+        {
+            return Parent();
+        }
+
+        IPath IPath.Parent(int nthParent)
+        {
+            return Parent(nthParent);
+        }
+
+        IEnumerable<IPath> IPath.Parents()
+        {
+            return LinqBridge.Select(Parents(), p => (IPath) p);
+        }
+
+        IPath IPath.Relative()
+        {
+            return Relative();
+        }
+
+        IPath IPath.RelativeTo(IPurePath parent)
+        {
+            return RelativeTo(parent);
+        }
+
+        IPath IPath.WithDirname(string newDirName)
+        {
+            return WithDirname(newDirName);
+        }
+
+        IPath IPath.WithFilename(string newFilename)
+        {
+            return WithFilename(newFilename);
+        }
+
+        IPath IPath.WithExtension(string newExtension)
+        {
+            return WithExtension(newExtension);
+        }
+
+        #endregion
 
 
         #region IPurePath implementation
