@@ -70,7 +70,8 @@ namespace PathLib.UnitTest
         {
             // Arrange
             #pragma warning disable 168
-            var expected = new PureWindowsPath(@"C:\use<rs\illegal.txt");
+            // ReSharper disable once ObjectCreationAsStatement
+            new PureWindowsPath(@"C:\use<rs\illegal.txt");
             #pragma warning restore 168
         }
 
@@ -80,7 +81,8 @@ namespace PathLib.UnitTest
         {
             // Arrange
             #pragma warning disable 168
-            var expected = new PureWindowsPath(@"C:\users\illegal>char.txt");
+            // ReSharper disable once ObjectCreationAsStatement
+            new PureWindowsPath(@"C:\users\illegal>char.txt");
             #pragma warning restore 168
         }
 
@@ -90,7 +92,8 @@ namespace PathLib.UnitTest
         {
             // Arrange
             #pragma warning disable 168
-            var expected = new PureWindowsPath(@"C:\users\illegal.tx<>t");
+            // ReSharper disable once ObjectCreationAsStatement
+            new PureWindowsPath(@"C:\users\illegal.tx<>t");
             #pragma warning restore 168
         }
 
