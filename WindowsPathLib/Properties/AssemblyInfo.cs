@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("NtPathLib")]
+[assembly: AssemblyTitle("WindowsPathLib")]
 [assembly: AssemblyDescription("Windows specific filesystem-aware path library.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Dan Nemec")]
-[assembly: AssemblyProduct("NtPathLib")]
+[assembly: AssemblyProduct("WindowsPathLib")]
 [assembly: AssemblyCopyright("Copyright © Dan Nemec 2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

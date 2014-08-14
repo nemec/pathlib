@@ -26,7 +26,7 @@ namespace WindowsPathUnitTest
             var ret = TestUtils.CreateJunctionAndTarget(TempFolder);
             var junction = ret.Item2;
             
-            var path = new NtPath(junction);
+            var path = new WindowsPath(junction);
             
             Assert.IsTrue(path.IsJunction());
         }
@@ -35,7 +35,7 @@ namespace WindowsPathUnitTest
         public void SetCurrentDirectory_WithDirectory_SetsEnvironmentVariable()
         {
             const string newCwd = @"C:\";
-            var path = new NtPath(newCwd);
+            var path = new WindowsPath(newCwd);
             using (path.SetCurrentDirectory())
             {
                 Assert.AreEqual(newCwd, Environment.CurrentDirectory);
@@ -46,7 +46,7 @@ namespace WindowsPathUnitTest
         public void SetCurrentDirectory_UponDispose_RestoresEnvironmentVariable()
         {
             var oldCwd = Environment.CurrentDirectory;
-            var path = new NtPath(@"C:\");
+            var path = new WindowsPath(@"C:\");
             var tmp = path.SetCurrentDirectory();
             
             tmp.Dispose();
@@ -57,8 +57,8 @@ namespace WindowsPathUnitTest
         [TestMethod]
         public void ExpandUser_WithHomeDir_ExpandsDir()
         {
-            var path = new NtPath("~/tmp");
-            var expected = new NtPath(
+            var path = new WindowsPath("~/tmp");
+            var expected = new WindowsPath(
                 Environment.GetEnvironmentVariable("USERPROFILE") + @"\tmp");
 
             var actual = path.ExpandUser();
@@ -67,14 +67,14 @@ namespace WindowsPathUnitTest
         }
 
         [TestMethod]
-        public void JoinIPath_WithAnotherPath_ReturnsNtPath()
+        public void JoinIPath_WithAnotherPath_ReturnsWindowsPath()
         {
-            IPath path = new NtPath(@"C:\tmp");
-            IPath other = new NtPath(@"C:\tmp");
+            IPath path = new WindowsPath(@"C:\tmp");
+            IPath other = new WindowsPath(@"C:\tmp");
 
             var final = path.Join(other);
 
-            Assert.IsTrue(final is NtPath);
+            Assert.IsTrue(final is WindowsPath);
         }
 
         [ClassCleanup]

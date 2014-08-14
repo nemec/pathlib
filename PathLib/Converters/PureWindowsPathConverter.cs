@@ -6,7 +6,7 @@ namespace PathLib.Converters
     /// <summary>
     /// Adds type conversion support from strings to paths.
     /// </summary>
-    public class PureNtPathConverter : TypeConverter
+    public class PureWindowsPathConverter : TypeConverter
     {
         /// <inheritdoc/>
         public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
@@ -24,7 +24,7 @@ namespace PathLib.Converters
             var path = value as string;
             if (path != null)
             {
-                return new PureNtPath(path);
+                return new PureWindowsPath(path);
             }
             return base.ConvertFrom(context, culture, value);
         }
@@ -34,8 +34,8 @@ namespace PathLib.Converters
         {
             if (value is string)
             {
-                PureNtPath path;
-                return PureNtPath.TryParse(value as string, out path);
+                PureWindowsPath path;
+                return PureWindowsPath.TryParse(value as string, out path);
             }
             return base.IsValid(context, value);
         }

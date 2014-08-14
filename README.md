@@ -11,8 +11,8 @@ module.
 See Unit Tests for more thorough examples (and intellisense for description
 of each method and property).
 
-    var path = new PureNtPath(@"a");
-    var expected = new PureNtPath(@"a\b");
+    var path = new PureWindowsPath(@"a");
+    var expected = new PureWindowsPath(@"a\b");
 
     var joined = path.Join("b");
 

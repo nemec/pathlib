@@ -3,7 +3,7 @@ using System.ComponentModel;
 
 namespace PathLib
 {
-    public class NtPathConverter : TypeConverter
+    public class WindowsPathConverter : TypeConverter
     {
         /// <inheritdoc/>
         public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
@@ -21,7 +21,7 @@ namespace PathLib
             var path = value as string;
             if (path != null)
             {
-                return new NtPath(path);
+                return new WindowsPath(path);
             }
             return base.ConvertFrom(context, culture, value);
         }
@@ -31,8 +31,8 @@ namespace PathLib
         {
             if (value is string)
             {
-                PureNtPath path;
-                return PureNtPath.TryParse(value as string, out path);
+                PureWindowsPath path;
+                return PureWindowsPath.TryParse(value as string, out path);
             }
             return base.IsValid(context, value);
         }

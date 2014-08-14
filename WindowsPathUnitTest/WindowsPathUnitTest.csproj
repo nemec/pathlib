@@ -57,13 +57,13 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\NtPathLib\NtPathLib.csproj">
-      <Project>{0a1ec78b-634b-4748-a42c-d081e98dced9}</Project>
-      <Name>NtPathLib</Name>
-    </ProjectReference>
     <ProjectReference Include="..\PathLib\PathLib.csproj">
       <Project>{379ef4d6-ed47-4a41-b387-7f1b70d10609}</Project>
       <Name>PathLib</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\WindowsPathLib\WindowsPathLib.csproj">
+      <Project>{0a1ec78b-634b-4748-a42c-d081e98dced9}</Project>
+      <Name>WindowsPathLib</Name>
     </ProjectReference>
   </ItemGroup>
   <Choose>

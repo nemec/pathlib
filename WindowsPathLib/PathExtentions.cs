@@ -11,7 +11,7 @@ namespace PathLib
         /// <returns></returns>
         public static IPath FromString(string path)
         {
-            return new NtPath(path);
+            return new WindowsPath(path);
         }
 
         /// <summary>
@@ -22,7 +22,7 @@ namespace PathLib
         /// <returns></returns>
         public static IPath FromString(params string[] paths)
         {
-            return new NtPath(paths);
+            return new WindowsPath(paths);
         }
     }
 }

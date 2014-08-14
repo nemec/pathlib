@@ -28,7 +28,7 @@ namespace PathLib
             {
                 return new PurePosixPath(paths);
             }
-            return new PureNtPath(paths);
+            return new PureWindowsPath(paths);
         }
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace PathLib
             {
                 return new PurePosixPath(path);
             }
-            return new PureNtPath(path);
+            return new PureWindowsPath(path);
         }
     }
 

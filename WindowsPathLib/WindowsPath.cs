@@ -6,17 +6,17 @@ using System.Text;
 
 namespace PathLib
 {
-    [TypeConverter(typeof(NtPathConverter))]
-    public class NtPath : ConcretePath<NtPath, PureNtPath>
+    [TypeConverter(typeof(WindowsPathConverter))]
+    public class WindowsPath : ConcretePath<WindowsPath, PureWindowsPath>
     {
         private const string ExtendedLengthPrefix = @"\\?\";
 
-        public NtPath(params string[] paths)
-            : base(new PureNtPath(paths))
+        public WindowsPath(params string[] paths)
+            : base(new PureWindowsPath(paths))
         {
         }
 
-        public NtPath(PureNtPath path)
+        public WindowsPath(PureWindowsPath path)
             : base(path)
         {
         }
@@ -33,8 +33,8 @@ namespace PathLib
         /// on that disk.
         /// http://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx
         /// </summary>
-        private NtPath _cachedResolve;
-        public override NtPath Resolve()
+        private WindowsPath _cachedResolve;
+        public override WindowsPath Resolve()
         {
             if (_cachedResolve != null) return _cachedResolve;
 
@@ -54,19 +54,19 @@ namespace PathLib
                 {
                     newPath = newPath.Substring(ExtendedLengthPrefix.Length);
                 }
-                return (_cachedResolve = new NtPath(newPath));
+                return (_cachedResolve = new WindowsPath(newPath));
             }
 
         }
 
-        protected override NtPath PathFactory(params string[] paths)
+        protected override WindowsPath PathFactory(params string[] paths)
         {
-            return new NtPath(paths);
+            return new WindowsPath(paths);
         }
 
-        protected override NtPath PathFactory(PureNtPath path)
+        protected override WindowsPath PathFactory(PureWindowsPath path)
         {
-            return new NtPath(path);
+            return new WindowsPath(path);
         }
 
         private StatInfo _cachedStat;
@@ -116,13 +116,13 @@ namespace PathLib
                    && rep.Tag == ReparsePoint.TagType.JunctionPoint;
         }
 
-        public override NtPath ExpandUser()
+        public override WindowsPath ExpandUser()
         {
-            var homeDir = new PureNtPath("~");
+            var homeDir = new PureWindowsPath("~");
             if (homeDir < PurePath)
             {
-                var newDir = new PureNtPath(Environment.GetEnvironmentVariable("USERPROFILE"));
-                return new NtPath(newDir.Join(PurePath.RelativeTo(homeDir)));
+                var newDir = new PureWindowsPath(Environment.GetEnvironmentVariable("USERPROFILE"));
+                return new WindowsPath(newDir.Join(PurePath.RelativeTo(homeDir)));
             }
             return this;
         }
@@ -156,7 +156,7 @@ namespace PathLib
         /// filename. (e.g. DOCUME~2.docx) 
         /// </summary>
         /// <returns></returns>
-        public NtPath ToShortPath()
+        public WindowsPath ToShortPath()
         {
             var oldPath = PurePath.ToString();
             var newPath = new StringBuilder(255);
@@ -164,7 +164,7 @@ namespace PathLib
             {
                 return this;
             }
-            return new NtPath(PurePath.WithFilename(newPath.ToString()).ToString());
+            return new WindowsPath(PurePath.WithFilename(newPath.ToString()).ToString());
         }
 
         /// <summary>
@@ -172,7 +172,7 @@ namespace PathLib
         /// into its long path.
         /// </summary>
         /// <returns></returns>
-        public NtPath ToLongPath()
+        public WindowsPath ToLongPath()
         {
             var oldPath = PurePath.ToString();
             var newPath = new StringBuilder(255);
@@ -180,7 +180,7 @@ namespace PathLib
             {
                 return this;
             }
-            return new NtPath(PurePath.WithFilename(newPath.ToString()).ToString());
+            return new WindowsPath(PurePath.WithFilename(newPath.ToString()).ToString());
         }
 
         [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
@@ -203,13 +203,13 @@ namespace PathLib
         #region Equality Members
 
         /// <summary>
-        /// Compare two <see cref="PureNtPath"/> for equality.
+        /// Compare two <see cref="PureWindowsPath"/> for equality.
         /// Case insensitive.
         /// </summary>
         /// <param name="first"></param>
         /// <param name="second"></param>
         /// <returns></returns>
-        public static bool operator ==(NtPath first, NtPath second)
+        public static bool operator ==(WindowsPath first, WindowsPath second)
         {
             return ReferenceEquals(first, null) ?
                 ReferenceEquals(second, null) :
@@ -217,13 +217,13 @@ namespace PathLib
         }
 
         /// <summary>
-        /// Compare two <see cref="PureNtPath"/> for inequality.
+        /// Compare two <see cref="PureWindowsPath"/> for inequality.
         /// Case insensitive.
         /// </summary>
         /// <param name="first"></param>
         /// <param name="second"></param>
         /// <returns></returns>
-        public static bool operator !=(NtPath first, NtPath second)
+        public static bool operator !=(WindowsPath first, WindowsPath second)
         {
             return !(first == second);
         }
@@ -235,7 +235,7 @@ namespace PathLib
         /// <param name="first"></param>
         /// <param name="second"></param>
         /// <returns></returns>
-        public static bool operator <(NtPath first, NtPath second)
+        public static bool operator <(WindowsPath first, WindowsPath second)
         {
             return first.PurePath < second.PurePath;
         }
@@ -247,7 +247,7 @@ namespace PathLib
         /// <param name="first"></param>
         /// <param name="second"></param>
         /// <returns></returns>
-        public static bool operator >(NtPath first, NtPath second)
+        public static bool operator >(WindowsPath first, WindowsPath second)
         {
             return second < first;
         }
@@ -259,7 +259,7 @@ namespace PathLib
         /// <param name="first"></param>
         /// <param name="second"></param>
         /// <returns></returns>
-        public static bool operator <=(NtPath first, NtPath second)
+        public static bool operator <=(WindowsPath first, WindowsPath second)
         {
             return first.PurePath <= second.PurePath;
         }
@@ -271,31 +271,31 @@ namespace PathLib
         /// <param name="first"></param>
         /// <param name="second"></param>
         /// <returns></returns>
-        public static bool operator >=(NtPath first, NtPath second)
+        public static bool operator >=(WindowsPath first, WindowsPath second)
         {
             return first.PurePath >= second.PurePath;
         }
 
         /// <summary>
-        /// Compare two <see cref="PureNtPath"/> for equality.
+        /// Compare two <see cref="PureWindowsPath"/> for equality.
         /// Case insensitive.
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        public bool Equals(NtPath other)
+        public bool Equals(WindowsPath other)
         {
             return PurePath.Equals(other.PurePath);
         }
 
         /// <summary>
-        /// Compare two <see cref="PureNtPath"/> for equality.
+        /// Compare two <see cref="PureWindowsPath"/> for equality.
         /// Case insensitive.
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
         public override bool Equals(object other)
         {
-            var obj = other as NtPath;
+            var obj = other as WindowsPath;
             return !ReferenceEquals(obj, null) && Equals(obj);
         }
 

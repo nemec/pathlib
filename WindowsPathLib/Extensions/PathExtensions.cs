@@ -3,9 +3,9 @@ namespace PathLib.Extensions
 {
     public static class PathExtensions
     {
-        public static NtPath ToPath(string path)
+        public static WindowsPath ToPath(string path)
         {
-            return new NtPath(path);
+            return new WindowsPath(path);
         }
     }
 }

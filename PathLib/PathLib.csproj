@@ -40,7 +40,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Converters\PureNtPathConverter.cs" />
+    <Compile Include="Converters\PureWindowsPathConverter.cs" />
     <Compile Include="Utils\FileAccess.cs" />
     <Compile Include="InvalidPathException.cs" />
     <Compile Include="IPath.cs" />
@@ -51,7 +51,7 @@
     <Compile Include="PathComponent.cs" />
     <Compile Include="Utils\PathUtils.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="PureNtPath.cs" />
+    <Compile Include="PureWindowsPath.cs" />
     <Compile Include="PurePath.cs" />
     <Compile Include="PurePosixPath.cs" />
     <Compile Include="StatInfo.cs" />

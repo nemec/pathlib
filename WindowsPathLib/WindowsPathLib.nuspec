@@ -3,7 +3,7 @@
   <metadata>
     <id>$id$</id>
     <version>$version$</version>
-    <title>NtPathLib Alpha Release</title>
+    <title>WindowsPathLib Alpha Release</title>
     <authors>$author$</authors>
     <owners>$author$</owners>
     <licenseUrl>https://github.com/nemec/pathlib/blob/master/LICENSE.txt</licenseUrl>

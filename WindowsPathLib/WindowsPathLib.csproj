@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>PathLib</RootNamespace>
-    <AssemblyName>NtPathLib</AssemblyName>
+    <AssemblyName>WindowsPathLib</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
@@ -39,8 +39,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Extensions\PathExtensions.cs" />
-    <Compile Include="NtPath.cs" />
-    <Compile Include="NtPathConverter.cs" />
+    <Compile Include="WindowsPath.cs" />
+    <Compile Include="WindowsPathConverter.cs" />
     <Compile Include="PathExtentions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReparsePoints.cs" />
