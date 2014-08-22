@@ -8,7 +8,7 @@ namespace PathLib
     /// Represents a POSIX path. Uses the slash as a directory separator
     /// and treats paths as case sensitive.
     /// </summary>
-    public class PurePosixPath : PurePath<PurePosixPath>, IEquatable<PurePosixPath>
+    public sealed class PurePosixPath : PurePath<PurePosixPath>, IEquatable<PurePosixPath>
     {
         #region ctors
 
@@ -38,7 +38,7 @@ namespace PathLib
         }
 
         /// <inheritdoc/>
-        protected PurePosixPath(string drive, string root, string dirname, string basename, string extension)
+        private PurePosixPath(string drive, string root, string dirname, string basename, string extension)
             : base(drive, root, dirname, basename, extension)
         {
         }

@@ -10,14 +10,17 @@ namespace PathLib
     public enum PathComponent
     {
         /// <summary>
+        /// Path's drive on platforms that support a drive.
         /// </summary>
         Drive = 1 << 1,
 
         /// <summary>
+        /// The root of the drive, if absolute path.
         /// </summary>
         Root = 1 << 2,
 
         /// <summary>
+        /// Directory name.
         /// </summary>
         Dirname = 1 << 3,
 
@@ -27,6 +30,7 @@ namespace PathLib
         Basename = 1 << 4,
 
         /// <summary>
+        /// File extension.
         /// </summary>
         Extension = 1 << 5,
 

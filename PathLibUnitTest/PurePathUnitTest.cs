@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Globalization;
-using System.IO;
 using System.Linq;
-using System.Xml.Serialization;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PathLib.Utils;
 
@@ -11,13 +9,9 @@ namespace PathLib.UnitTest
     [TestClass]
     public class PurePathUnitTest
     {
-        // TODO A relative path has neither a drive nor a root
-
         // TODO NT Paths can have a drive or a root
 
         // TODO POSIX path drive always empty
-
-        // TODO empty path changes to '.'
 
         private class MockParser : IPathParser
         {
@@ -95,13 +89,6 @@ namespace PathLib.UnitTest
 
         private class MockPath : PurePath<MockPath>
         {
-            public MockPath()
-            { }
-
-            public MockPath(params IPurePath[] paths)
-                : base(paths)
-            { }
-
             public MockPath(params string[] paths)
                 : base(new MockParser(@"\"), paths)
             { }
@@ -166,6 +153,14 @@ namespace PathLib.UnitTest
             {
                 return new MockPath(drive, root, dirname, basename, extension);
             }
+        }
+
+        [TestMethod]
+        public void Constructor_WithEmptyString_ReturnsCurrentDir()
+        {
+            var path = new MockPath("");
+            var expected = new MockPath(".");
+            Assert.AreEqual(expected, path);
         }
 
         [TestMethod]
@@ -472,6 +467,17 @@ namespace PathLib.UnitTest
         }
 
         [TestMethod]
+        public void GetExtension_WithDotfileNoExtension_ReturnsEmptyString()
+        {
+            const string expected = "";
+            var path = new MockPath(@"c:\users\nemec\.bashrc");
+
+            var actual = path.Extension;
+
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
         public void GetExtensions_WithMultipleExtensions_ReturnsExtensionsInOrder()
         {
             var expected = new [] {".txt", ".tar", ".gz"};
@@ -483,12 +489,68 @@ namespace PathLib.UnitTest
         }
 
         [TestMethod]
+        public void GetExtensions_WithDotfileAndNoExtension_ReturnsEmptyEnumerable()
+        {
+            const int expected = 0;
+            var path = new MockPath(@"c:\users\nemec\.bashrc");
+
+            var actual = path.Extensions.Count();
+
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void GetBasenameWithoutExtension_WithExtension_ReturnsBasename()
+        {
+            
+            var path = new MockPath(@"c:\users\nemec\file.txt");
+
+            var expected = path.Basename;
+            var actual = path.BasenameWithoutExtensions;
+
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void GetBasenameWithoutExtension_WithMultipleExtensions_ReturnsBasenameMinusExtensions()
+        {
+            const string expected = "file";
+            var path = new MockPath(@"c:\users\nemec\file.txt.gz");
+
+            var actual = path.BasenameWithoutExtensions;
+
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
         public void WithExtension_WithOneExtensionPrependedWithDot_ReturnsPathWithNewExtension()
         {
             var expected = new MockPath(@"c:\users\nemec\file.xml");
             var path = new MockPath(@"c:\users\nemec\file.txt");
 
             var actual = path.WithExtension(".xml");
+
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void WithExtension_AddingTwoExtensionsPrependedWithDot_ReturnsPathWithNewExtensions()
+        {
+            var expected = new MockPath(@"c:\users\nemec\file.tar.gz");
+            var path = new MockPath(@"c:\users\nemec\file.txt");
+
+            var actual = path.WithExtension(".tar.gz");
+
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void WithExtension_AddingTwoExtensions_ReturnsPathWithNewExtensions()
+        {
+            var expected = new MockPath(@"c:\users\nemec\file.tar.gz");
+            var path = new MockPath(@"c:\users\nemec\file.txt");
+
+            var actual = path.WithExtension("tar.gz");
 
             Assert.AreEqual(expected, actual);
         }
@@ -513,6 +575,34 @@ namespace PathLib.UnitTest
             var actual = path.WithExtension("xml");
 
             Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void IsAbsolute_WithAbsolutePath_ReturnsFalse()
+        {
+            var path = new MockPath("c:/hello/world");
+            Assert.IsTrue(path.IsAbsolute());
+        }
+
+        [TestMethod]
+        public void IsAbsolute_WithRelativePath_ReturnsFalse()
+        {
+            var path = new MockPath("hello/world");
+            Assert.IsFalse(path.IsAbsolute());
+        }
+
+        [TestMethod]
+        public void IsAbsolute_WithCurrentDirectory_ReturnsFalse()
+        {
+            var path = new MockPath("");
+            Assert.IsFalse(path.IsAbsolute());
+        }
+
+        [TestMethod]
+        public void IsAbsolute_WithParentDirectory_ReturnsFalse()
+        {
+            var path = new MockPath("../hello");
+            Assert.IsFalse(path.IsAbsolute());
         }
 
         [TestMethod]

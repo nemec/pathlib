@@ -153,7 +153,7 @@ namespace PathLib
         }
 
         /// <inheritdoc/>
-        public Stream Open(FileMode mode)
+        public FileStream Open(FileMode mode)
         {
             return File.Open(PurePath.ToString(), mode);
         }
@@ -265,6 +265,12 @@ namespace PathLib
         public string Basename
         {
             get { return PurePath.Basename; }
+        }
+
+        /// <inheritdoc/>
+        public string BasenameWithoutExtensions
+        {
+            get { return PurePath.BasenameWithoutExtensions; }
         }
 
         /// <inheritdoc/>

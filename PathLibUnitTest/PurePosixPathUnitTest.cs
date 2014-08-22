@@ -28,7 +28,7 @@ namespace PathLib.UnitTest
             var path = new PurePosixPath();
 
             // Assert
-            Assert.AreEqual(".", path.Dirname);
+            Assert.AreEqual(".", path.Basename);
         }
 
         [TestMethod]

@@ -106,7 +106,8 @@ namespace PathLib.Utils
 
             foreach (var path in paths)
             {
-                if(path.ToString() == String.Empty)
+                var pStr = path.ToString();
+                if(pStr == String.Empty || pStr == CurrentDirectoryIdentifier)
                 {
                     continue;
                 }
@@ -123,9 +124,9 @@ namespace PathLib.Utils
                 {
                     dirnameBuilder.Append(separator);
                 }
+                
                 dirnameBuilder.Append(
-                    path.GetComponents(
-                    PathComponent.Dirname | PathComponent.Filename));
+                    path.GetComponents(PathComponent.Dirname | PathComponent.Filename)); 
                 lastPart = path;
                 lastPartStr = path.ToString();
             }
@@ -133,9 +134,10 @@ namespace PathLib.Utils
             {
                 return null;
             }
+
             var filenameLen = lastPart.Filename.Length;
             dirnameBuilder.Remove(dirnameBuilder.Length - filenameLen, filenameLen);
-
+            // TODO optimize this so fewer new objects are created
             return lastAbsolute
                 .WithDirname(dirnameBuilder
                     .ToString()

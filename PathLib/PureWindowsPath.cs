@@ -12,7 +12,7 @@ namespace PathLib
     /// http://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx
     /// </summary>
     [TypeConverter(typeof(Converters.PureWindowsPathConverter))]
-    public class PureWindowsPath : PurePath<PureWindowsPath>, IEquatable<PureWindowsPath>
+    public sealed class PureWindowsPath : PurePath<PureWindowsPath>, IEquatable<PureWindowsPath>
     {
         private readonly string[] _reservedPaths =
             {
@@ -64,7 +64,7 @@ namespace PathLib
         /// <param name="dirname"></param>
         /// <param name="basename"></param>
         /// <param name="extension"></param>
-        protected PureWindowsPath(string drive, string root, string dirname, string basename, string extension)
+        private PureWindowsPath(string drive, string root, string dirname, string basename, string extension)
             : base(drive, root, dirname, basename, extension)
         {
         }

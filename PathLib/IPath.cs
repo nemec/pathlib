@@ -108,7 +108,7 @@ namespace PathLib
         /// </summary>
         /// <param name="mode"></param>
         /// <returns></returns>
-        Stream Open(FileMode mode);
+        FileStream Open(FileMode mode);
 
         /// <summary>
         /// Reads the file and returns its contents in a string.
@@ -129,6 +129,7 @@ namespace PathLib
         /// </summary>
         /// <returns></returns>
         IDisposable SetCurrentDirectory();
+
 
         #region IPurePath override
 

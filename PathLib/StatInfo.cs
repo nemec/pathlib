@@ -5,7 +5,7 @@ namespace PathLib
     /// <summary>
     /// File attributes.
     /// </summary>
-    public class StatInfo
+    public sealed class StatInfo
     {
         /// <summary>
         /// protection bits

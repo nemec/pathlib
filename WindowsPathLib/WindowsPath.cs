@@ -7,7 +7,7 @@ using System.Text;
 namespace PathLib
 {
     [TypeConverter(typeof(WindowsPathConverter))]
-    public class WindowsPath : ConcretePath<WindowsPath, PureWindowsPath>
+    public sealed class WindowsPath : ConcretePath<WindowsPath, PureWindowsPath>
     {
         private const string ExtendedLengthPrefix = @"\\?\";
 

@@ -70,8 +70,8 @@ namespace PathLib
         {
             Drive = "";
             Root = "";
-            Dirname = PathUtils.CurrentDirectoryIdentifier;
-            Basename = "";
+            Dirname = "";
+            Basename = PathUtils.CurrentDirectoryIdentifier;
             Extension = "";
         }
 
@@ -91,7 +91,7 @@ namespace PathLib
                 rawPath = path.ToString();
                 Assimilate(path);
             }
-            else if (paths.Length == 1)
+            else if (paths.Length == 1 && !String.IsNullOrEmpty(paths[0]))
             {
                 rawPath = NormalizeSeparators(paths[0]);
                 Drive = "";
@@ -104,8 +104,8 @@ namespace PathLib
             {
                 Drive = "";
                 Root = "";
-                Dirname = PathUtils.CurrentDirectoryIdentifier;
-                Basename = "";
+                Dirname = "";
+                Basename = PathUtils.CurrentDirectoryIdentifier;
                 Extension = "";
             }
             Initialize(rawPath, parser);
@@ -246,11 +246,28 @@ namespace PathLib
         public string Filename { get { return Basename + Extension; } }
 
         /// <inheritdoc/>
-        public string[] Extensions
+        public string BasenameWithoutExtensions
         {
             get
             {
                 var parts = Filename.Split(PathUtils.ExtensionDelimiter);
+                if (parts[0] == String.Empty && parts.Length > 1)
+                {
+                    // .dotfile is a filename, not an extension
+                    return PathUtils.ExtensionDelimiter + parts[1];
+                }
+                return parts[0];
+            }
+        }
+
+        /// <inheritdoc/>
+        public string[] Extensions
+        {
+            get
+            {
+                var parts = Filename.Split(
+                    new []{PathUtils.ExtensionDelimiter},
+                    StringSplitOptions.RemoveEmptyEntries);
                 var ret = new string[parts.Length - 1];
                 for (var i = 0; i < ret.Length; i++)
                 {
@@ -265,10 +282,21 @@ namespace PathLib
         {
             get 
             {
-                return _cachedParts ?? (_cachedParts = BuildPartsArray());
+                if (_cachedParts == null)
+                {
+                    lock (_partsLock)
+                    {
+                        if (_cachedParts == null)
+                        {
+                            _cachedParts = BuildPartsArray();
+                        }
+                    }
+                }
+                return _cachedParts;
             }
         }
         private IEnumerable<string> _cachedParts;
+        private readonly object _partsLock = new object();
 
         /// <inheritdoc/>
         private IEnumerable<string> BuildPartsArray()
@@ -290,17 +318,29 @@ namespace PathLib
             }
         }
 
-        private string _cachedPosix;
         /// <inheritdoc/>
         public string ToPosix()
         {
-            return _cachedPosix ?? (_cachedPosix = ToString().Replace(@"\", "/"));
+            if (_cachedPosix == null)
+            {
+                lock (_toPosixLock)
+                {
+                    if (_cachedPosix == null)
+                    {
+                        _cachedPosix = ToString().Replace(@"\", "/");
+                    }
+                }
+            }
+            return _cachedPosix;
         }
+        private string _cachedPosix;
+        private readonly object _toPosixLock = new object();
 
         /// <inheritdoc/>
         public TPath Join(params string[] paths)
         {
             // TODO optimize for empty paths, return 'this'
+            // TODO optimize for performance? currently ~400x slower than Path.Combine
             return JoinInternal(
                 LinqBridge.Concat(
                     new[] { (TPath)this },
@@ -548,12 +588,25 @@ namespace PathLib
                 throw new InvalidPathException(newExtension,
                     "Path must contain only extension.");
             }
+            if (fname.HasComponents(PathComponent.Extension))
+            {
+                // Multiple extensions... place the extras on the basename
+                return PurePathFactoryFromComponents(this,
+                    basename: Basename + PrependWithDot(fname.Basename),
+                    extension: PrependWithDot(fname.Extension));
+            }
+
             return PurePathFactoryFromComponents(this,
-                extension: fname.HasComponents(PathComponent.Basename)
-                    ? fname.Basename.StartsWith(""+PathUtils.ExtensionDelimiter)
-                        ? fname.Basename
-                        : PathUtils.ExtensionDelimiter + fname.Basename 
-                    : fname.Extension);
+                extension: PrependWithDot(fname.Basename));
+        }
+
+        private static string PrependWithDot(string extension)
+        {
+            if (extension.StartsWith("" + PathUtils.ExtensionDelimiter))
+            {
+                return extension;
+            }
+            return PathUtils.ExtensionDelimiter + extension;
         }
 
         IPurePath IPurePath.WithExtension(string newExtension)
@@ -564,6 +617,12 @@ namespace PathLib
         /// <inheritdoc/>
         public TPath WithFilename(string newFilename)
         {
+            if (String.IsNullOrEmpty(newFilename))
+            {
+                return PurePathFactoryFromComponents(
+                    this, basename: "", extension: "");
+            }
+
             var fname = PurePathFactory(newFilename);
             if (fname.HasComponents(PathComponent.All & ~PathComponent.Filename))
             {

@@ -28,9 +28,14 @@ namespace PathLib
         string Filename { get; }
 
         /// <summary>
-        /// Returns the filename minus the extension.
+        /// Returns the filename minus the final extension.
         /// </summary>
         string Basename { get; }
+
+        /// <summary>
+        /// Returns the filename minus all extensions.
+        /// </summary>
+        string BasenameWithoutExtensions { get; }
 
         /// <summary>
         /// <para>Gets the path's last extension.</para>
