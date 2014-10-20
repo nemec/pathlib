@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -61,12 +62,39 @@ namespace PathLib
 
         protected override WindowsPath PathFactory(params string[] paths)
         {
+            if (paths == null)
+            {
+                throw new NullReferenceException(
+                    "Path passed to factory cannot be null.");
+            }
             return new WindowsPath(paths);
         }
 
         protected override WindowsPath PathFactory(PureWindowsPath path)
         {
+            if (path == null)
+            {
+                throw new NullReferenceException(
+                    "Path passed to factory cannot be null.");
+            }
             return new WindowsPath(path);
+        }
+
+        protected override WindowsPath PathFactory(IPurePath path)
+        {
+            if (path == null)
+            {
+                throw new NullReferenceException(
+                    "Path passed to factory cannot be null.");
+            }
+            var purePath = path as PureWindowsPath;
+            if (purePath != null)
+            {
+                return new WindowsPath(purePath);
+            }
+            var parts = new List<string>();
+            parts.AddRange(path.Parts);
+            return new WindowsPath(parts.ToArray());
         }
 
         private StatInfo _cachedStat;

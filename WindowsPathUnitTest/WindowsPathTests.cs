@@ -59,9 +59,21 @@ namespace WindowsPathUnitTest
         {
             var path = new WindowsPath("~/tmp");
             var expected = new WindowsPath(
-                Environment.GetEnvironmentVariable("USERPROFILE") + @"\tmp");
+                Environment.GetEnvironmentVariable("USERPROFILE"), "tmp");
 
             var actual = path.ExpandUser();
+
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void ExpandUser_WithCustomHomeDirString_ExpandsDir()
+        {
+            var homeDir = new WindowsPath(@"C:\users\test");
+            var path = new WindowsPath("~/tmp");
+            var expected = homeDir.Join("tmp");
+
+            var actual = path.ExpandUser(homeDir);
 
             Assert.AreEqual(expected, actual);
         }

@@ -669,5 +669,16 @@ namespace PathLib.UnitTest
 
             Assert.AreEqual(expected, actual);
         }
+
+        [TestMethod]
+        public void ToString_WithTrailingDot_DoesNotStripTrailingDot()
+        {
+            const string expected = @"c:\nemec\file...\other.txt";
+            var path = new MockPath(expected);
+
+            var actual = path.ToString();
+
+            Assert.AreEqual(expected, actual);
+        }
     }
 }

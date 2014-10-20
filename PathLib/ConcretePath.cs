@@ -11,7 +11,7 @@ namespace PathLib
     /// Base class for common methods in concrete paths.
     /// </summary>
     public abstract class ConcretePath<TPath, TPurePath> : IPath<TPath, TPurePath>
-        where TPath : IPath
+        where TPath : ConcretePath<TPath, TPurePath>, IPath
         where TPurePath : IPurePath<TPurePath>
     {
         /// <inheritdoc/>
@@ -109,6 +109,9 @@ namespace PathLib
         protected abstract TPath PathFactory(TPurePath path);
 
         /// <inheritdoc/>
+        protected abstract TPath PathFactory(IPurePath path);
+
+        /// <inheritdoc/>
         public abstract TPath Resolve();
 
         IPath IPath.Resolve()
@@ -170,6 +173,30 @@ namespace PathLib
         IPath IPath.ExpandUser()
         {
             return ExpandUser();
+        }
+
+        IPath IPath.ExpandUser(IPath homeDir)
+        {
+            return ExpandUser(homeDir);
+        }
+
+        /// <inheritdoc/>
+        public TPath ExpandUser(IPath homeDir)
+        {
+            if (homeDir == null || PurePath.IsAbsolute())
+            {
+                return (TPath)this;
+            }
+
+            var parts = new List<string>();
+            parts.AddRange(PurePath.Parts);
+            if (parts.Count == 0 || parts[0] != "~")
+            {
+                return (TPath)this;
+            }
+            parts.RemoveAt(0);
+
+            return PathFactory(homeDir.Join(parts.ToArray()));
         }
 
         /// <inheritdoc/>

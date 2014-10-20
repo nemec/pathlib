@@ -61,7 +61,7 @@ namespace PathLib
         IEnumerable<IPath> ListDir(string pattern);
 
         // TODO OS.Walk
-            
+
         /// <summary>
         /// Make the path absolute, resolving any symlinks. Returns a
         /// new path.
@@ -121,6 +121,13 @@ namespace PathLib
         /// </summary>
         /// <returns></returns>
         IPath ExpandUser();
+
+        /// <summary>
+        /// Expand a leading ~ into the given home directory.
+        /// </summary>
+        /// <param name="homeDir"></param>
+        /// <returns></returns>
+        IPath ExpandUser(IPath homeDir);
 
         /// <summary>
         /// Set the current working directory to this path. Upon dispose,
@@ -210,6 +217,13 @@ namespace PathLib
         /// </summary>
         /// <returns></returns>
         new TPath ExpandUser();
+
+        /// <summary>
+        /// Expand a leading ~ into the given home directory.
+        /// </summary>
+        /// <param name="homeDir"></param>
+        /// <returns></returns>
+        new TPath ExpandUser(IPath homeDir);
 
         #region IPurePath override
 
