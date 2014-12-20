@@ -11,6 +11,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
     <releaseNotes>
+      0.9.5.0 Add concrete Windows paths and factory functions.
       0.9.4.1 Fix bug in RelativeTo method.
       0.9.4 Make purepath info available on concrete paths.
       0.9.0 Initial release.
