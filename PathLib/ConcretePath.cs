@@ -60,6 +60,44 @@ namespace PathLib
         }
 
         /// <inheritdoc/>
+        public FileInfo FileInfo
+        {
+            get
+            {
+                if (_fileInfoCache != null)
+                {
+                    return _fileInfoCache;
+                }
+                if (Exists() && !IsFile())
+                {
+                    return null;
+                }
+                return (_fileInfoCache = new FileInfo(ToString()));
+            }
+        }
+
+        private FileInfo _fileInfoCache;
+
+        /// <inheritdoc/>
+        public DirectoryInfo DirectoryInfo
+        {
+            get
+            {
+                if (_directoryInfoCache != null)
+                {
+                    return _directoryInfoCache;
+                }
+                if (Exists() && !IsDir())
+                {
+                    return null;
+                }
+                return (_directoryInfoCache = new DirectoryInfo(ToString()));
+            }
+        }
+
+        private DirectoryInfo _directoryInfoCache;
+
+        /// <inheritdoc/>
         public void Chmod(int mode)
         {
             throw new NotImplementedException();
@@ -156,6 +194,25 @@ namespace PathLib
         }
 
         /// <inheritdoc/>
+        public void Delete(bool recursive = false)
+        {
+            if (!Exists())
+            {
+                return;
+            }
+            var file = FileInfo;
+            if (file != null)
+            {
+                file.Delete();
+            }
+            var dir = DirectoryInfo;
+            if (dir != null)
+            {
+                dir.Delete(recursive);
+            }
+        }
+
+        /// <inheritdoc/>
         public FileStream Open(FileMode mode)
         {
             return File.Open(PurePath.ToString(), mode);
@@ -197,6 +254,18 @@ namespace PathLib
             parts.RemoveAt(0);
 
             return PathFactory(homeDir.Join(parts.ToArray()));
+        }
+
+        IPath IPath.ExpandEnvironmentVars()
+        {
+            return ExpandEnvironmentVars();
+        }
+
+        /// <inheritdoc/>
+        public TPath ExpandEnvironmentVars()
+        {
+            return PathFactory(
+                Environment.ExpandEnvironmentVariables(ToString()));
         }
 
         /// <inheritdoc/>

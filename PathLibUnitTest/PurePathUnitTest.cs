@@ -298,6 +298,16 @@ namespace PathLib.UnitTest
         }
 
         [TestMethod]
+        public void Constructor_WithFileUri_StripsUriPrefix()
+        {
+            var path1 = new MockPath(@"c:\users");
+            var path2 = new MockPath(@"file://c:/users");
+
+
+            Assert.AreEqual(path1, path2);
+        }
+
+        [TestMethod]
         public void GetRoot_WithUncShare_ReturnsUncRoot()
         {
             var path = new MockPath(@"\\some\share");
@@ -612,6 +622,19 @@ namespace PathLib.UnitTest
 
             var parent = new MockPath(@"c:\users\");
             var path = new MockPath(@"c:\users\nemec\file.txt");
+
+            var actual = path.RelativeTo(parent);
+
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void RelativeTo_WithLongPath_ReturnsRelativePath()
+        {
+            var expected = new MockPath(@"nemec\tmp\filestorage\file.txt");
+
+            var parent = new MockPath(@"c:\users\");
+            var path = new MockPath(@"c:\users\nemec\tmp\filestorage\file.txt");
 
             var actual = path.RelativeTo(parent);
 

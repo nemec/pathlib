@@ -14,7 +14,7 @@ namespace PathLib
         // http://www.codeproject.com/Articles/21202/Reparse-Points-in-Vista
         // This is based on the code at http://www.flexhex.com/docs/articles/hard-links.phtml
 
-        private const uint IO_REPARSE_TAG_MOUNT_POINT = 0xA0000003;		// Moiunt point or junction, see winnt.h
+        private const uint IO_REPARSE_TAG_MOUNT_POINT = 0xA0000003;		// Mount point or junction, see winnt.h
         private const uint IO_REPARSE_TAG_SYMLINK = 0xA000000C;			// SYMLINK or SYMLINKD (see http://wesnerm.blogs.com/net_undocumented/2006/10/index.html)
         private const UInt32 SE_PRIVILEGE_ENABLED = 0x00000002;
         private const string SE_BACKUP_NAME = "SeBackupPrivilege";

@@ -11,9 +11,11 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
     <releaseNotes>
+      0.9.4.1 Fix bug in RelativeTo method.
+      0.9.4 Make purepath info available on concrete paths.
       0.9.0 Initial release.
     </releaseNotes>
-    <copyright>Copyright 2013</copyright>
+    <copyright>Copyright 2014</copyright>
     <tags>path directory</tags>
   </metadata>
 </package>

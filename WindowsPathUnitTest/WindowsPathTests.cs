@@ -89,6 +89,20 @@ namespace WindowsPathUnitTest
             Assert.IsTrue(final is WindowsPath);
         }
 
+        // TODO FileInfo with nonexistant file
+        // TODO FileInfo with directory
+        // TODO FileInfo with file
+
+        // TODO DirectoryInfo with nonexistant directory
+        // TODO DirectoryInfo with directory
+        // TODO DirectoryInfo with file
+
+        // TODO delete file
+        // TODO delete directory
+        // TODO delete recursive
+
+        // TODO expand environment variables
+
         [ClassCleanup]
         public static void Cleanup()
         {

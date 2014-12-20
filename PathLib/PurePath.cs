@@ -61,6 +61,8 @@ namespace PathLib
     {
         // Drive + Root + Dirname + Basename + Extension
 
+        private const string UriPrefix = "file://";
+
         #region ctors
 
         /// <summary>
@@ -107,6 +109,11 @@ namespace PathLib
                 Dirname = "";
                 Basename = PathUtils.CurrentDirectoryIdentifier;
                 Extension = "";
+            }
+            if (rawPath != null && 
+                rawPath.StartsWith(NormalizeSeparators(UriPrefix)))
+            {
+                rawPath = rawPath.Substring(UriPrefix.Length);
             }
             Initialize(rawPath, parser);
         }
@@ -527,7 +534,7 @@ namespace PathLib
                 throw new InvalidOperationException(
                     "Cannot create a URI from a relative path.");
             }
-            return new Uri("file://" + ToPosix());
+            return new Uri(UriPrefix + ToPosix());
         }
 
         /// <inheritdoc/>
@@ -555,6 +562,10 @@ namespace PathLib
             var builder = new StringBuilder();
             while (thisDirname.MoveNext())
             {
+                if (builder.Length != 0)
+                {
+                    builder.Append(PathSeparator);
+                }
                 builder.Append(thisDirname.Current);
             }
             return PurePathFactoryFromComponents(

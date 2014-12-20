@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Net;
 
 namespace PathLib
 {
@@ -26,6 +27,18 @@ namespace PathLib
         /// </summary>
         /// <returns></returns>
         StatInfo Restat();
+
+        /// <summary>
+        /// Retrieve the FileInfo object for this path or null
+        /// if exists and not a file.
+        /// </summary>
+        FileInfo FileInfo { get; }
+
+        /// <summary>
+        /// Retrieve the DirectoryInfo object for this path or null
+        /// if exists and not a file.
+        /// </summary>
+        DirectoryInfo DirectoryInfo { get; }
 
         /// <summary>
         /// Change file mode and permissions.
@@ -104,6 +117,13 @@ namespace PathLib
         void Mkdir(bool makeParents = false);
 
         /// <summary>
+        /// Delete the file or directory represented by the path.
+        /// If a directory, recursively delete all child files too.
+        /// </summary>
+        /// <param name="recursive"></param>
+        void Delete(bool recursive = false);
+
+        /// <summary>
         /// Open a file pointed to by the path.
         /// </summary>
         /// <param name="mode"></param>
@@ -128,6 +148,12 @@ namespace PathLib
         /// <param name="homeDir"></param>
         /// <returns></returns>
         IPath ExpandUser(IPath homeDir);
+
+        /// <summary>
+        /// Expand all environment variables in the path.
+        /// </summary>
+        /// <returns></returns>
+        IPath ExpandEnvironmentVars();
 
         /// <summary>
         /// Set the current working directory to this path. Upon dispose,
@@ -224,6 +250,13 @@ namespace PathLib
         /// <param name="homeDir"></param>
         /// <returns></returns>
         new TPath ExpandUser(IPath homeDir);
+
+        /// <summary>
+        /// Expand all environment variables in the path.
+        /// </summary>
+        /// <returns></returns>
+        new TPath ExpandEnvironmentVars();
+
 
         #region IPurePath override
 
