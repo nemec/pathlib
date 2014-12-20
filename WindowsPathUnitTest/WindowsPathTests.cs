@@ -2,6 +2,7 @@
 using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PathLib;
+using Path = System.IO.Path;
 
 namespace WindowsPathUnitTest
 {

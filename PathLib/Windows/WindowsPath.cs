@@ -7,16 +7,28 @@ using System.Text;
 
 namespace PathLib
 {
+    /// <summary>
+    /// Concrete path implementation for Windows machines. Unusable on
+    /// other systems.
+    /// </summary>
     [TypeConverter(typeof(WindowsPathConverter))]
     public sealed class WindowsPath : ConcretePath<WindowsPath, PureWindowsPath>
     {
         private const string ExtendedLengthPrefix = @"\\?\";
 
+        /// <summary>
+        /// Create a new path object for Windows machines.
+        /// </summary>
+        /// <param name="paths"></param>
         public WindowsPath(params string[] paths)
             : base(new PureWindowsPath(paths))
         {
         }
 
+        /// <summary>
+        /// Create a new path object for Windows machines.
+        /// </summary>
+        /// <param name="path"></param>
         public WindowsPath(PureWindowsPath path)
             : base(path)
         {
@@ -35,6 +47,8 @@ namespace PathLib
         /// http://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx
         /// </summary>
         private WindowsPath _cachedResolve;
+
+        /// <inheritdoc/>
         public override WindowsPath Resolve()
         {
             if (_cachedResolve != null) return _cachedResolve;
@@ -60,6 +74,7 @@ namespace PathLib
 
         }
 
+        /// <inheritdoc/>
         protected override WindowsPath PathFactory(params string[] paths)
         {
             if (paths == null)
@@ -70,6 +85,7 @@ namespace PathLib
             return new WindowsPath(paths);
         }
 
+        /// <inheritdoc/>
         protected override WindowsPath PathFactory(PureWindowsPath path)
         {
             if (path == null)
@@ -80,6 +96,7 @@ namespace PathLib
             return new WindowsPath(path);
         }
 
+        /// <inheritdoc/>
         protected override WindowsPath PathFactory(IPurePath path)
         {
             if (path == null)
@@ -98,6 +115,8 @@ namespace PathLib
         }
 
         private StatInfo _cachedStat;
+
+        /// <inheritdoc/>
         protected override StatInfo Stat(bool flushCache)
         {
             if(_cachedStat != null && !flushCache)
@@ -144,6 +163,7 @@ namespace PathLib
                    && rep.Tag == ReparsePoint.TagType.JunctionPoint;
         }
 
+        /// <inheritdoc/>
         public override WindowsPath ExpandUser()
         {
             var homeDir = new PureWindowsPath("~");
@@ -155,6 +175,7 @@ namespace PathLib
             return this;
         }
 
+        /// <inheritdoc/>
         public override IDisposable SetCurrentDirectory()
         {
             return new CurrentDirectorySetter(ToString());
@@ -335,6 +356,7 @@ namespace PathLib
 
         #endregion
 
+        /// <inheritdoc/>
         public override string ToString()
         {
             return PurePath.ToString();

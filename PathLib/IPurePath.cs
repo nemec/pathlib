@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 
 namespace PathLib
@@ -8,6 +9,7 @@ namespace PathLib
     /// Pure paths do not implement any IO operations and may be
     /// used cross-platform.
     /// </summary>
+    [TypeConverter(typeof(PurePathFactoryConverter))]
     public interface IPurePath
     {
         /// <summary>

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.IO;
-using System.Net;
 
 namespace PathLib
 {
@@ -11,6 +11,7 @@ namespace PathLib
     /// should not be used on any platform but the one
     /// they were designed for.
     /// </summary>
+    [TypeConverter(typeof(PathFactoryConverter))]
     public interface IPath : IPurePath
     {
         /// <summary>

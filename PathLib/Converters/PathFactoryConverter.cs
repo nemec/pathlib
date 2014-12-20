@@ -4,10 +4,13 @@ using System.ComponentModel;
 namespace PathLib
 {
     /// <summary>
-    /// Adds type conversion support from strings to paths.
+    /// Adds type conversion support from strings to paths depending on the
+    /// platform.
     /// </summary>
-    public class PureWindowsPathConverter : TypeConverter
+    internal class PathFactoryConverter : TypeConverter
     {
+        private readonly PathFactory _factory = new PathFactory();
+
         /// <inheritdoc/>
         public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
         {
@@ -24,7 +27,7 @@ namespace PathLib
             var path = value as string;
             if (path != null)
             {
-                return new PureWindowsPath(path);
+                return _factory.Create(path);
             }
             return base.ConvertFrom(context, culture, value);
         }
@@ -34,8 +37,8 @@ namespace PathLib
         {
             if (value is string)
             {
-                PureWindowsPath path;
-                return PureWindowsPath.TryParse(value as string, out path);
+                IPath path;
+                return _factory.TryCreate(value as string, out path);
             }
             return base.IsValid(context, value);
         }

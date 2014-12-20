@@ -11,7 +11,7 @@ namespace PathLib
     /// treats paths as case insensitive.
     /// http://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx
     /// </summary>
-    [TypeConverter(typeof(Converters.PureWindowsPathConverter))]
+    [TypeConverter(typeof(PureWindowsPathConverter))]
     public sealed class PureWindowsPath : PurePath<PureWindowsPath>, IEquatable<PureWindowsPath>
     {
         private readonly string[] _reservedPaths =
@@ -75,8 +75,8 @@ namespace PathLib
         {
             private readonly char[] _reservedCharacters =
             {
-                '<', '>', '|', '"', '?', '*', '\u0000'
-                //':', '/', '\\'  // Technically reserved, but parsed here as path characters
+                '<', '>', ':', '|', '"', '?', '*', '\u0000'
+                //'/', '\\'  // Technically reserved, but parsed here as path characters
             };
 
             private const string PathSeparator = @"\";
@@ -146,7 +146,12 @@ namespace PathLib
             }
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Attempt to parse a given string as a PureWindowsPath.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="result"></param>
+        /// <returns></returns>
         public static bool TryParse(string path, out PureWindowsPath result)
         {
             try

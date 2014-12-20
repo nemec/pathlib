@@ -77,6 +77,17 @@ namespace PathLib.UnitTest
 
         [TestMethod]
         [ExpectedException(typeof(InvalidPathException))]
+        public void CreatePath_WhereDirnameContainsColons_ThrowsException()
+        {
+            // Arrange
+            #pragma warning disable 168
+            // ReSharper disable once ObjectCreationAsStatement
+            new PureWindowsPath(@"C:\:::\illegal.txt");
+            #pragma warning restore 168
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(InvalidPathException))]
         public void CreatePath_WhereBasenameContainsReservedCharacter_ThrowsException()
         {
             // Arrange

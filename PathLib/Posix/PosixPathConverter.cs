@@ -1,17 +1,18 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Globalization;
 
 namespace PathLib
 {
     /// <summary>
-    /// Adds type conversion support from strings to paths.
+    /// Turn a string into a Windows path.
     /// </summary>
-    public class PureWindowsPathConverter : TypeConverter
+    public class PosixPathConverter : TypeConverter
     {
         /// <inheritdoc/>
         public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
         {
-            if (sourceType == typeof (string))
+            if (sourceType == typeof(string))
             {
                 return true;
             }
@@ -19,12 +20,12 @@ namespace PathLib
         }
 
         /// <inheritdoc/>
-        public override object ConvertFrom(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value)
+        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
         {
             var path = value as string;
             if (path != null)
             {
-                return new PureWindowsPath(path);
+                return new PosixPath(path);
             }
             return base.ConvertFrom(context, culture, value);
         }
@@ -34,8 +35,8 @@ namespace PathLib
         {
             if (value is string)
             {
-                PureWindowsPath path;
-                return PureWindowsPath.TryParse(value as string, out path);
+                PurePosixPath path;
+                return PurePosixPath.TryParse(value as string, out path);
             }
             return base.IsValid(context, value);
         }

@@ -4,14 +4,14 @@ using System.ComponentModel;
 namespace PathLib
 {
     /// <summary>
-    /// Adds type conversion support from strings to paths.
+    /// Turn a string into a Windows path.
     /// </summary>
-    public class PureWindowsPathConverter : TypeConverter
+    public class WindowsPathConverter : TypeConverter
     {
         /// <inheritdoc/>
         public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
         {
-            if (sourceType == typeof (string))
+            if (sourceType == typeof(string))
             {
                 return true;
             }
@@ -24,7 +24,7 @@ namespace PathLib
             var path = value as string;
             if (path != null)
             {
-                return new PureWindowsPath(path);
+                return new WindowsPath(path);
             }
             return base.ConvertFrom(context, culture, value);
         }

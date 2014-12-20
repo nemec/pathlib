@@ -8,48 +8,6 @@ using PathLib.Utils;
 
 namespace PathLib
 {
-    /// <summary>
-    /// Factory functions for PurePaths
-    /// </summary>
-    public static class PurePath
-    {
-        /// <summary>
-        /// Factory method to create a new <see cref="PurePath"/> instance
-        /// based upon the current operating system.
-        /// </summary>
-        /// <param name="paths"></param>
-        /// <returns></returns>
-        public static IPurePath FromString(params string[] paths)
-        {
-            var p = Environment.OSVersion.Platform;
-            // http://mono.wikia.com/wiki/Detecting_the_execution_platform
-            // 128 required for early versions of Mono
-            if (p == PlatformID.Unix || p == PlatformID.MacOSX || (int)p == 128)
-            {
-                return new PurePosixPath(paths);
-            }
-            return new PureWindowsPath(paths);
-        }
-
-        /// <summary>
-        /// Factory method to create a new <see cref="PurePath"/> instance
-        /// based upon the current operating system.
-        /// </summary>
-        /// <param name="path"></param>
-        /// <returns></returns>
-        public static IPurePath FromString(string path)
-        {
-            var p = Environment.OSVersion.Platform;
-            // http://mono.wikia.com/wiki/Detecting_the_execution_platform
-            // 128 required for early versions of Mono
-            if (p == PlatformID.Unix || p == PlatformID.MacOSX || (int)p == 128)
-            {
-                return new PurePosixPath(path);
-            }
-            return new PureWindowsPath(path);
-        }
-    }
-
     // https://pathlib.readthedocs.org/en/latest/
     // https://docs.python.org/3/library/pathlib.html#module-pathlib
     // http://www.dotnetperls.com/path
@@ -168,12 +126,6 @@ namespace PathLib
             {
                 return;
             }
-            char reservedCharacter;
-            if (parser.ReservedCharactersInPath(rawPath, out reservedCharacter))
-            {
-                throw new InvalidPathException(rawPath, String.Format(
-                    "Path contains reserved character '{0}'.", reservedCharacter));
-            }
 
             Drive = parser.ParseDrive(rawPath) ?? "";
             Root = parser.ParseRoot(rawPath) ?? "";
@@ -184,6 +136,15 @@ namespace PathLib
             }
 
             rawPath = rawPath.Substring(Drive.Length + Root.Length);
+
+            // Since the drive can contain invalid characters like '\\?\' or 
+            // ':', we want to wait until after we parse the drive and root.
+            char reservedCharacter;
+            if (parser.ReservedCharactersInPath(rawPath, out reservedCharacter))
+            {
+                throw new InvalidPathException(rawPath, String.Format(
+                    "Path contains reserved character '{0}'.", reservedCharacter));
+            }
 
             // Remove trailing slash
             // This is what Python's pathlib does, but I don't think it's

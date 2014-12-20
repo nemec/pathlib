@@ -1,8 +1,8 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using PathLib.Utils;
 
 namespace PathLib.UnitTest
 {
@@ -22,6 +22,9 @@ namespace PathLib.UnitTest
 
             private string PathSeparator { get; set; }
 
+            private readonly PrivateType _pathUtils = new PrivateType(
+                "pathlib", "PathLib.Utils.PathUtils");
+
             public MockParser(string pathSeparator)
             {
                 PathSeparator = pathSeparator;
@@ -30,7 +33,9 @@ namespace PathLib.UnitTest
             public string ParseDrive(string path)
             {
                 return !String.IsNullOrEmpty(path)
-                    ? PathUtils.GetPathRoot(path, PathSeparator).TrimEnd(PathSeparator[0])
+                    ? ((string)_pathUtils.InvokeStatic(
+                        "GetPathRoot", 
+                        new object[]{path, PathSeparator})).TrimEnd(PathSeparator[0])
                     : null;
             }
 
@@ -41,7 +46,9 @@ namespace PathLib.UnitTest
                     return null;
                 }
 
-                var root = PathUtils.GetPathRoot(path, PathSeparator);
+                var root = ((string) _pathUtils.InvokeStatic(
+                    "GetPathRoot",
+                    new object[] {path, PathSeparator}));
                 if (root.StartsWith(PathSeparator))
                 {
                     return PathSeparator;
@@ -53,22 +60,29 @@ namespace PathLib.UnitTest
 
             public string ParseDirname(string remainingPath)
             {
-                return PathUtils.GetDirectoryName(remainingPath, PathSeparator) ?? "";
+                return ((string) _pathUtils.InvokeStatic(
+                    "GetDirectoryName",
+                    new object[]{remainingPath, PathSeparator})) ?? "";
             }
 
             public string ParseBasename(string remainingPath)
             {
+                var currentDirectoryIdentifier = ((string) _pathUtils.GetStaticField("CurrentDirectoryIdentifier"));
                 return !String.IsNullOrEmpty(remainingPath)
-                    ? remainingPath != PathUtils.CurrentDirectoryIdentifier
-                        ? PathUtils.GetFileNameWithoutExtension(remainingPath, PathSeparator)
-                            : PathUtils.CurrentDirectoryIdentifier
+                    ? remainingPath != currentDirectoryIdentifier
+                        ? ((string) _pathUtils.InvokeStatic(
+                            "GetFileNameWithoutExtension",
+                            new object[]{remainingPath, PathSeparator}))
+                            : currentDirectoryIdentifier
                     : null;
             }
 
             public string ParseExtension(string remainingPath)
             {
                 return !String.IsNullOrEmpty(remainingPath)
-                    ? PathUtils.GetExtension(remainingPath, PathSeparator)
+                    ? ((string) _pathUtils.InvokeStatic(
+                        "GetExtension",
+                        new object[]{remainingPath, PathSeparator}))
                     : null;
             }
 
@@ -702,6 +716,29 @@ namespace PathLib.UnitTest
             var actual = path.ToString();
 
             Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void Create_WithTypeConverter_CreatesPathForPlatform()
+        {
+            var isWindows = true;
+            var p = Environment.OSVersion.Platform;
+            // http://mono.wikia.com/wiki/Detecting_the_execution_platform
+            // 128 required for early versions of Mono
+            if (p == PlatformID.Unix || p == PlatformID.MacOSX || (int)p == 128)
+            {
+                isWindows = false;
+            }
+
+            const string path = @"C:\users\tmp";
+            var converter = TypeDescriptor.GetConverter(typeof (IPurePath));
+            var expected = isWindows
+                ? typeof (PureWindowsPath)
+                : typeof (PurePosixPath);
+
+            var actual = converter.ConvertFromInvariantString(path);
+
+            Assert.IsInstanceOfType(actual, expected);
         }
     }
 }

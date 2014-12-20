@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Globalization;
 using PathLib.Utils;
 
@@ -8,6 +9,7 @@ namespace PathLib
     /// Represents a POSIX path. Uses the slash as a directory separator
     /// and treats paths as case sensitive.
     /// </summary>
+    [TypeConverter(typeof(PurePosixPathConverter))]
     public sealed class PurePosixPath : PurePath<PurePosixPath>, IEquatable<PurePosixPath>
     {
         #region ctors
@@ -97,6 +99,31 @@ namespace PathLib
             public bool ReservedCharactersInPath(string path, out char reservedCharacter)
             {
                 reservedCharacter = default(char);
+                if (path.Contains("\u0000"))
+                {
+                    reservedCharacter = '\u0000';
+                    return true;
+                }
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Attempt to parse a given string as a PureWindowsPath.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="result"></param>
+        /// <returns></returns>
+        public static bool TryParse(string path, out PurePosixPath result)
+        {
+            try
+            {
+                result = new PurePosixPath(path);
+                return true;
+            }
+            catch (InvalidPathException)
+            {
+                result = null;
                 return false;
             }
         }

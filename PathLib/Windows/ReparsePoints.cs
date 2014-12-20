@@ -59,6 +59,7 @@ namespace PathLib
 
         private struct TOKEN_PRIVILEGES
         {
+// ReSharper disable once NotAccessedField.Local
             public UInt32 PrivilegeCount;
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1)]		// !! think we only need one
             public LUID_AND_ATTRIBUTES[] Privileges;
@@ -230,7 +231,8 @@ namespace PathLib
                 Debug.Assert(
                         buffer.ReparseTag == IO_REPARSE_TAG_SYMLINK || 
                         normalizedTarget.StartsWith(@"\??\Volume") || 
-                        normalizedTarget[1] == ':',
+                        normalizedTarget[1] == ':' ||
+                        normalizedTarget.StartsWith(@"\??\") && normalizedTarget[5] == ':',
                     "Relative junction point");
                 if (normalizedTarget.StartsWith(@"\??\"))
                 {

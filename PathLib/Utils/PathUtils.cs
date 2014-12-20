@@ -34,7 +34,7 @@ namespace PathLib.Utils
     /// General utilities and separator-agnostic replacements for
     /// System.IO.Path methods.
     /// </summary>
-    public static class PathUtils
+    internal static class PathUtils
     {
         /// <summary>
         /// A string representing the operating system's "current directory"

@@ -61,10 +61,6 @@
       <Project>{379ef4d6-ed47-4a41-b387-7f1b70d10609}</Project>
       <Name>PathLib</Name>
     </ProjectReference>
-    <ProjectReference Include="..\WindowsPathLib\WindowsPathLib.csproj">
-      <Project>{0a1ec78b-634b-4748-a42c-d081e98dced9}</Project>
-      <Name>WindowsPathLib</Name>
-    </ProjectReference>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
