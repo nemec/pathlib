@@ -222,6 +222,14 @@ namespace PathLib
         IPurePath WithDirname(string newDirName);
 
         /// <summary>
+        /// Returns a new path with the directory name changed.
+        /// The drive, root, and filename all stay the same.
+        /// </summary>
+        /// <param name="newDirName"></param>
+        /// <returns></returns>
+        IPurePath WithDirname(IPurePath newDirName);
+
+        /// <summary>
         /// Returns a new path with filename changed.
         /// </summary>
         /// <param name="newFilename"></param>
@@ -354,6 +362,14 @@ namespace PathLib
         /// <param name="newDirName"></param>
         /// <returns></returns>
         new TPath WithDirname(string newDirName);
+
+        /// <summary>
+        /// Returns a new path with the directory name changed.
+        /// The drive, root, and filename all stay the same.
+        /// </summary>
+        /// <param name="newDirName"></param>
+        /// <returns></returns>
+        new TPath WithDirname(IPurePath newDirName);
 
         /// <summary>
         /// Returns a new path with filename changed.

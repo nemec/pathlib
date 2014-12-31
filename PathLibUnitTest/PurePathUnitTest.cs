@@ -322,6 +322,16 @@ namespace PathLib.UnitTest
         }
 
         [TestMethod]
+        public void Constructor_WithParentDirectoryPart_DoesNotResolvePart()
+        {
+            const string expected = @"c:\users\userA\..\userB";
+            var path = new MockPath(expected);
+
+
+            Assert.AreEqual(expected, path.ToString());
+        }
+
+        [TestMethod]
         public void GetRoot_WithUncShare_ReturnsUncRoot()
         {
             var path = new MockPath(@"\\some\share");
@@ -694,6 +704,66 @@ namespace PathLib.UnitTest
             var path = new MockPath(@"c:\users\nemec\file.txt");
 
             path.RelativeTo(parent);
+        }
+
+        [TestMethod]
+        public void WithDirname_WithRegularDirname_ReplacesDirname()
+        {
+            const string dirname = "new/dirname";
+            var path = new MockPath("C:/some/directory/file.txt");
+            var expected = new MockPath("C:/new/dirname/file.txt");
+
+            var actual = path.WithDirname(dirname);
+
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void WithDirname_WithDirnameAndRoot_ReplacesDirname()
+        {
+            const string dirname = "/new/dirname";
+            var path = new MockPath("C:/some/directory/file.txt");
+            var expected = new MockPath("C:/new/dirname/file.txt");
+
+            var actual = path.WithDirname(dirname);
+
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void WithDirname_WithDirnameAndDrive_ReplacesDirname()
+        {
+            const string dirname = "F:/new/dirname";
+            var path = new MockPath("C:/some/directory/file.txt");
+            var expected = new MockPath("C:/new/dirname/file.txt");
+
+            var actual = path.WithDirname(dirname);
+
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void WithDirname_WithDirnameAndRelativeOrigin_ReplacesDirnameAndAddsDriveAndRoot()
+        {
+            const string dirname = "C:/new/dirname";
+            var path = new MockPath("file.txt");
+            var expected = new MockPath("C:/new/dirname/file.txt");
+
+            var actual = path.WithDirname(dirname);
+
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void WithDirname_WithDirnameAndBothRelative_ReplacesDirname()
+        {
+            const string dirname = "new/dirname";
+            var path = new MockPath("file.txt");
+            var expected = new MockPath("new/dirname/file.txt");
+
+            var actual = path.WithDirname(dirname);
+
+            Assert.AreEqual(expected, actual);
         }
 
         [TestMethod]

@@ -198,6 +198,9 @@ namespace PathLib
         new IPath WithDirname(string newDirName);
 
         /// <inheritdoc/>
+        new IPath WithDirname(IPurePath newDirName);
+
+        /// <inheritdoc/>
         new IPath WithFilename(string newFilename);
 
         /// <inheritdoc/>
@@ -290,6 +293,9 @@ namespace PathLib
 
         /// <inheritdoc/>
         new TPath WithDirname(string newDirName);
+
+        /// <inheritdoc/>
+        new TPath WithDirname(IPurePath newDirName);
 
         /// <inheritdoc/>
         new TPath WithFilename(string newFilename);

@@ -539,12 +539,35 @@ namespace PathLib
         }
 
         /// <inheritdoc/>
+        public TPath WithDirname(IPurePath newDirname)
+        {
+            // Format separators, remove extra separators, and
+            // exclude Drive (if present)
+            var formatted = newDirname.GetComponents(
+                    PathComponent.Dirname | PathComponent.Filename);
+            if (IsAbsolute() || !newDirname.IsAbsolute())
+            {
+                return PurePathFactoryFromComponents(this,
+                    dirname: formatted);
+            }
+            return PurePathFactoryFromComponents(this,
+                newDirname.Drive,
+                newDirname.Root,
+                formatted);
+        }
+
+        /// <inheritdoc/>
         public TPath WithDirname(string newDirname)
         {
-            return PurePathFactoryFromComponents(this, dirname: newDirname);
+            return WithDirname(PurePathFactory(newDirname));
         }
 
         IPurePath IPurePath.WithDirname(string newDirname)
+        {
+            return WithDirname(PurePathFactory(newDirname));
+        }
+
+        IPurePath IPurePath.WithDirname(IPurePath newDirname)
         {
             return WithDirname(newDirname);
         }

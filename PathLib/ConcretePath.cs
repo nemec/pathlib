@@ -324,6 +324,11 @@ namespace PathLib
             return WithDirname(newDirName);
         }
 
+        IPath IPath.WithDirname(IPurePath newDirName)
+        {
+            return WithDirname(newDirName);
+        }
+
         IPath IPath.WithFilename(string newFilename)
         {
             return WithFilename(newFilename);
@@ -508,6 +513,12 @@ namespace PathLib
         }
 
         /// <inheritdoc/>
+        IPurePath IPurePath.WithDirname(IPurePath newDirName)
+        {
+            return PurePath.WithDirname(newDirName);
+        }
+
+        /// <inheritdoc/>
         IPurePath IPurePath.WithFilename(string newFilename)
         {
             return PurePath.WithFilename(newFilename);
@@ -609,6 +620,12 @@ namespace PathLib
         }
 
         /// <inheritdoc/>
+        TPurePath IPurePath<TPurePath>.WithDirname(IPurePath newDirName)
+        {
+            return PurePath.WithDirname(newDirName);
+        }
+
+        /// <inheritdoc/>
         TPurePath IPurePath<TPurePath>.WithFilename(string newFilename)
         {
             return PurePath.WithFilename(newFilename);
@@ -681,6 +698,12 @@ namespace PathLib
 
         /// <inheritdoc/>
         public TPath WithDirname(string newDirName)
+        {
+            return PathFactory(PurePath.WithDirname(newDirName));
+        }
+
+        /// <inheritdoc/>
+        public TPath WithDirname(IPurePath newDirName)
         {
             return PathFactory(PurePath.WithDirname(newDirName));
         }

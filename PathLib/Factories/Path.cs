@@ -1,4 +1,7 @@
 ﻿
+using System;
+using System.Reflection;
+
 namespace PathLib
 {
     /// <summary>
@@ -38,6 +41,22 @@ namespace PathLib
         public static IPath Create(string path)
         {
             return Factory.Create(path, FactoryOptions);
+        }
+
+        /// <summary>
+        /// Gets the fully-qualified path of the working directory as an IPath.
+        /// </summary>
+        public static IPath CurrentDirectory
+        {
+            get { return Factory.Create(Environment.CurrentDirectory, FactoryOptions); }
+        }
+
+        /// <summary>
+        /// Gets the fully-qualified path of the system directory as an IPath.
+        /// </summary>
+        public static IPath SystemDirectory
+        {
+            get { return Factory.Create(Environment.SystemDirectory, FactoryOptions); }
         }
     }
 }

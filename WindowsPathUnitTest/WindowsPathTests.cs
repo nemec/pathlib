@@ -102,7 +102,8 @@ namespace WindowsPathUnitTest
         // TODO delete directory
         // TODO delete recursive
 
-        // TODO expand environment variables
+        
+        // TODO resolve path with .. in it (symlinks)
 
         [ClassCleanup]
         public static void Cleanup()
