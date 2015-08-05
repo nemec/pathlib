@@ -69,10 +69,35 @@ namespace PathLib
         /// <summary>
         /// Glob the given pattern in the directory 
         /// </summary>
-        /// <exception cref="ArgumentException">Glob was called on a file.</exception>
-        /// <param name="pattern"></param>
+        /// <exception cref="ArgumentException">
+        ///     The path being globbed is a file, not a directory.
+        /// </exception>
+        /// <param name="pattern">
+        /// A pattern to match. The special character '*' will match any
+        /// number of characters while '?' will match one character.
+        /// </param>
         /// <returns></returns>
         IEnumerable<IPath> ListDir(string pattern);
+
+        /// <summary>
+        /// Glob the given pattern in the directory, with the specified scope.
+        /// </summary>
+        /// <exception cref="ArgumentException">Glob was called on a file.</exception>
+        /// <param name="scope">Whether to search in subdirectories or not.</param>
+        /// <returns></returns>
+        IEnumerable<IPath> ListDir(SearchOption scope);
+
+        /// <summary>
+        /// Glob the given pattern in the directory, with the specified scope.
+        /// </summary>
+        /// <exception cref="ArgumentException">Glob was called on a file.</exception>
+        /// <param name="pattern">
+        /// A pattern to match. The special character '*' will match any
+        /// number of characters while '?' will match one character.
+        /// </param>
+        /// <param name="scope">Whether to search in subdirectories or not.</param>
+        /// <returns></returns>
+        IEnumerable<IPath> ListDir(string pattern, SearchOption scope);
 
         // TODO OS.Walk
 
@@ -82,6 +107,8 @@ namespace PathLib
         /// </summary>
         /// <returns></returns>
         IPath Resolve();
+
+        // TODO ResolveGlob - evaluate the path and transform any globbed parts into paths
 
         /// <summary>
         /// Return true if the path is a file.

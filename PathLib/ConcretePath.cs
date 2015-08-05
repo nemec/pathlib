@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Globalization;
 using System.IO;
 using PathLib.Utils;
@@ -21,27 +20,6 @@ namespace PathLib
         protected ConcretePath(TPurePath purePath)
         {
             PurePath = purePath;
-        }
-
-        /// <inheritdoc/>
-        public IEnumerable<TPath> ListDir(string pattern)
-        {
-            if (!IsDir())
-            {
-                throw new ArgumentException("Glob may only be called on directories.");
-            }
-            foreach (var path in ListDir())
-            {
-                if (PathUtils.Glob(pattern, path.ToString()))
-                {
-                    yield return path;
-                }
-            }
-        }
-
-        IEnumerable<IPath> IPath.ListDir(string pattern)
-        {
-            return LinqBridge.Select(ListDir(pattern), p => (IPath)p);
         }
 
         /// <inheritdoc/>
@@ -124,20 +102,57 @@ namespace PathLib
         /// <inheritdoc/>
         public IEnumerable<TPath> ListDir()
         {
-            if (!IsDir())
-            {
-                throw new ConstraintException("Path object must be a directory.");
-            }
-            foreach (var directory in System.IO.Directory.GetFileSystemEntries(PurePath.ToString()))
-            {
-                yield return PathFactory(PurePath.Filename, directory);
-            }
+            return ListDir("*", SearchOption.TopDirectoryOnly);
         }
 
         /// <inheritdoc/>
         IEnumerable<IPath> IPath.ListDir()
         {
             return LinqBridge.Select(ListDir(), p => (IPath)p);
+        }
+
+        /// <inheritdoc/>
+        public IEnumerable<TPath> ListDir(string pattern)
+        {
+            return ListDir(pattern, SearchOption.TopDirectoryOnly);
+        }
+
+        IEnumerable<IPath> IPath.ListDir(string pattern)
+        {
+            return LinqBridge.Select(ListDir(pattern), p => (IPath)p);
+        }
+
+        /// <inheritdoc/>
+        public IEnumerable<TPath> ListDir(SearchOption scope)
+        {
+            return ListDir("*", scope);
+        }
+
+        IEnumerable<IPath> IPath.ListDir(SearchOption scope)
+        {
+            return LinqBridge.Select(ListDir(scope), p => (IPath)p);
+        }
+
+        /// <inheritdoc/>
+        public IEnumerable<TPath> ListDir(string pattern, SearchOption scope)
+        {
+            if (!IsDir())
+            {
+                throw new ArgumentException("Glob may only be called on directories.");
+            }
+            foreach (var dir in DirectoryInfo.GetDirectories())
+            {
+                yield return PathFactory(dir.FullName);
+            }
+            foreach (var file in DirectoryInfo.GetFiles(pattern, scope))
+            {
+                yield return PathFactory(file.FullName);
+            }
+        }
+
+        IEnumerable<IPath> IPath.ListDir(string pattern, SearchOption scope)
+        {
+            return LinqBridge.Select(ListDir(pattern, scope), p => (IPath)p);
         }
 
         /// <inheritdoc/>

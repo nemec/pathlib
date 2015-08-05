@@ -666,6 +666,19 @@ namespace PathLib.UnitTest
         }
 
         [TestMethod]
+        public void RelativeTo_WithLongUncPath_ReturnsRelativePath()
+        {
+            var expected = new MockPath(@"subdir\file.exe");
+
+            var parent = new MockPath(@"\\some\share\");
+            var path = new MockPath(@"\\some\share\subdir\file.exe");
+
+            var actual = path.RelativeTo(parent);
+
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
         public void RelativeTo_WithParent_IsAbsoluteIsFalse()
         {
             var parent = new MockPath(@"c:\users\");

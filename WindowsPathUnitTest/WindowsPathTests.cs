@@ -105,6 +105,9 @@ namespace WindowsPathUnitTest
         
         // TODO resolve path with .. in it (symlinks)
 
+        // TODO listdir with selector
+        // TODO listdir with selector case insensitive
+
         [ClassCleanup]
         public static void Cleanup()
         {

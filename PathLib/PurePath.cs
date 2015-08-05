@@ -346,7 +346,6 @@ namespace PathLib
             var pathsList = new List<IPurePath>(paths);
             var path = PurePathFactoryFromComponents(
                 PathUtils.Combine(pathsList, PathSeparator));
-
             if (path.Drive == String.Empty)
             {
                 // Need to retain the last drive since the Combine chops off
@@ -564,7 +563,9 @@ namespace PathLib
 
         IPurePath IPurePath.WithDirname(string newDirname)
         {
-            return WithDirname(PurePathFactory(newDirname));
+            return String.IsNullOrEmpty(newDirname)
+                ? this 
+                : WithDirname(PurePathFactory(newDirname));
         }
 
         IPurePath IPurePath.WithDirname(IPurePath newDirname)

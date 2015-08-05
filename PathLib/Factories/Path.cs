@@ -1,6 +1,5 @@
-﻿
-using System;
-using System.Reflection;
+﻿using System;
+using System.IO;
 
 namespace PathLib
 {
@@ -22,7 +21,7 @@ namespace PathLib
         }
 
         /// <summary>
-        /// Factory method to create a new <see cref="PurePath"/> instance
+        /// Factory method to create a new <see cref="Path"/> instance
         /// based upon the current operating system.
         /// </summary>
         /// <param name="paths"></param>
@@ -33,7 +32,7 @@ namespace PathLib
         }
 
         /// <summary>
-        /// Factory method to create a new <see cref="PurePath"/> instance
+        /// Factory method to create a new <see cref="Path"/> instance
         /// based upon the current operating system.
         /// </summary>
         /// <param name="path"></param>
@@ -41,6 +40,28 @@ namespace PathLib
         public static IPath Create(string path)
         {
             return Factory.Create(path, FactoryOptions);
+        }
+
+        /// <summary>
+        /// Factory method to create a new <see cref="Path"/> instance
+        /// based upon the current operating system.
+        /// </summary>
+        /// <param name="info"></param>
+        /// <returns></returns>
+        public static IPath Create(FileInfo info)
+        {
+            return Factory.Create(info.FullName);
+        }
+
+        /// <summary>
+        /// Factory method to create a new <see cref="Path"/> instance
+        /// based upon the current operating system.
+        /// </summary>
+        /// <param name="info"></param>
+        /// <returns></returns>
+        public static IPath Create(DirectoryInfo info)
+        {
+            return Factory.Create(info.FullName);
         }
 
         /// <summary>
