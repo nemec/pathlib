@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace PathLib
 {
@@ -107,9 +108,33 @@ namespace PathLib
             return _bytes/_conversionTable[units].Multiplier;
         }
 
+        private double GetAsFraction(FileSizeUnits units)
+        {
+            return 1.0 * _bytes / _conversionTable[units].Multiplier;
+        }
+
+        /// <summary>
+        /// Convert to a string using the closest "round" units.
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
-            return _bytes + "B";
+            const double lowerTolerance = 0.85;
+            var units = new[] { FileSizeUnits.Byte, FileSizeUnits.Kilobyte, FileSizeUnits.Megabyte };
+            double scaledValue = _bytes;
+            var scaledUnit = FileSizeUnits.Byte;
+            for (var i = 0; i < units.Length; i++)
+            {
+                var unit = units[i];
+                var value = GetAsFraction(unit);
+                if (value < lowerTolerance)
+                {
+                    break;
+                }
+                scaledValue = value;
+                scaledUnit = unit;
+            }
+            return String.Format("{0:##.##}{1}", scaledValue, _conversionTable[scaledUnit].BasicPrefix);
         }
 
         /// <summary>
