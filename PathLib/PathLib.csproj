@@ -51,6 +51,7 @@
     <Compile Include="Factories\PurePath.cs" />
     <Compile Include="Factories\PathFactory.cs" />
     <Compile Include="Factories\PurePathFactory.cs" />
+    <Compile Include="FileSize.cs" />
     <Compile Include="Posix\PosixPath.cs" />
     <Compile Include="Posix\PosixPathConverter.cs" />
     <Compile Include="Utils\FileAccess.cs" />

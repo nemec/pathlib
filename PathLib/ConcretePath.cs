@@ -22,6 +22,15 @@ namespace PathLib
             PurePath = purePath;
         }
 
+        public FileSize Size
+        {
+            get
+            {
+                var data = Restat();
+                return new FileSize(data.Size);
+            }
+        }
+
         /// <inheritdoc/>
         protected abstract StatInfo Stat(bool flushCache);
 
@@ -53,7 +62,6 @@ namespace PathLib
                 return (_fileInfoCache = new FileInfo(ToString()));
             }
         }
-
         private FileInfo _fileInfoCache;
 
         /// <inheritdoc/>

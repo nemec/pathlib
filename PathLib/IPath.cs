@@ -15,6 +15,11 @@ namespace PathLib
     public interface IPath : IPurePath
     {
         /// <summary>
+        /// The size of the file.
+        /// </summary>
+        FileSize Size { get; }
+
+        /// <summary>
         /// Returns information about the path.
         /// Information is cached indefinitely.
         /// </summary>
