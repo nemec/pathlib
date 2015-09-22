@@ -146,6 +146,12 @@ namespace PathLib
             get { return "/"; }
         }
 
+        /// <inheritdoc/>
+        protected override StringComparer ComponentComparer
+        {
+            get { return StringComparer.CurrentCulture; }
+        }
+
         #region Equality Members
 
         /// <summary>
@@ -191,13 +197,12 @@ namespace PathLib
                 return false;
             }
 
-            if (LinqBridge.Count(first.Parts) >= LinqBridge.Count(second.Parts))
+            if (first.Parts.Count() >= second.Parts.Count())
             {
                 return false;
             }
 
-            foreach (var parts in LinqBridge.Zip(
-                first.Parts, second.Parts, (p, c) => new[]{p, c}))
+            foreach (var parts in first.Parts.Zip(second.Parts, (p, c) => new[]{p, c}))
             {
                 if (parts[0] != parts[1])
                 {

@@ -197,6 +197,19 @@ namespace PathLib.UnitTest
         }
 
         [TestMethod]
+        public void IsAbsolute_WithRelativePath_ReturnsFalse()
+        {
+            // Arrange
+            var parent = new PurePosixPath("home/tmp");
+
+            // Act
+            var actual = parent.IsAbsolute();
+
+            // Assert
+            Assert.IsFalse(actual);
+        }
+
+        [TestMethod]
         public void IsAbsolute_WithRelativePath_ReturnsTrue()
         {
             // Arrange

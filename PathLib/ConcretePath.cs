@@ -22,6 +22,7 @@ namespace PathLib
             PurePath = purePath;
         }
 
+        /// <inheritdoc/>
         public FileSize Size
         {
             get
@@ -116,7 +117,7 @@ namespace PathLib
         /// <inheritdoc/>
         IEnumerable<IPath> IPath.ListDir()
         {
-            return LinqBridge.Select(ListDir(), p => (IPath)p);
+            return ListDir().Select(p => (IPath)p);
         }
 
         /// <inheritdoc/>
@@ -127,7 +128,7 @@ namespace PathLib
 
         IEnumerable<IPath> IPath.ListDir(string pattern)
         {
-            return LinqBridge.Select(ListDir(pattern), p => (IPath)p);
+            return ListDir(pattern).Select(p => (IPath)p);
         }
 
         /// <inheritdoc/>
@@ -138,7 +139,7 @@ namespace PathLib
 
         IEnumerable<IPath> IPath.ListDir(SearchOption scope)
         {
-            return LinqBridge.Select(ListDir(scope), p => (IPath)p);
+            return ListDir(scope).Select(p => (IPath)p);
         }
 
         /// <inheritdoc/>
@@ -160,7 +161,7 @@ namespace PathLib
 
         IEnumerable<IPath> IPath.ListDir(string pattern, SearchOption scope)
         {
-            return LinqBridge.Select(ListDir(pattern, scope), p => (IPath)p);
+            return ListDir(pattern, scope).Select(p => (IPath)p);
         }
 
         /// <inheritdoc/>
@@ -329,7 +330,7 @@ namespace PathLib
 
         IEnumerable<IPath> IPath.Parents()
         {
-            return LinqBridge.Select(Parents(), p => (IPath) p);
+            return Parents().Select(p => (IPath) p);
         }
 
         IPath IPath.Relative()
@@ -508,7 +509,7 @@ namespace PathLib
         /// <inheritdoc/>
         IEnumerable<IPurePath> IPurePath.Parents()
         {
-            return LinqBridge.Select(PurePath.Parents(), p => (IPurePath)p);
+            return PurePath.Parents().Select(p => (IPurePath)p);
         }
 
         /// <inheritdoc/>
@@ -704,7 +705,7 @@ namespace PathLib
         /// <inheritdoc/>
         public IEnumerable<TPath> Parents()
         {
-            return LinqBridge.Select(PurePath.Parents(), PathFactory);
+            return PurePath.Parents().Select(PathFactory);
         }
 
         /// <inheritdoc/>

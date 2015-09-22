@@ -347,6 +347,40 @@ namespace PathLib.UnitTest
         }
 
         [TestMethod]
+        public void RelativeTo_WithRootAndDrive_CalculatesRelativePath()
+        {
+            var expected = new PureWindowsPath(@"users\nemec");
+            var root = new PureWindowsPath(@"C:\");
+            var abs = new PureWindowsPath(@"C:\users\nemec");
+
+            var actual = abs.RelativeTo(root);
+
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void RelativeTo_WithCaseInsensitivePathAndDifferentCasing_CalculatesRelativePath()
+        {
+            var expected = new PureWindowsPath(@"nemec\downloads");
+            var root = new PureWindowsPath(@"C:\users");
+            var abs = new PureWindowsPath(@"C:\USERS\nemec\downloads");
+
+            var actual = abs.RelativeTo(root);
+
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
+        public void RelativeTo_WithCaseSensitivePathAndDifferentCasing_ThrowsException()
+        {
+            var root = new PurePosixPath(@"/home");
+            var abs = new PurePosixPath(@"/HOME/nemec");
+
+            abs.RelativeTo(root);
+        }
+
+        [TestMethod]
         public void TypeConverter_FromString_CreatesPath()
         {
             const string str = @"c:\users\nemec";

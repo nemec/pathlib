@@ -45,8 +45,8 @@ namespace PathLib
             string rawPath = null;
             if (paths.Length > 1)
             {
-                var components = LinqBridge.Select(paths, p => 
-                        PurePathFactory(NormalizeSeparators(p)));
+                var components = paths.Select(p => 
+                    PurePathFactory(NormalizeSeparators(p)));
                 var path = JoinInternal(components);
                 rawPath = path.ToString();
                 Assimilate(path);
@@ -310,9 +310,8 @@ namespace PathLib
             // TODO optimize for empty paths, return 'this'
             // TODO optimize for performance? currently ~400x slower than Path.Combine
             return JoinInternal(
-                LinqBridge.Concat(
-                    new[] { (TPath)this },
-                    LinqBridge.Select(paths, PurePathFactory)));
+                new[] { (TPath)this }
+                    .Concat(paths.Select(PurePathFactory)));
         }
 
         IPurePath IPurePath.Join(params string[] paths)
@@ -323,7 +322,7 @@ namespace PathLib
         /// <inheritdoc/>
         public TPath Join(params IPurePath[] paths)
         {
-            return JoinInternal(LinqBridge.Concat(new[] { this }, paths));
+            return JoinInternal(new[] { this }.Concat(paths));
         }
 
         IPurePath IPurePath.Join(params IPurePath[] paths)
@@ -333,12 +332,12 @@ namespace PathLib
 
         private TPath JoinInternal(IEnumerable<string> paths)
         {
-            return JoinInternal(LinqBridge.Select(paths, PurePathFactory));
+            return JoinInternal(paths.Select(PurePathFactory));
         }
         
         private TPath JoinInternal(IEnumerable<TPath> paths)
         {
-            return JoinInternal(LinqBridge.Select(paths, p => (IPurePath)p));
+            return JoinInternal(paths.Select(p => (IPurePath)p));
         }
 
         private TPath JoinInternal(IEnumerable<IPurePath> paths)
@@ -350,10 +349,10 @@ namespace PathLib
             {
                 // Need to retain the last drive since the Combine chops off
                 // the drive if an absolute path comes along later.
-                var drive = LinqBridge.LastOrDefault(
-                    LinqBridge.Select(
-                        LinqBridge.Where(pathsList, p => p.Drive != String.Empty),
-                        p => p.Drive));
+                var drive = pathsList
+                    .Where(p => p.Drive != String.Empty)
+                    .Select(p => p.Drive)
+                    .LastOrDefault();
                 if (drive != null)
                 {
                     path = PurePathFactoryFromComponents(path, drive);
@@ -459,8 +458,7 @@ namespace PathLib
         /// <inheritdoc/>
         public TPath Parent(int nthParent)
         {
-            return LinqBridge.FirstOrDefault(
-                LinqBridge.Skip(Parents(), nthParent - 1));
+            return Parents().Skip(nthParent - 1).FirstOrDefault();
         }
 
         IPurePath IPurePath.Parent(int nthParent)
@@ -471,19 +469,19 @@ namespace PathLib
         /// <inheritdoc/>
         public IEnumerable<TPath> Parents()
         {
-            var maxPathLength = LinqBridge.Count(Parts) - 1;  // Don't return self as a parent
+            var maxPathLength = Parts.Count() - 1;  // Don't return self as a parent
             for (var i = maxPathLength; i > 0; i--)
             {
                 yield return PurePathFactory(
                     JoinInternal(
-                        LinqBridge.Take(Parts, i))
+                        Parts.Take(i))
                     .ToString());
             }
         }
 
         IEnumerable<IPurePath> IPurePath.Parents()
         {
-            return LinqBridge.Select(Parents(), p => (IPurePath)p);
+            return Parents().Select(p => (IPurePath)p);
         }
 
         /// <inheritdoc/>
@@ -500,20 +498,27 @@ namespace PathLib
         /// <inheritdoc/>
         public TPath RelativeTo(IPurePath parent)
         {
-            if (parent.Drive != Drive || parent.Root != Root)
+            if (!ComponentComparer.Equals(parent.Drive, Drive) || 
+                !ComponentComparer.Equals(parent.Root, Root))
             {
                 throw new ArgumentException(String.Format(
-                    "'{0}' does not start with '{1}'", this, parent));
+                    "'{0}' does not share the same root/drive as '{1}', " +
+                    "thus cannot be relative.", this, parent));
             }
 
             var thisDirname = Dirname
                 .Split(PathSeparator[0]).GetEnumerator();
-            var parentDirname = parent.Relative().ToString()
-                .Split(PathSeparator[0]).GetEnumerator();
+            var parentRelative = parent.Relative().ToString();
+            if (parentRelative == String.Empty)
+            {
+                return Relative();
+            }
+
+            var parentDirname = parentRelative.Split(PathSeparator[0]).GetEnumerator();
             while (parentDirname.MoveNext())
             {
                 if (!thisDirname.MoveNext() ||
-                    !Equals(parentDirname.Current, thisDirname.Current))
+                    !ComponentComparer.Equals(parentDirname.Current, thisDirname.Current))
                 {
                     throw new ArgumentException(String.Format(
                         "'{0}' does not start with '{1}'", this, parent));
@@ -710,6 +715,12 @@ namespace PathLib
 
         /// <inheritdoc/>
         protected abstract string PathSeparator { get; }
+
+        /// <summary>
+        /// Allows comparisons between components to be made regardless of
+        /// current filesystem rules.
+        /// </summary>
+        protected abstract StringComparer ComponentComparer { get; }
 
         /// <inheritdoc/>
         public bool IsAbsolute()

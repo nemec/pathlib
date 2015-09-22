@@ -180,6 +180,12 @@ namespace PathLib
             get { return @"\"; }
         }
 
+        /// <inheritdoc/>
+        protected override StringComparer ComponentComparer
+        {
+            get { return StringComparer.CurrentCultureIgnoreCase; }  // TODO allow custom culture
+        }
+
         #region Parsing Initializers
 
         #endregion
@@ -231,11 +237,11 @@ namespace PathLib
             var child = new List<string>(second.NormCase().Parts);
 
             // Parent must be shorter than child
-            if (LinqBridge.Count(parent) >= LinqBridge.Count(child))
+            if (parent.Count() >= child.Count())
             {
                 return false;
             }
-            foreach (var parts in LinqBridge.Zip(parent, child, (p, c) => new [] {p, c}))
+            foreach (var parts in parent.Zip(child, (p, c) => new [] {p, c}))
             {
                 if (!String.Equals(parts[0], parts[1], StringComparison.InvariantCultureIgnoreCase))
                 {
@@ -363,7 +369,7 @@ namespace PathLib
         {
             return PathUtils.Glob(
                 pattern, 
-                NormCase().ToString(), 
+                ToString(), 
                 IsAbsolute(), true);
         }
 

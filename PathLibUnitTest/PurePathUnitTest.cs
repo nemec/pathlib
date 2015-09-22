@@ -116,6 +116,11 @@ namespace PathLib.UnitTest
                 get { return @"\"; }
             }
 
+            protected override StringComparer ComponentComparer
+            {
+                get { return StringComparer.CurrentCultureIgnoreCase; }
+            }
+
             public override bool Equals(object otherObj)
             {
                 var other = otherObj as MockPath;

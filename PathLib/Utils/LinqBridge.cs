@@ -35,6 +35,13 @@ using System.Diagnostics;
 
 #pragma warning disable 1591
 
+namespace System.Runtime.CompilerServices
+{
+    [AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Class
+         | AttributeTargets.Method)]
+    public sealed class ExtensionAttribute : Attribute { }
+}
+
 namespace PathLib.Utils
 {
     /// <summary>
@@ -62,7 +69,7 @@ namespace PathLib.Utils
             }
         } 
 
-        public static IEnumerable<TResult> Select<T, TResult>(IEnumerable<T> source, Func<T, TResult> selector)
+        public static IEnumerable<TResult> Select<T, TResult>(this IEnumerable<T> source, Func<T, TResult> selector)
         {
             foreach (var elem in source)
             {
@@ -70,7 +77,7 @@ namespace PathLib.Utils
             }
         }
 
-        public static IEnumerable<T> Where<T>(IEnumerable<T> source, Func<T, bool> selector)
+        public static IEnumerable<T> Where<T>(this IEnumerable<T> source, Func<T, bool> selector)
         {
             foreach (var elem in source)
             {
@@ -81,7 +88,7 @@ namespace PathLib.Utils
             }
         } 
 
-        public static IEnumerable<T> Concat<T>(IEnumerable<T> fst, IEnumerable<T> snd)
+        public static IEnumerable<T> Concat<T>(this IEnumerable<T> fst, IEnumerable<T> snd)
         {
             foreach (var elem in fst)
             {
@@ -93,7 +100,7 @@ namespace PathLib.Utils
             }
         } 
 
-        public static IEnumerable<TResult> Zip<TFirst, TSecond, TResult>(IEnumerable<TFirst> fst,
+        public static IEnumerable<TResult> Zip<TFirst, TSecond, TResult>(this IEnumerable<TFirst> fst,
                                                                          IEnumerable<TSecond> snd,
                                                                          Func<TFirst, TSecond, TResult> selector)
         {
@@ -110,7 +117,7 @@ namespace PathLib.Utils
             }
         }
 
-        public static IEnumerable<T> Take<T>(IEnumerable<T> source, int count)
+        public static IEnumerable<T> Take<T>(this IEnumerable<T> source, int count)
         {
             if (count <= 0) yield break;
 
@@ -122,7 +129,7 @@ namespace PathLib.Utils
             }
         }
 
-        public static IEnumerable<TSource> Skip<TSource>(IEnumerable<TSource> source, int count)
+        public static IEnumerable<TSource> Skip<TSource>(this IEnumerable<TSource> source, int count)
         {
             var enumerator = source.GetEnumerator();
             try
@@ -141,7 +148,7 @@ namespace PathLib.Utils
             }
         }
  
-        public static int Count<T>(IEnumerable<T> source)
+        public static int Count<T>(this IEnumerable<T> source)
         {
             var collection = source as ICollection<T>;
             if (collection != null)
@@ -155,7 +162,7 @@ namespace PathLib.Utils
             return counter;
         }
 
-        public static bool Any<T>(IEnumerable<T> source)
+        public static bool Any<T>(this IEnumerable<T> source)
         {
             var collection = source as ICollection<T>;
             if (collection != null)
@@ -166,7 +173,7 @@ namespace PathLib.Utils
 
         }
 
-        public static T First<T>(IEnumerable<T> source)
+        public static T First<T>(this IEnumerable<T> source)
         {
             var list = source as IList<T>;
             if (list != null)
@@ -185,7 +192,7 @@ namespace PathLib.Utils
             throw new ArgumentOutOfRangeException();
         }
 
-        public static T FirstOrDefault<T>(IEnumerable<T> source)
+        public static T FirstOrDefault<T>(this IEnumerable<T> source)
         {
             var list = source as IList<T>;
             if (list != null)
@@ -204,7 +211,7 @@ namespace PathLib.Utils
             return default(T);
         }
 
-        public static T LastOrDefault<T>(IEnumerable<T> source)
+        public static T LastOrDefault<T>(this IEnumerable<T> source)
         {
             var list = source as IList<T>;
             if (list != null)
