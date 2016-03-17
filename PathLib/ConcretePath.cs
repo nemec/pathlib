@@ -228,6 +228,7 @@ namespace PathLib
             if (file != null)
             {
                 file.Delete();
+                return;
             }
             var dir = DirectoryInfo;
             if (dir != null)
