@@ -6,6 +6,8 @@ using PathLib.Utils;
 
 namespace PathLib
 {
+    // TODO: verify against https://blogs.msdn.microsoft.com/jeremykuhne/2016/04/21/path-normalization/
+    
     /// <summary>
     /// Represents an NT path. Uses the backslash for a separator and
     /// treats paths as case insensitive.
