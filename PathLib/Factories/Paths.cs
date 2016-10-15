@@ -6,7 +6,7 @@ namespace PathLib
     /// <summary>
     /// Factory functions for concrete paths.
     /// </summary>
-    public static class Path
+    public static class Paths
     {
         private static readonly PathFactory Factory = new PathFactory();
 
@@ -15,7 +15,7 @@ namespace PathLib
         /// </summary>
         public static PathFactoryOptions FactoryOptions { get; set; }
 
-        static Path()
+        static Paths()
         {
             FactoryOptions = new PathFactoryOptions();
         }
