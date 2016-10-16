@@ -17,7 +17,10 @@ namespace PathLib
 
         static Paths()
         {
-            FactoryOptions = new PathFactoryOptions();
+            FactoryOptions = new PathFactoryOptions
+            {
+                AutoExpandUserDirectory = true
+            };
         }
 
         /// <summary>
