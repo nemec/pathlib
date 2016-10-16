@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 
 namespace PathLib
 {
@@ -72,6 +74,12 @@ namespace PathLib
 
         /// <inheritdoc/>
         public override IDisposable SetCurrentDirectory()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <inheritdoc/>
+        public override IEnumerable<DirectoryContents<PosixPath>> WalkDir(Action<IOException> onError = null)
         {
             throw new NotImplementedException();
         }

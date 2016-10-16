@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PathLib.Windows;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -360,6 +361,62 @@ namespace PathLib
         public override string ToString()
         {
             return PurePath.ToString();
+        }
+
+        /// <inheritdoc/>
+        public override IEnumerable<DirectoryContents<WindowsPath>> WalkDir(Action<IOException> onError = null)
+        {
+            var subdirs = new Queue<WindowsPath>();
+            subdirs.Enqueue(this);
+
+            IntPtr INVALID_HANDLE_VALUE = new IntPtr(-1);
+            FindFileNative.WIN32_FIND_DATA findData;
+
+            // Breadth-first search
+            while (subdirs.Count > 0)
+            {
+                var directory = subdirs.Dequeue();
+
+                // please note that the following line won't work if you try this on a network folder, like \\Machine\C$
+                // simply remove the \\?\ part in this case or use \\?\UNC\ prefix
+                using (FindFileNative.SafeFindHandle findHandle = FindFileNative.FindFirstFile(@"\\?\" + directory + @"\*", out findData))
+                {
+                    if (!findHandle.IsInvalid)
+                    {
+                        var content = new DirectoryContents<WindowsPath>(directory);
+                        do
+                        {
+                            var entry = PathFactory(findData.cFileName);
+                            if ((findData.dwFileAttributes & FileAttributes.Directory) != 0)
+                            {
+
+                                if (findData.cFileName == "." || findData.cFileName == "..")
+                                {
+                                    continue;  // skip self and parent
+                                }
+                                content.Directories.Add(entry);
+                            }
+                            else
+                            {
+                                //files++;
+                                content.Files.Add(entry);
+                            }
+                        }
+                        while (FindFileNative.FindNextFile(findHandle, out findData));
+
+                        yield return content;
+                        foreach (var entry in content.Directories)
+                        {
+                            subdirs.Enqueue(directory.Join(entry));
+                        }
+                    }
+                    else
+                    {
+                        var err = new Win32Exception();
+                        onError(new IOException(String.Format("Unable to enter directory {0}. \r\n{1}", directory, err.Message)));
+                    }
+                }
+            }
         }
     }
 }

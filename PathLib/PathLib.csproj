@@ -9,11 +9,13 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>PathLib</RootNamespace>
     <AssemblyName>PathLib</AssemblyName>
-    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
     <ProductVersion>12.0.0</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -45,6 +47,7 @@
     <Compile Include="Converters\PurePosixPathConverter.cs" />
     <Compile Include="Converters\PathFactoryConverter.cs" />
     <Compile Include="Converters\PureWindowsPathConverter.cs" />
+    <Compile Include="DirectoryEntryContent.cs" />
     <Compile Include="Factories\Paths.cs" />
     <Compile Include="Factories\PlatformChooser.cs" />
     <Compile Include="Factories\PathFactoryOptions.cs" />
@@ -68,6 +71,7 @@
     <Compile Include="PurePath.cs" />
     <Compile Include="PurePosixPath.cs" />
     <Compile Include="StatInfo.cs" />
+    <Compile Include="Windows\FindFileNative.cs" />
     <Compile Include="Windows\ReparsePoints.cs" />
     <Compile Include="Windows\WindowsPath.cs" />
     <Compile Include="Windows\WindowsPathConverter.cs" />

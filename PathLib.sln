@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PosixPathLib", "PosixPathLi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WindowsPathUnitTest", "WindowsPathUnitTest\WindowsPathUnitTest.csproj", "{144BD83D-B0C3-45D5-8C0D-96F250C5D94F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PathLib.Benchmark", "PathLib.Benchmark\PathLib.Benchmark.csproj", "{7193929E-326F-47AD-98DD-1AC3AB0FDBB1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -53,6 +55,14 @@ Global
 		{144BD83D-B0C3-45D5-8C0D-96F250C5D94F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{144BD83D-B0C3-45D5-8C0D-96F250C5D94F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{144BD83D-B0C3-45D5-8C0D-96F250C5D94F}.Release-Mono|Any CPU.ActiveCfg = Release|Any CPU
+		{7193929E-326F-47AD-98DD-1AC3AB0FDBB1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7193929E-326F-47AD-98DD-1AC3AB0FDBB1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7193929E-326F-47AD-98DD-1AC3AB0FDBB1}.Debug-Mono|Any CPU.ActiveCfg = Debug|Any CPU
+		{7193929E-326F-47AD-98DD-1AC3AB0FDBB1}.Debug-Mono|Any CPU.Build.0 = Debug|Any CPU
+		{7193929E-326F-47AD-98DD-1AC3AB0FDBB1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7193929E-326F-47AD-98DD-1AC3AB0FDBB1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7193929E-326F-47AD-98DD-1AC3AB0FDBB1}.Release-Mono|Any CPU.ActiveCfg = Release|Any CPU
+		{7193929E-326F-47AD-98DD-1AC3AB0FDBB1}.Release-Mono|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

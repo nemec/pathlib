@@ -165,6 +165,16 @@ namespace PathLib
         }
 
         /// <inheritdoc/>
+        public abstract IEnumerable<DirectoryContents<TPath>> WalkDir(Action<IOException> onError = null);
+
+        /// <inheritdoc/>
+        IEnumerable<DirectoryContents<IPath>> IPath.WalkDir(Action<IOException> onError)
+        {
+            return WalkDir(onError).Select(p => 
+                new DirectoryContents<IPath>(p.Root, p.Directories, p.Files));
+        }
+
+        /// <inheritdoc/>
         protected abstract TPath PathFactory(params string[] path);
 
         /// <inheritdoc/>

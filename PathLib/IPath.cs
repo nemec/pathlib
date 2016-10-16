@@ -104,6 +104,12 @@ namespace PathLib
         /// <returns></returns>
         IEnumerable<IPath> ListDir(string pattern, SearchOption scope);
 
+        /// <summary>
+        /// Generate the files names in a directory tree.
+        /// </summary>
+        /// <returns></returns>
+        IEnumerable<DirectoryContents<IPath>> WalkDir(Action<IOException> onError = null);
+
         // TODO OS.Walk
 
         /// <summary>
