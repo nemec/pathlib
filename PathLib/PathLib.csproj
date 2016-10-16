@@ -47,7 +47,7 @@
     <Compile Include="Converters\PurePosixPathConverter.cs" />
     <Compile Include="Converters\PathFactoryConverter.cs" />
     <Compile Include="Converters\PureWindowsPathConverter.cs" />
-    <Compile Include="DirectoryEntryContent.cs" />
+    <Compile Include="DirectoryContents.cs" />
     <Compile Include="Factories\Paths.cs" />
     <Compile Include="Factories\PlatformChooser.cs" />
     <Compile Include="Factories\PathFactoryOptions.cs" />

@@ -407,13 +407,19 @@ namespace PathLib
                         yield return content;
                         foreach (var entry in content.Directories)
                         {
-                            subdirs.Enqueue(directory.Join(entry));
+                            if (entry != null)
+                            {
+                                subdirs.Enqueue(directory.Join(entry));
+                            }
                         }
                     }
                     else
                     {
-                        var err = new Win32Exception();
-                        onError(new IOException(String.Format("Unable to enter directory {0}. \r\n{1}", directory, err.Message)));
+                        if (onError != null)
+                        {
+                            var err = new Win32Exception();
+                            onError(new IOException(String.Format("Unable to enter directory {0}. \r\n{1}", directory, err.Message)));
+                        }
                     }
                 }
             }
