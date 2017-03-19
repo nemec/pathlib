@@ -5,7 +5,7 @@ Path manipulation library for .Net
 
 We're on [NuGet](https://www.nuget.org/packages/PathLib/)!
 
-##Why a library for paths?
+## Why a library for paths?
 
 Paths are commonly used in programming, from opening files to storage
 directories. They're integral to any program, yet unlike their siblings URLs
@@ -128,7 +128,7 @@ create instances of a "windows path" or "posix path". To that end, the library
 provides a couple of path factories that automatically detect the user's
 operating system and create the appropriate path on command.
 
-###PurePathFactory
+### PurePathFactory
 
 This factory builds a pure path for the current operating system. You may also
 provide a set of `PurePathFactoryOptions` to the builder:
