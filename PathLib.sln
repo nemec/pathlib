@@ -9,6 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PathLibUnitTest", "PathLibU
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{28598FE8-AC6D-4DA6-9845-7E45A39E6DC9}"
 	ProjectSection(SolutionItems) = preProject
+		CHANGELOG.md = CHANGELOG.md
 		PathLib\PathLib.nuspec = PathLib\PathLib.nuspec
 		README.md = README.md
 	EndProjectSection
