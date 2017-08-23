@@ -5,6 +5,14 @@ Path manipulation library for .Net
 
 We're on [NuGet](https://www.nuget.org/packages/PathLib/)!
 
+## Changelog
+
+### Master
+
+* Correct the XML Serializer, fixes #9
+
+[Full Changelog](CHANGELOG.md)
+
 ## Why a library for paths?
 
 Paths are commonly used in programming, from opening files to storage

@@ -823,7 +823,6 @@ namespace PathLib
         public void WriteXml(System.Xml.XmlWriter writer)
         {
             writer.WriteString(ToString());
-            writer.WriteEndElement();
         }
 
         #endregion
