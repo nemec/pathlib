@@ -16,13 +16,13 @@ namespace PathLib.Benchmark
 
         const string Second = "Downloads";
 
-        //[Benchmark]
+        [Benchmark]
         public string Native_PathCombine()
         {
             return Path.Combine(First, Second);
         }
 
-        //[Benchmark]
+        [Benchmark]
         public IPath PathLib_PathCombine()
         {
             return FirstP.Join(Second);
