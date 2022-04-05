@@ -20,10 +20,10 @@ namespace PathLib.UnitTest.Windows
         {
             var target = JunctionPoint.GetTarget(path);
             JunctionPoint.Delete(path);
-            if (target != null)
-            {
-                File.Delete(target);
-            }
+            //if (target != null)
+            //{
+            //    File.Delete(target);
+            //}
         }
 
     }

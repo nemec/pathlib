@@ -319,6 +319,16 @@ namespace PathLib
             return Join(paths);
         }
 
+        public static TPath operator/(ConcretePath<TPath, TPurePath> lvalue, IPath rvalue)
+        {
+            return lvalue.Join(rvalue);
+        }
+
+        public static TPath operator/(ConcretePath<TPath, TPurePath> lvalue, string rvalue)
+        {
+            return lvalue.Join(rvalue);
+        }
+
         IPath IPath.NormCase()
         {
             return NormCase();

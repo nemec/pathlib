@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PathLibUnitTest", "PathLibUnitTest\PathLibUnitTest.csproj", "{21D71FE8-3CB8-4AEC-B3C7-DA58A0A421AD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PathLib.UnitTest", "PathLib.UnitTest\PathLib.UnitTest.csproj", "{21D71FE8-3CB8-4AEC-B3C7-DA58A0A421AD}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{28598FE8-AC6D-4DA6-9845-7E45A39E6DC9}"
 	ProjectSection(SolutionItems) = preProject
@@ -12,7 +12,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{28598FE8-A
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WindowsPathUnitTest", "WindowsPathUnitTest\WindowsPathUnitTest.csproj", "{144BD83D-B0C3-45D5-8C0D-96F250C5D94F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PathLib.UnitTest.Windows", "PathLib.UnitTest.Windows\PathLib.UnitTest.Windows.csproj", "{144BD83D-B0C3-45D5-8C0D-96F250C5D94F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PathLib.Benchmark", "PathLib.Benchmark\PathLib.Benchmark.csproj", "{7193929E-326F-47AD-98DD-1AC3AB0FDBB1}"
 EndProject

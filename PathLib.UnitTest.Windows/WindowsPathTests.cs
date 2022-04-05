@@ -14,7 +14,7 @@ namespace PathLib.UnitTest.Windows
         {
             do
             {
-                TempFolder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+                TempFolder = Path.Combine(Path.GetTempPath(), "pathlib_" + Guid.NewGuid().ToString());
             } while (Directory.Exists(TempFolder));
             Directory.CreateDirectory(TempFolder);
         }
@@ -43,6 +43,7 @@ namespace PathLib.UnitTest.Windows
             var path = new WindowsPath(junction);
             
             Assert.True(path.IsJunction());
+            TestUtils.DeleteJunctionAndTarget(junction);
         }
 
         [Fact]
