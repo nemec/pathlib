@@ -1,18 +1,16 @@
 ﻿using System;
 using System.IO;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 using PathLib;
 using Path = System.IO.Path;
 
-namespace WindowsPathUnitTest
+namespace PathLib.UnitTest.Windows
 {
-    [TestClass]
-    public class WindowsPathTests
+    public class WindowsPathTestsFixture : IDisposable
     {
-        private static string TempFolder { get; set; }
+        public string TempFolder { get; set; }
 
-        [ClassInitialize]
-        public static void Initialize(TestContext context)
+        public WindowsPathTestsFixture()
         {
             do
             {
@@ -21,29 +19,44 @@ namespace WindowsPathUnitTest
             Directory.CreateDirectory(TempFolder);
         }
 
-        [TestMethod]
+        public void Dispose()
+        {
+            Directory.Delete(TempFolder, true);
+        }
+    }
+
+    public class WindowsPathTests : IClassFixture<WindowsPathTestsFixture>
+    {
+        private readonly WindowsPathTestsFixture _fixture;
+
+        public WindowsPathTests(WindowsPathTestsFixture fixture)
+        {
+            _fixture = fixture;
+        }
+
+        [Fact]
         public void IsJunction_WithJunction_ReturnsTrue()
         {
-            var ret = TestUtils.CreateJunctionAndTarget(TempFolder);
+            var ret = TestUtils.CreateJunctionAndTarget(_fixture.TempFolder);
             var junction = ret.Item2;
             
             var path = new WindowsPath(junction);
             
-            Assert.IsTrue(path.IsJunction());
+            Assert.True(path.IsJunction());
         }
 
-        [TestMethod]
+        [Fact]
         public void SetCurrentDirectory_WithDirectory_SetsEnvironmentVariable()
         {
             const string newCwd = @"C:\";
             var path = new WindowsPath(newCwd);
             using (path.SetCurrentDirectory())
             {
-                Assert.AreEqual(newCwd, Environment.CurrentDirectory);
+                Assert.Equal(newCwd, Environment.CurrentDirectory);
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void SetCurrentDirectory_UponDispose_RestoresEnvironmentVariable()
         {
             var oldCwd = Environment.CurrentDirectory;
@@ -52,10 +65,10 @@ namespace WindowsPathUnitTest
             
             tmp.Dispose();
 
-            Assert.AreEqual(oldCwd, Environment.CurrentDirectory);
+            Assert.Equal(oldCwd, Environment.CurrentDirectory);
         }
 
-        [TestMethod]
+        [Fact]
         public void ExpandUser_WithHomeDir_ExpandsDir()
         {
             var path = new WindowsPath("~/tmp");
@@ -64,10 +77,10 @@ namespace WindowsPathUnitTest
 
             var actual = path.ExpandUser();
 
-            Assert.AreEqual(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void ExpandUser_WithCustomHomeDirString_ExpandsDir()
         {
             var homeDir = new WindowsPath(@"C:\users\test");
@@ -76,10 +89,10 @@ namespace WindowsPathUnitTest
 
             var actual = path.ExpandUser(homeDir);
 
-            Assert.AreEqual(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void JoinIPath_WithAnotherPath_ReturnsWindowsPath()
         {
             IPath path = new WindowsPath(@"C:\tmp");
@@ -87,7 +100,40 @@ namespace WindowsPathUnitTest
 
             var final = path.Join(other);
 
-            Assert.IsTrue(final is WindowsPath);
+            Assert.True(final is WindowsPath);
+        }
+
+        [Fact]
+        public void JoinIPath_WithAnotherPathByDiv_ReturnsWindowsPath()
+        {
+            IPath path = new WindowsPath(@"C:\tmp");
+            IPath other = new WindowsPath(@"C:\tmp");
+
+            var final = path / other;
+
+            Assert.True(final is WindowsPath);
+        }
+
+        [Fact]
+        public void JoinIPath_WithStringByDiv_ReturnsWindowsPath()
+        {
+            IPath path = new WindowsPath(@"C:\tmp");
+            var other = @"C:\tmp";
+
+            var final = path / other;
+
+            Assert.True(final is WindowsPath);
+        }
+
+        [Fact]
+        public void JoinWindowsPath_WithStringByDiv_ReturnsWindowsPath()
+        {
+            var path = new WindowsPath(@"C:\tmp");
+            var other = @"C:\tmp";
+
+            var final = path / other;
+
+            Assert.True(final is WindowsPath);
         }
 
         // TODO FileInfo with nonexistant file
@@ -107,11 +153,5 @@ namespace WindowsPathUnitTest
 
         // TODO listdir with selector
         // TODO listdir with selector case insensitive
-
-        [ClassCleanup]
-        public static void Cleanup()
-        {
-            Directory.Delete(TempFolder, true);
-        }
     }
 }

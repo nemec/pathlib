@@ -1,11 +1,10 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Xunit;
 
 namespace PathLib.UnitTest
 {
-    [TestClass]
     public class FileSizeTest
     {
-        [TestMethod]
+        [Fact]
         public void TestMethod1()
         {
         }

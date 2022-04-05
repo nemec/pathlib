@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1;net45</TargetFrameworks>
+    <langversion>8.0</langversion>
     <RootNamespace>PathLib</RootNamespace>
     <AssemblyName>PathLib</AssemblyName>
   </PropertyGroup>
@@ -10,8 +11,8 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Description>Path manipulation library for .Net</Description>
     <Authors>Dan Nemec</Authors>
-    <Copyright>Copyright 2018</Copyright>
-    <PackageLicenseUrl>https://github.com/nemec/pathlib/blob/master/LICENSE.txt</PackageLicenseUrl>
+    <Copyright>Copyright 2022</Copyright>
+    <license>MIT</license>
     <PackageProjectUrl>https://github.com/nemec/pathlib</PackageProjectUrl>
     <Company></Company>
     <Version>0.9.6.0</Version>

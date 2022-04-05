@@ -113,3 +113,9 @@ Backup*/
 UpgradeLog*.XML
 
 clipr.sln.ide/
+.vscode/**/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+PathLib.Benchmark/BenchmarkDotNet.Artifacts/**

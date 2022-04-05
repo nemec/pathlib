@@ -1,25 +1,24 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Xunit;
 using System.Linq;
 
 namespace PathLib.UnitTest
 {
-    [TestClass]
     public class PurePosixPathUnitTest
     {
-        [TestMethod]
+        [Fact]
         public void CreatePath_WithEmptyPath_AllPartsAreNonNull()
         {
             var path = new PurePosixPath("");
 
-            Assert.IsNotNull(path.Drive);
-            Assert.IsNotNull(path.Root);
-            Assert.IsNotNull(path.Dirname);
-            Assert.IsNotNull(path.Basename);
-            Assert.IsNotNull(path.Extension);
-            CollectionAssert.AllItemsAreNotNull(path.Parts.ToList());
+            Assert.NotNull(path.Drive);
+            Assert.NotNull(path.Root);
+            Assert.NotNull(path.Dirname);
+            Assert.NotNull(path.Basename);
+            Assert.NotNull(path.Extension);
+            Assert.Empty(path.Parts.Where(p => p is null));
         }
 
-        [TestMethod]
+        [Fact]
         public void CreatePath_WithCurrentDir_CreatesRelativePathWithDirname()
         {
             // Arrange
@@ -28,10 +27,10 @@ namespace PathLib.UnitTest
             var path = new PurePosixPath();
 
             // Assert
-            Assert.AreEqual(".", path.Basename);
+            Assert.Equal(".", path.Basename);
         }
 
-        [TestMethod]
+        [Fact]
         public void CreatePath_WithFilename_StoresPathInFilename()
         {
             // Arrange
@@ -40,10 +39,10 @@ namespace PathLib.UnitTest
             var path = new PurePosixPath("file.txt");
 
             // Assert
-            Assert.AreEqual("file.txt", path.Filename);
+            Assert.Equal("file.txt", path.Filename);
         }
 
-        [TestMethod]
+        [Fact]
         public void CreatePath_WithMultipleStringPaths_CombinesPaths()
         {
             // Arrange
@@ -54,10 +53,10 @@ namespace PathLib.UnitTest
             var path = new PurePosixPath(someInitialPath, someSubPath);
 
             // Assert
-            Assert.AreEqual("/home/dan/music", path.ToPosix());
+            Assert.Equal("/home/dan/music", path.ToPosix());
         }
 
-        [TestMethod]
+        [Fact]
         public void CreatePath_WithMultipleAbsolutePaths_UsesLastPathAsAnchor()
         {
             // Arrange
@@ -68,10 +67,10 @@ namespace PathLib.UnitTest
             var path = new PurePosixPath(paths);
 
             // Assert
-            Assert.AreEqual(expected, path.ToPosix());
+            Assert.Equal(expected, path.ToPosix());
         }
 
-        [TestMethod]
+        [Fact]
         public void CreatePath_WithExtraSlashes_RemovesExtraSlashes()
         {
             // Arrange
@@ -82,10 +81,10 @@ namespace PathLib.UnitTest
             var path = new PurePosixPath(paths);
 
             // Assert
-            Assert.AreEqual(expected, path.ToPosix());
+            Assert.Equal(expected, path.ToPosix());
         }
 
-        [TestMethod]
+        [Fact]
         public void CreatePath_WithExtraDots_RemovesExtraDots()
         {
             // Arrange
@@ -96,10 +95,10 @@ namespace PathLib.UnitTest
             var path = new PurePosixPath(paths);
 
             // Assert
-            Assert.AreEqual(expected, path.ToPosix());
+            Assert.Equal(expected, path.ToPosix());
         }
 
-        [TestMethod]
+        [Fact]
         public void CreatePath_WithExtraDoubleDots_KeepsDoubleDots()
         {
             // Arrange
@@ -110,10 +109,10 @@ namespace PathLib.UnitTest
             var path = new PurePosixPath(paths);
 
             // Assert
-            Assert.AreEqual(expected, path.ToPosix());
+            Assert.Equal(expected, path.ToPosix());
         }
 
-        [TestMethod]
+        [Fact]
         public void CreatePath_WithLeadingDoubleSlash_KeepsDoubleSlashAsRoot()
         {
             // Arrange
@@ -124,10 +123,10 @@ namespace PathLib.UnitTest
             var path = new PurePosixPath(paths);
 
             // Assert
-            Assert.AreEqual(expected, path.Root);
+            Assert.Equal(expected, path.Root);
         }
 
-        [TestMethod]
+        [Fact]
         public void CreatePath_WithLeadingTripleSlash_CompressesLeadingSlashesToOne()
         {
             // Arrange
@@ -138,11 +137,11 @@ namespace PathLib.UnitTest
             var path = new PurePosixPath(paths);
 
             // Assert
-            Assert.AreEqual(expected, path.Root);
+            Assert.Equal(expected, path.Root);
         }
 
-        [TestMethod]
-        public void PathEquality_WithSamePath_AreEqual()
+        [Fact]
+        public void PathEquality_WithSamePath_Equal()
         {
             // Arrange
             var first = new PurePosixPath("foo");
@@ -152,10 +151,10 @@ namespace PathLib.UnitTest
             var actual = first == second;
 
             // Assert
-            Assert.IsTrue(actual);
+            Assert.True(actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void PathEquality_UsingPosixPaths_ComparesCaseSensitive()
         {
             // Arrange
@@ -166,10 +165,10 @@ namespace PathLib.UnitTest
             var actual = first == second;
 
             // Assert
-            Assert.IsFalse(actual);
+            Assert.False(actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void PathCompare_ParentLessThanChild_ReturnsTrue()
         {
             // Arrange
@@ -180,10 +179,10 @@ namespace PathLib.UnitTest
             var actual = parent < child;
 
             // Assert
-            Assert.IsTrue(actual);
+            Assert.True(actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void IsAbsolute_WithAbsolutePath_ReturnsTrue()
         {
             // Arrange
@@ -193,10 +192,10 @@ namespace PathLib.UnitTest
             var actual = parent.IsAbsolute();
 
             // Assert
-            Assert.IsTrue(actual);
+            Assert.True(actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void IsAbsolute_WithRelativePath_ReturnsFalse()
         {
             // Arrange
@@ -206,10 +205,10 @@ namespace PathLib.UnitTest
             var actual = parent.IsAbsolute();
 
             // Assert
-            Assert.IsFalse(actual);
+            Assert.False(actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void IsAbsolute_WithRelativePath_ReturnsTrue()
         {
             // Arrange
@@ -219,10 +218,10 @@ namespace PathLib.UnitTest
             var actual = parent.IsAbsolute();
 
             // Assert
-            Assert.IsFalse(actual);
+            Assert.False(actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void Addition_WithOtherPureNtPath_JoinsBoth()
         {
             var first = new PurePosixPath(@"/home/");
@@ -231,10 +230,10 @@ namespace PathLib.UnitTest
 
             var actual = first + second;
 
-            Assert.AreEqual(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void Addition_WithString_JoinsBoth()
         {
             var first = new PurePosixPath(@"/home/");
@@ -243,7 +242,7 @@ namespace PathLib.UnitTest
 
             var actual = first + second;
 
-            Assert.AreEqual(expected, actual);
+            Assert.Equal(expected, actual);
         }
     }
 }

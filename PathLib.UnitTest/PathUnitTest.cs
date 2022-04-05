@@ -1,13 +1,12 @@
 ﻿using System;
 using System.ComponentModel;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace PathLib.UnitTest
 {
-    [TestClass]
     public class PathUnitTest
     {
-        [TestMethod]
+        [Fact]
         public void Create_WithTypeConverter_CreatesPathForPlatform()
         {
             var isWindows = true;
@@ -27,7 +26,7 @@ namespace PathLib.UnitTest
 
             var actual = converter.ConvertFromInvariantString(path);
 
-            Assert.IsInstanceOfType(actual, expected);
+            Assert.IsType(expected, actual);
         }
     }
 }

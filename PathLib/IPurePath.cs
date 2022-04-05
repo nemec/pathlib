@@ -107,6 +107,19 @@ namespace PathLib
         /// <returns></returns>
         IPurePath Join(params IPurePath[] paths);
 
+#if NETSTANDARD2_1_OR_GREATER
+
+        /// <summary>
+        /// Join the current path with the provided paths, in turn.
+        /// </summary>
+        /// <param name="paths"></param>
+        /// <returns></returns>
+        public static IPurePath operator/ (IPurePath lvalue, IPurePath rvalue)
+        {
+            return lvalue.Join(rvalue);
+        }
+#endif
+
         /// <summary>
         /// Join the current path with the provided path. In addition,
         /// the joined path is not allowed to traverse outside the directory
@@ -281,6 +294,29 @@ namespace PathLib
         /// <param name="paths"></param>
         /// <returns></returns>
         new TPath Join(params IPurePath[] paths);
+
+#if NETSTANDARD2_1_OR_GREATER
+
+        /// <summary>
+        /// Join the current path with the provided paths, in turn.
+        /// </summary>
+        /// <param name="paths"></param>
+        /// <returns></returns>
+        public static IPurePath<TPath> operator/ (IPurePath<TPath> lvalue, IPurePath<TPath> rvalue)
+        {
+            return (IPurePath<TPath>)lvalue.Join(rvalue);
+        }
+
+        /// <summary>
+        /// Join the current path with the provided paths, in turn.
+        /// </summary>
+        /// <param name="paths"></param>
+        /// <returns></returns>
+        public static IPurePath<TPath> operator/ (IPurePath<TPath> lvalue, string rvalue)
+        {
+            return (IPurePath<TPath>)lvalue.Join(rvalue);
+        }
+#endif
 
         /// <summary>
         /// Join the current path with the provided path. In addition,

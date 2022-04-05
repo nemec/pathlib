@@ -10,7 +10,7 @@ using Microsoft.Win32.SafeHandles;
 // ReSharper disable InconsistentNaming
 // ReSharper disable UnusedMember.Local
 
-namespace WindowsPathUnitTest
+namespace PathLib.UnitTest.Windows
 {
     /// <summary>
     /// Provides access to NTFS junction points in .Net.
@@ -324,7 +324,7 @@ namespace WindowsPathUnitTest
 
             using (SafeFileHandle handle = OpenReparsePoint(path, EFileAccess.GenericRead))
             {
-                string target = InternalGetTarget(handle);
+                string? target = InternalGetTarget(handle);
                 return target != null;
             }
         }
@@ -343,7 +343,7 @@ namespace WindowsPathUnitTest
         {
             using (SafeFileHandle handle = OpenReparsePoint(junctionPoint, EFileAccess.GenericRead))
             {
-                string target = InternalGetTarget(handle);
+                string? target = InternalGetTarget(handle);
                 if (target == null)
                     throw new IOException("Path is not a junction point.");
 
@@ -351,7 +351,7 @@ namespace WindowsPathUnitTest
             }
         }
 
-        private static string InternalGetTarget(SafeFileHandle handle)
+        private static string? InternalGetTarget(SafeFileHandle handle)
         {
             int outBufferSize = Marshal.SizeOf(typeof(REPARSE_DATA_BUFFER));
             IntPtr outBuffer = Marshal.AllocHGlobal(outBufferSize);
@@ -372,7 +372,7 @@ namespace WindowsPathUnitTest
                 }
 
                 REPARSE_DATA_BUFFER reparseDataBuffer = (REPARSE_DATA_BUFFER)
-                    Marshal.PtrToStructure(outBuffer, typeof(REPARSE_DATA_BUFFER));
+                    Marshal.PtrToStructure(outBuffer, typeof(REPARSE_DATA_BUFFER))!;
 
                 if (reparseDataBuffer.ReparseTag != IO_REPARSE_TAG_MOUNT_POINT)
                     return null;

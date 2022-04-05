@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace WindowsPathUnitTest
+namespace PathLib.UnitTest.Windows
 {
     public static class TestUtils
     {

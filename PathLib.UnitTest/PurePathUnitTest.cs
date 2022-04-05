@@ -2,11 +2,10 @@
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace PathLib.UnitTest
 {
-    [TestClass]
     public class PurePathUnitTest
     {
         // TODO NT Paths can have a drive or a root
@@ -22,33 +21,26 @@ namespace PathLib.UnitTest
 
             private string PathSeparator { get; set; }
 
-            private readonly PrivateType _pathUtils = new PrivateType(
-                "pathlib", "PathLib.Utils.PathUtils");
-
             public MockParser(string pathSeparator)
             {
                 PathSeparator = pathSeparator;
             }
 
-            public string ParseDrive(string path)
+            public string? ParseDrive(string path)
             {
                 return !String.IsNullOrEmpty(path)
-                    ? ((string)_pathUtils.InvokeStatic(
-                        "GetPathRoot", 
-                        new object[]{path, PathSeparator})).TrimEnd(PathSeparator[0])
+                    ? PathLib.Utils.PathUtils.GetPathRoot(path, PathSeparator).TrimEnd(PathSeparator[0])
                     : null;
             }
 
-            public string ParseRoot(string path)
+            public string? ParseRoot(string path)
             {
                 if (String.IsNullOrEmpty(path))
                 {
                     return null;
                 }
 
-                var root = ((string) _pathUtils.InvokeStatic(
-                    "GetPathRoot",
-                    new object[] {path, PathSeparator}));
+                var root = PathLib.Utils.PathUtils.GetPathRoot(path, PathSeparator);
                 if (root.StartsWith(PathSeparator))
                 {
                     return PathSeparator;
@@ -60,29 +52,23 @@ namespace PathLib.UnitTest
 
             public string ParseDirname(string remainingPath)
             {
-                return ((string) _pathUtils.InvokeStatic(
-                    "GetDirectoryName",
-                    new object[]{remainingPath, PathSeparator})) ?? "";
+                return PathLib.Utils.PathUtils.GetDirectoryName(remainingPath, PathSeparator) ?? "";
             }
 
-            public string ParseBasename(string remainingPath)
+            public string? ParseBasename(string remainingPath)
             {
-                var currentDirectoryIdentifier = ((string) _pathUtils.GetStaticField("CurrentDirectoryIdentifier"));
+                var currentDirectoryIdentifier = PathLib.Utils.PathUtils.CurrentDirectoryIdentifier;
                 return !String.IsNullOrEmpty(remainingPath)
                     ? remainingPath != currentDirectoryIdentifier
-                        ? ((string) _pathUtils.InvokeStatic(
-                            "GetFileNameWithoutExtension",
-                            new object[]{remainingPath, PathSeparator}))
-                            : currentDirectoryIdentifier
+                        ? PathLib.Utils.PathUtils.GetFileNameWithoutExtension(remainingPath, PathSeparator)
+                        : currentDirectoryIdentifier
                     : null;
             }
 
-            public string ParseExtension(string remainingPath)
+            public string? ParseExtension(string remainingPath)
             {
                 return !String.IsNullOrEmpty(remainingPath)
-                    ? ((string) _pathUtils.InvokeStatic(
-                        "GetExtension",
-                        new object[]{remainingPath, PathSeparator}))
+                    ? PathLib.Utils.PathUtils.GetExtension(remainingPath, PathSeparator)
                     : null;
             }
 
@@ -121,7 +107,7 @@ namespace PathLib.UnitTest
                 get { return StringComparer.CurrentCultureIgnoreCase; }
             }
 
-            public override bool Equals(object otherObj)
+            public override bool Equals(object? otherObj)
             {
                 var other = otherObj as MockPath;
                 if (other == null)
@@ -174,196 +160,196 @@ namespace PathLib.UnitTest
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void Constructor_WithEmptyString_ReturnsCurrentDir()
         {
             var path = new MockPath("");
             var expected = new MockPath(".");
-            Assert.AreEqual(expected, path);
+            Assert.Equal(expected, path);
         }
 
-        [TestMethod]
+        [Fact]
         public void Constructor_WithSameInput_CreatesEqualPaths()
         {
             var path1 = new MockPath(@"a\b");
             var path2 = new MockPath(@"a\b");
 
-            Assert.AreEqual(path1, path2);
+            Assert.Equal(path1, path2);
         }
-        [TestMethod]
+        [Fact]
         public void Constructor_WithSameInputAndDifferentSeparator_CreatesEqualPaths()
         {
             var path1 = new MockPath(@"a\b");
             var path2 = new MockPath(@"a/b");
 
-            Assert.AreEqual(path1, path2);
+            Assert.Equal(path1, path2);
         }
 
-        [TestMethod]
+        [Fact]
         public void Constructor_WithDriveLetterAndRoot_DoesNotDropTrailingSlash()
         {
             var path1 = new MockPath(@"C:\");
             const string expected = @"\";
 
-            Assert.AreEqual(expected, path1.Root);
+            Assert.Equal(expected, path1.Root);
         }
 
-        [TestMethod]
+        [Fact]
         public void Constructor_WithOnlyDriveLetter_HasNoRoot()
         {
             var path1 = new MockPath(@"C:");
             const string expected = "";
 
-            Assert.AreEqual(expected, path1.Root);
+            Assert.Equal(expected, path1.Root);
         }
 
-        [TestMethod]
+        [Fact]
         public void Constructor_WithJoiningPaths_CreatesEqualPaths()
         {
             var expected = new MockPath(@"a\b");
             var actual = new MockPath("a", "b");
             
-            Assert.AreEqual(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void Constructor_WithOneContainingTrailingSlash_CreatesEqualPaths()
         {
             var expected = new MockPath(@"a\b");
             var actual = new MockPath(@"a", @"b\");
             
-            Assert.AreEqual(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void Constructor_WithBothContainingTrailingSlash_CreatesEqualPaths()
         {
             var expected = new MockPath(@"a\b");
             var actual = new MockPath(@"a\", @"b\");
 
-            Assert.AreEqual(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void Constructor_WithOneContainingEmptyComponent_CreatesEqualPaths()
         {
             var expected = new MockPath(@"a\\b\");
             var actual = new MockPath(@"a\b");
             
-            Assert.AreEqual(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void Constructor_WithEmptyComponentAtBeginning_LeavesEmptyComponentOut()
         {
             var expected = new MockPath(@"a\b");
             var actual = new MockPath("", "a", "b");
             
-            Assert.AreEqual(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void Constructor_WithEmptyComponentInMiddle_LeavesEmptyComponentOut()
         {
             var expected = new MockPath(@"a\b");
             var actual = new MockPath("a", "", "b");
             
-            Assert.AreEqual(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void Constructor_WithAbsoluteComponentInMiddle_DropsComponentBeforeAbsoluteComponent()
         {
             var expected = new MockPath(@"\b\c");
             var actual = new MockPath(@"a", @"\b", @"c");
             
-            Assert.AreEqual(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void Constructor_WithAbsoluteAndEmptyComponent_DropsComponentBeforeAbsoluteComponent()
         {
             var expected = new MockPath(@"\b\c");
             var actual = new MockPath(@"a", @"\b\\", @"c");
             
-            Assert.AreEqual(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void Constructor_WithEmptyComponentAtEnd_LeavesEmptyComponentOut()
         {
             var expected = new MockPath(@"a\b");
             var actual = new MockPath("a", "b", "");
             
-            Assert.AreEqual(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void Constructor_WithOnePathRelative_PathsAreNotEqual()
         {
             var expected = new MockPath(@"a\b");
             var actual = new MockPath(@"\a\b");
             
-            Assert.AreNotEqual(expected, actual);
+            Assert.NotEqual(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void Constructor_WithDifferentPaths_PathsAreNotEqual()
         {
             var path1 = new MockPath(@"a");
             var path2 = new MockPath(@"a\b");
 
-            Assert.AreNotEqual(path1, path2);
+            Assert.NotEqual(path1, path2);
         }
 
-        [TestMethod]
+        [Fact]
         public void Constructor_WithFileUri_StripsUriPrefix()
         {
             var path1 = new MockPath(@"c:\users");
             var path2 = new MockPath(@"file://c:/users");
 
 
-            Assert.AreEqual(path1, path2);
+            Assert.Equal(path1, path2);
         }
 
-        [TestMethod]
+        [Fact]
         public void Constructor_WithParentDirectoryPart_DoesNotResolvePart()
         {
             const string expected = @"c:\users\userA\..\userB";
             var path = new MockPath(expected);
 
 
-            Assert.AreEqual(expected, path.ToString());
+            Assert.Equal(expected, path.ToString());
         }
 
-        [TestMethod]
+        [Fact]
         public void GetRoot_WithUncShare_ReturnsUncRoot()
         {
             var path = new MockPath(@"\\some\share");
             const string expected = @"\";
 
-            Assert.AreEqual(expected, path.Root);
+            Assert.Equal(expected, path.Root);
         }
 
-        [TestMethod]
+        [Fact]
         public void GetRoot_WithLocalRoot_ReturnsRoot()
         {
             var path = new MockPath(@"c:\ProgramFiles\");
             const string expected = @"\";
 
-            Assert.AreEqual(expected, path.Root);
+            Assert.Equal(expected, path.Root);
         }
 
-        [TestMethod]
+        [Fact]
         public void GetRoot_WithRelativePathOnDrive_ReturnsEmptyRoot()
         {
             var path = new MockPath(@"c:ProgramFiles\");
             const string expected = "";
 
-            Assert.AreEqual(expected, path.Root);
+            Assert.Equal(expected, path.Root);
         }
 
-        [TestMethod]
+        [Fact]
         public void Join_WithAnotherPath_CreatesPathEqualToCombinedPath()
         {
             var path = new MockPath(@"a");
@@ -371,10 +357,33 @@ namespace PathLib.UnitTest
 
             var joined = path.Join("b");
 
-            Assert.AreEqual(expected, joined);
+            Assert.Equal(expected, joined);
         }
 
-        [TestMethod]
+        [Fact]
+        public void Join_WithOperatorSlash_CreatesPath()
+        {
+            var path = new MockPath(@"a");
+            var path2 = new MockPath(@"b");
+            var expected = new MockPath(@"a\b");
+
+            var joined = path / path2;
+
+            Assert.Equal(expected, joined);
+        }
+
+        [Fact]
+        public void Join_WithOperatorSlashAndStringPath_CreatesPath()
+        {
+            var path = new MockPath(@"a");
+            var expected = new MockPath(@"a\b");
+
+            var joined = path / "b";
+
+            Assert.Equal(expected, joined);
+        }
+
+        [Fact]
         public void Join_WithEmptyPathAsInitial_CreatesPathEqualToSecondPath()
         {
             var path = new PurePosixPath();
@@ -382,58 +391,58 @@ namespace PathLib.UnitTest
 
             var joined = path.Join(@"\Users\nemecd\tmp\testfiles");
 
-            Assert.AreEqual(expected, joined);
+            Assert.Equal(expected, joined);
         }
 
-        [TestMethod]
+        [Fact]
         public void SafeJoin_WithRelative_CreatesPathEqualToCombinedPath()
         {
             var path = new MockPath(@"a");
             var expected = new MockPath(@"a\b");
 
             MockPath joined;
-            Assert.IsTrue(path.TrySafeJoin("b", out joined));
+            Assert.True(path.TrySafeJoin("b", out joined));
 
-            Assert.AreEqual(expected, joined);
+            Assert.Equal(expected, joined);
         }
 
-        [TestMethod]
+        [Fact]
         public void SafeJoin_WithRelativeParentTraversal_FailsJoin()
         {
             var path = new MockPath(@"a");
 
             MockPath joined;
-            Assert.IsFalse(path.TrySafeJoin("..", out joined));
+            Assert.False(path.TrySafeJoin("..", out joined));
         }
 
-        [TestMethod]
+        [Fact]
         public void SafeJoin_WithComplexRelativeParentTraversal_FailsJoin()
         {
             var path = new MockPath(@"a");
 
             MockPath joined;
-            Assert.IsFalse(path.TrySafeJoin(@"b\c\d\..\f\..\..\..\g\..\..", out joined));
+            Assert.False(path.TrySafeJoin(@"b\c\d\..\f\..\..\..\g\..\..", out joined));
         }
 
-        [TestMethod]
+        [Fact]
         public void SafeJoin_WithSiblingRelativeParentTraversal_FailsJoin()
         {
             var path = new MockPath(@"a");
 
             MockPath joined;
-            Assert.IsFalse(path.TrySafeJoin(@"..\c\d", out joined));
+            Assert.False(path.TrySafeJoin(@"..\c\d", out joined));
         }
 
-        [TestMethod]
+        [Fact]
         public void SafeJoin_WithSiblinStartsWithTraversal_FailsJoin()
         {
             var path = new MockPath(@"a");
 
             MockPath joined;
-            Assert.IsFalse(path.TrySafeJoin(@"..\ab\d", out joined));
+            Assert.False(path.TrySafeJoin(@"..\ab\d", out joined));
         }
 
-        [TestMethod]
+        [Fact]
         public void GetParent_WithAParent_ReturnsTheParent()
         {
             var path = new MockPath(@"C:\Users\nemec");
@@ -442,10 +451,10 @@ namespace PathLib.UnitTest
 
             var actual = path.Parent();
 
-            Assert.AreEqual(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void GetParents_WithAParent_ReturnsTheParent()
         {
             var path = new MockPath(@"C:\nemec");
@@ -456,10 +465,10 @@ namespace PathLib.UnitTest
             parents.MoveNext();
             var actual = parents.Current;
 
-            Assert.AreEqual(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void GetParents_WithMultipleParents_ReturnsTheParentsFromMostToLeastSpecific()
         {
             var path = new MockPath(@"C:\users\nemec");
@@ -470,20 +479,20 @@ namespace PathLib.UnitTest
                     new MockPath(@"C:\")
                 };
 
-            Assert.IsTrue(expected.SequenceEqual(path.Parents()));
+            Assert.True(expected.SequenceEqual(path.Parents()));
         }
 
-        [TestMethod]
+        [Fact]
         public void GetParents_WithAParent_DoesNotReturnSelf()
         {
             var path = new MockPath(@"C:\nemec");
 
             var parents = path.Parents();
 
-            Assert.AreEqual(1, parents.Count());
+            Assert.Single(parents);
         }
 
-        [TestMethod]
+        [Fact]
         public void GetExtension_WithSingleExtension_ReturnsThatExtension()
         {
             const string expected = ".txt";
@@ -491,10 +500,10 @@ namespace PathLib.UnitTest
 
             var actual = path.Extension;
 
-            Assert.AreEqual(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void GetExtension_WithMultipleExtensions_ReturnsLastExtension()
         {
             const string expected = ".gz";
@@ -502,10 +511,10 @@ namespace PathLib.UnitTest
 
             var actual = path.Extension;
 
-            Assert.AreEqual(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void GetExtension_WithDotfileNoExtension_ReturnsEmptyString()
         {
             const string expected = "";
@@ -513,10 +522,10 @@ namespace PathLib.UnitTest
 
             var actual = path.Extension;
 
-            Assert.AreEqual(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void GetExtensions_WithMultipleExtensions_ReturnsExtensionsInOrder()
         {
             var expected = new [] {".txt", ".tar", ".gz"};
@@ -524,10 +533,10 @@ namespace PathLib.UnitTest
 
             var actual = path.Extensions;
 
-            CollectionAssert.AreEqual(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void GetExtensions_WithDotfileAndNoExtension_ReturnsEmptyEnumerable()
         {
             const int expected = 0;
@@ -535,10 +544,10 @@ namespace PathLib.UnitTest
 
             var actual = path.Extensions.Count();
 
-            Assert.AreEqual(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void GetBasenameWithoutExtension_WithExtension_ReturnsBasename()
         {
             
@@ -547,10 +556,10 @@ namespace PathLib.UnitTest
             var expected = path.Basename;
             var actual = path.BasenameWithoutExtensions;
 
-            Assert.AreEqual(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void GetBasenameWithoutExtension_WithMultipleExtensions_ReturnsBasenameMinusExtensions()
         {
             const string expected = "file";
@@ -558,10 +567,10 @@ namespace PathLib.UnitTest
 
             var actual = path.BasenameWithoutExtensions;
 
-            Assert.AreEqual(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void WithExtension_WithOneExtensionPrependedWithDot_ReturnsPathWithNewExtension()
         {
             var expected = new MockPath(@"c:\users\nemec\file.xml");
@@ -569,10 +578,10 @@ namespace PathLib.UnitTest
 
             var actual = path.WithExtension(".xml");
 
-            Assert.AreEqual(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void WithExtension_AddingTwoExtensionsPrependedWithDot_ReturnsPathWithNewExtensions()
         {
             var expected = new MockPath(@"c:\users\nemec\file.tar.gz");
@@ -580,10 +589,10 @@ namespace PathLib.UnitTest
 
             var actual = path.WithExtension(".tar.gz");
 
-            Assert.AreEqual(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void WithExtension_AddingTwoExtensions_ReturnsPathWithNewExtensions()
         {
             var expected = new MockPath(@"c:\users\nemec\file.tar.gz");
@@ -591,10 +600,10 @@ namespace PathLib.UnitTest
 
             var actual = path.WithExtension("tar.gz");
 
-            Assert.AreEqual(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void WithExtension_WithMultipleExtensionPrependedWithDot_ReturnsPathWithNewLastExtension()
         {
             var expected = new MockPath(@"c:\users\nemec\file.tar.xml");
@@ -602,10 +611,10 @@ namespace PathLib.UnitTest
 
             var actual = path.WithExtension(".xml");
 
-            Assert.AreEqual(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void WithExtension_WithNoExtension_ReturnsPathWithNewExtension()
         {
             var expected = new MockPath(@"c:\users\nemec\file.xml");
@@ -613,38 +622,38 @@ namespace PathLib.UnitTest
 
             var actual = path.WithExtension("xml");
 
-            Assert.AreEqual(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void IsAbsolute_WithAbsolutePath_ReturnsFalse()
         {
             var path = new MockPath("c:/hello/world");
-            Assert.IsTrue(path.IsAbsolute());
+            Assert.True(path.IsAbsolute());
         }
 
-        [TestMethod]
+        [Fact]
         public void IsAbsolute_WithRelativePath_ReturnsFalse()
         {
             var path = new MockPath("hello/world");
-            Assert.IsFalse(path.IsAbsolute());
+            Assert.False(path.IsAbsolute());
         }
 
-        [TestMethod]
+        [Fact]
         public void IsAbsolute_WithCurrentDirectory_ReturnsFalse()
         {
             var path = new MockPath("");
-            Assert.IsFalse(path.IsAbsolute());
+            Assert.False(path.IsAbsolute());
         }
 
-        [TestMethod]
+        [Fact]
         public void IsAbsolute_WithParentDirectory_ReturnsFalse()
         {
             var path = new MockPath("../hello");
-            Assert.IsFalse(path.IsAbsolute());
+            Assert.False(path.IsAbsolute());
         }
 
-        [TestMethod]
+        [Fact]
         public void RelativeTo_WithParent_ReturnsRelativePath()
         {
             var expected = new MockPath(@"nemec\file.txt");
@@ -654,10 +663,10 @@ namespace PathLib.UnitTest
 
             var actual = path.RelativeTo(parent);
 
-            Assert.AreEqual(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void RelativeTo_WithLongPath_ReturnsRelativePath()
         {
             var expected = new MockPath(@"nemec\tmp\filestorage\file.txt");
@@ -667,10 +676,10 @@ namespace PathLib.UnitTest
 
             var actual = path.RelativeTo(parent);
 
-            Assert.AreEqual(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void RelativeTo_WithLongUncPath_ReturnsRelativePath()
         {
             var expected = new MockPath(@"subdir\file.exe");
@@ -680,51 +689,48 @@ namespace PathLib.UnitTest
 
             var actual = path.RelativeTo(parent);
 
-            Assert.AreEqual(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
-        public void RelativeTo_WithParent_IsAbsoluteIsFalse()
+        [Fact]
+        public void RelativeTo_WithParent_IsAbsoluteFalse()
         {
             var parent = new MockPath(@"c:\users\");
             var path = new MockPath(@"c:\users\nemec\file.txt");
 
             path.RelativeTo(parent);
 
-            Assert.IsTrue(path.IsAbsolute());
+            Assert.True(path.IsAbsolute());
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
+        [Fact]
         public void RelativeTo_WithParentInDifferentDir_ThrowsException()
         {
             var parent = new MockPath(@"\Program Files\");
             var path = new MockPath(@"c:\users\nemec\file.txt");
 
-            path.RelativeTo(parent);
+            Assert.Throws<ArgumentException>(() => path.RelativeTo(parent));
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
+        [Fact]
         public void RelativeTo_WithParentContainingPartialFilename_ThrowsException()
         {
             var parent = new MockPath(@"c:\users\nemec\file");
             var path = new MockPath(@"c:\users\nemec\file.txt");
 
-            path.RelativeTo(parent);
+            Assert.Throws<ArgumentException>(() => path.RelativeTo(parent));
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
+        [Fact]
         public void RelativeTo_WithParentLackingDrive_ThrowsException()
         {
             var parent = new MockPath(@"\users\");
             var path = new MockPath(@"c:\users\nemec\file.txt");
 
-            path.RelativeTo(parent);
+            Assert.Throws<ArgumentException>(() => path.RelativeTo(parent));
         }
 
-        [TestMethod]
+        [Fact]
         public void WithDirname_WithRegularDirname_ReplacesDirname()
         {
             const string dirname = "new/dirname";
@@ -733,10 +739,10 @@ namespace PathLib.UnitTest
 
             var actual = path.WithDirname(dirname);
 
-            Assert.AreEqual(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void WithDirname_WithDirnameAndRoot_ReplacesDirname()
         {
             const string dirname = "/new/dirname";
@@ -745,10 +751,10 @@ namespace PathLib.UnitTest
 
             var actual = path.WithDirname(dirname);
 
-            Assert.AreEqual(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void WithDirname_WithDirnameAndDrive_ReplacesDirname()
         {
             const string dirname = "F:/new/dirname";
@@ -757,10 +763,10 @@ namespace PathLib.UnitTest
 
             var actual = path.WithDirname(dirname);
 
-            Assert.AreEqual(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void WithDirname_WithDirnameAndRelativeOrigin_ReplacesDirnameAndAddsDriveAndRoot()
         {
             const string dirname = "C:/new/dirname";
@@ -769,10 +775,10 @@ namespace PathLib.UnitTest
 
             var actual = path.WithDirname(dirname);
 
-            Assert.AreEqual(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void WithDirname_WithDirnameAndBothRelative_ReplacesDirname()
         {
             const string dirname = "new/dirname";
@@ -781,10 +787,10 @@ namespace PathLib.UnitTest
 
             var actual = path.WithDirname(dirname);
 
-            Assert.AreEqual(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void AsUri_WithPath_ReturnsAUri()
         {
             var path = new MockPath(@"C:\nemec");
@@ -792,10 +798,10 @@ namespace PathLib.UnitTest
 
             var actual = path.ToUri();
 
-            Assert.AreEqual(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void ToString_WithTrailingDot_DoesNotStripTrailingDot()
         {
             const string expected = @"c:\nemec\file...\other.txt";
@@ -803,10 +809,10 @@ namespace PathLib.UnitTest
 
             var actual = path.ToString();
 
-            Assert.AreEqual(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void Create_WithTypeConverter_CreatesPathForPlatform()
         {
             var isWindows = true;
@@ -826,7 +832,7 @@ namespace PathLib.UnitTest
 
             var actual = converter.ConvertFromInvariantString(path);
 
-            Assert.IsInstanceOfType(actual, expected);
+            Assert.IsType(expected, actual);
         }
     }
 }

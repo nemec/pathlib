@@ -1,9 +1,8 @@
 ﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace PathLib.UnitTest
 {
-    [TestClass]
     public class PathFactoryUnitTest
     {
         private static readonly bool IsWindows;
@@ -20,7 +19,7 @@ namespace PathLib.UnitTest
             IsWindows = true;
         }
 
-        [TestMethod]
+        [Fact]
         public void Create_FromOnePath_CreatesPath()
         {
             const string part1 = "C:\\tmp";
@@ -31,10 +30,10 @@ namespace PathLib.UnitTest
 
             var actual = factory.Create(part1);
 
-            Assert.AreEqual(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void Create_FromMultiplePaths_CreatesPath()
         {
             const string part1 = "C:\\";
@@ -46,10 +45,10 @@ namespace PathLib.UnitTest
 
             var actual = factory.Create(part1, part2);
 
-            Assert.AreEqual(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void TryCreate_WithValidPath_ReturnsTrue()
         {
             const string path = "C:\\tmp";
@@ -58,10 +57,10 @@ namespace PathLib.UnitTest
             IPath tmp;
             var actual = factory.TryCreate(path, out tmp);
 
-            Assert.IsTrue(actual);
+            Assert.True(actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void TryCreate_WithInvalidPath_ReturnsFalse()
         {
             const string path = ":::";
@@ -70,10 +69,10 @@ namespace PathLib.UnitTest
             IPath tmp;
             var actual = factory.TryCreate(path, out tmp);
 
-            Assert.IsFalse(actual);
+            Assert.False(actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void Create_WithNormCaseOption_CreatesPathAndNormalizesCase()
         {
             const string part1 = "C:\\TmP";
@@ -84,10 +83,10 @@ namespace PathLib.UnitTest
 
             var actual = factory.Create(part1);
 
-            Assert.AreEqual(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void Create_WithExpandEnvVarsOption_CreatesPathExpandsVars()
         {
             Environment.SetEnvironmentVariable("MYCUSTOMBIN", "bin");
@@ -104,10 +103,10 @@ namespace PathLib.UnitTest
 
             var actual = factory.Create(unexpandedDir, options);
 
-            Assert.AreEqual(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void Create_WithExpandUserOption_CreatesPathAndExpandsUser()
         {
             var userDir = Environment.GetEnvironmentVariable("USERPROFILE");
@@ -124,10 +123,10 @@ namespace PathLib.UnitTest
 
             var actual = factory.Create(unexpandedDir, options);
 
-            Assert.AreEqual(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void Create_WithExpandUserOptionAndExplicitUserDirectory_CreatesPathAndExpandsUser()
         {
             const string expectedDir = @"c:\users\fake\tmp";
@@ -144,7 +143,7 @@ namespace PathLib.UnitTest
 
             var actual = factory.Create(unexpandedDir, options);
 
-            Assert.AreEqual(expected, actual);
+            Assert.Equal(expected, actual);
         }
     }
 }

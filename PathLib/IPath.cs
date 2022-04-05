@@ -211,6 +211,29 @@ namespace PathLib
         /// <inheritdoc/>
         new IPath Join(params IPurePath[] paths);
 
+#if NETSTANDARD2_1_OR_GREATER
+
+        /// <summary>
+        /// Join the current path with the provided paths, in turn.
+        /// </summary>
+        /// <param name="paths"></param>
+        /// <returns></returns>
+        public static IPath operator/ (IPath lvalue, IPath rvalue)
+        {
+            return (IPath)lvalue.Join(rvalue);
+        }
+
+        /// <summary>
+        /// Join the current path with the provided paths, in turn.
+        /// </summary>
+        /// <param name="paths"></param>
+        /// <returns></returns>
+        public static IPath operator/ (IPath lvalue, string rvalue)
+        {
+            return lvalue.Join(rvalue);
+        }
+#endif
+
         /// <inheritdoc/>
         new IPath NormCase();
 
@@ -307,6 +330,29 @@ namespace PathLib
 
         /// <inheritdoc/>
         new TPath Join(params IPurePath[] paths);
+
+#if NETSTANDARD2_1_OR_GREATER
+
+        /// <summary>
+        /// Join the current path with the provided paths, in turn.
+        /// </summary>
+        /// <param name="paths"></param>
+        /// <returns></returns>
+        public static IPath<TPath, TPurePath> operator/ (IPath<TPath, TPurePath> lvalue, IPath<TPath, TPurePath> rvalue)
+        {
+            return (IPath<TPath, TPurePath>)lvalue.Join(rvalue);
+        }
+
+        /// <summary>
+        /// Join the current path with the provided paths, in turn.
+        /// </summary>
+        /// <param name="paths"></param>
+        /// <returns></returns>
+        public static IPath<TPath, TPurePath> operator/ (IPath<TPath, TPurePath> lvalue, string rvalue)
+        {
+            return (IPath<TPath, TPurePath>)lvalue.Join(rvalue);
+        }
+#endif
 
         /// <inheritdoc/>
         new TPath NormCase();

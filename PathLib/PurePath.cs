@@ -314,6 +314,16 @@ namespace PathLib
                     .Concat(paths.Select(PurePathFactory)));
         }
 
+        public static PurePath<TPath> operator/ (PurePath<TPath> lvalue, PurePath<TPath> rvalue) 
+        {
+            return lvalue.JoinInternal(new[]{lvalue, rvalue});
+        }
+
+        public static PurePath<TPath> operator/ (PurePath<TPath> lvalue, string rvalue) 
+        {
+            return lvalue.JoinInternal(new[]{lvalue, lvalue.PurePathFactory(rvalue)});
+        }
+
         IPurePath IPurePath.Join(params string[] paths)
         {
             return Join(paths);
@@ -417,6 +427,9 @@ namespace PathLib
 
         private string NormalizeSeparators(string path)
         {
+            if (path is null) {
+                throw new InvalidPathException("", "Path component was null");
+            }
             foreach (var separator in PathUtils.PathSeparatorsForNormalization)
             {
                 path = path.Replace(separator, PathSeparator);
