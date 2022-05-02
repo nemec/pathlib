@@ -160,8 +160,8 @@ variables present in the created object.
 with the current user's directory. If the `UserDirectory` property on the
 options class is non-null, use that path as the user directory.
 
-For convenience, a static, global PurePathFactory instance can be accessed from
-the `PurePath` class (no generic arguments).
+For convenience, a static, global PathFactory instance can be accessed from
+the `Paths` class (no generic arguments).
 
 ## Serialization
 
