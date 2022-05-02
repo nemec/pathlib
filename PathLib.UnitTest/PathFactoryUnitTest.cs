@@ -1,8 +1,18 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using Xunit;
 
 namespace PathLib.UnitTest
 {
+    public sealed class IgnoreOnLinuxFact : FactAttribute
+    {
+        public IgnoreOnLinuxFact() {
+            if(RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
+                Skip = "Ignore on Linux";
+            }
+        }
+    }
+    
     public class PathFactoryUnitTest
     {
         private static readonly bool IsWindows;
@@ -15,7 +25,9 @@ namespace PathLib.UnitTest
             if (p == PlatformID.Unix || p == PlatformID.MacOSX || (int)p == 128)
             {
                 IsWindows = false;
+                return;
             }
+
             IsWindows = true;
         }
 
@@ -60,7 +72,7 @@ namespace PathLib.UnitTest
             Assert.True(actual);
         }
 
-        [Fact]
+        [IgnoreOnLinuxFact]
         public void TryCreate_WithInvalidPath_ReturnsFalse()
         {
             const string path = ":::";
@@ -109,7 +121,9 @@ namespace PathLib.UnitTest
         [Fact]
         public void Create_WithExpandUserOption_CreatesPathAndExpandsUser()
         {
-            var userDir = Environment.GetEnvironmentVariable("USERPROFILE");
+            var userDir = IsWindows
+                ? Environment.GetEnvironmentVariable("USERPROFILE")
+                : Environment.GetEnvironmentVariable("HOME");
             var expectedDir = userDir + @"\tmp";
             const string unexpandedDir = @"~\tmp";
             var factory = new PathFactory();
@@ -129,7 +143,7 @@ namespace PathLib.UnitTest
         [Fact]
         public void Create_WithExpandUserOptionAndExplicitUserDirectory_CreatesPathAndExpandsUser()
         {
-            const string expectedDir = @"c:\users\fake\tmp";
+            const string expectedDir = @"C:\users\fake\tmp";
             const string unexpandedDir = @"~\tmp";
             var factory = new PathFactory();
             var expected = (IsWindows

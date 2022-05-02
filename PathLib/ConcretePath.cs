@@ -304,7 +304,30 @@ namespace PathLib
         }
 
         /// <inheritdoc/>
-        public abstract IDisposable SetCurrentDirectory();
+        /// <inheritdoc/>
+        public IDisposable SetCurrentDirectory()
+        {
+            return new CurrentDirectorySetter(PurePath.ToString());
+        }
+
+        private class CurrentDirectorySetter : IDisposable
+        {
+            private readonly string _oldCwd;
+            private readonly string _newCwd;
+
+            public CurrentDirectorySetter(string newCwd)
+            {
+                _oldCwd = Environment.CurrentDirectory;
+                Environment.CurrentDirectory = _newCwd = newCwd;
+            }
+            public void Dispose()
+            {
+                if (Environment.CurrentDirectory == _newCwd)
+                {
+                    Environment.CurrentDirectory = _oldCwd;
+                }
+            }
+        }
 
 
         #region IPurePath -> IPath implementation
@@ -766,5 +789,16 @@ namespace PathLib
         }
 
         #endregion
+
+        public bool Equals(IPath other)
+        {
+            return PurePath switch
+            {
+                null => false,
+                PurePosixPath lppp when other is PosixPath rppp => lppp.Equals(rppp.PurePath),
+                PureWindowsPath lpwp when other is WindowsPath rpwp => lpwp.Equals(rpwp.PurePath),
+                _ => false
+            };
+        }
     }
 }

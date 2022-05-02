@@ -30,6 +30,7 @@ using System.Text.RegularExpressions;
 //
 
 [assembly: InternalsVisibleTo("PathLib.UnitTest")]
+[assembly: InternalsVisibleTo("PathLib.UnitTest.Posix")]
 namespace PathLib.Utils
 {
     /// <summary>

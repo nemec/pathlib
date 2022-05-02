@@ -15,6 +15,7 @@ namespace PathLib.UnitTest
             if (p == PlatformID.Unix || p == PlatformID.MacOSX || (int)p == 128)
             {
                 IsWindows = false;
+                return;
             }
             IsWindows = true;
         }

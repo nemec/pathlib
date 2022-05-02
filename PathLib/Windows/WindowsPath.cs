@@ -6,6 +6,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 
+// ReSharper disable once CheckNamespace
 namespace PathLib
 {
     /// <summary>
@@ -13,7 +14,7 @@ namespace PathLib
     /// other systems.
     /// </summary>
     [TypeConverter(typeof(WindowsPathConverter))]
-    public sealed class WindowsPath : ConcretePath<WindowsPath, PureWindowsPath>
+    public sealed class WindowsPath : ConcretePath<WindowsPath, PureWindowsPath>, IEquatable<WindowsPath>
     {
         private const string ExtendedLengthPrefix = @"\\?\";
 
@@ -137,7 +138,7 @@ namespace PathLib
                 Inode = 0,
                 Gid = 0,
                 Uid = 0,
-                Mode = 0 // TODO not implemented
+                Mode = "0000" // TODO not implemented
             };
 
             _cachedStat = stat;
@@ -174,31 +175,6 @@ namespace PathLib
                 return new WindowsPath(newDir.Join(PurePath.RelativeTo(homeDir)));
             }
             return this;
-        }
-
-        /// <inheritdoc/>
-        public override IDisposable SetCurrentDirectory()
-        {
-            return new CurrentDirectorySetter(ToString());
-        }
-
-        private class CurrentDirectorySetter : IDisposable
-        {
-            private readonly string _oldCwd;
-            private readonly string _newCwd;
-
-            public CurrentDirectorySetter(string newCwd)
-            {
-                _oldCwd = Environment.CurrentDirectory;
-                Environment.CurrentDirectory = _newCwd = newCwd;
-            }
-            public void Dispose()
-            {
-                if (Environment.CurrentDirectory == _newCwd)
-                {
-                    Environment.CurrentDirectory = _oldCwd;
-                }
-            }
         }
 
         /// <summary>
@@ -334,6 +310,7 @@ namespace PathLib
         /// <returns></returns>
         public bool Equals(WindowsPath other)
         {
+            if (other is null) return false;
             return PurePath.Equals(other.PurePath);
         }
 

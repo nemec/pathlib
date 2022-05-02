@@ -8,7 +8,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{28598FE8-AC6D-4DA6-9845-7E45A39E6DC9}"
 	ProjectSection(SolutionItems) = preProject
 		CHANGELOG.md = CHANGELOG.md
-		PathLib\PathLib.nuspec = PathLib\PathLib.nuspec
 		README.md = README.md
 	EndProjectSection
 EndProject
@@ -17,6 +16,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PathLib.Benchmark", "PathLib.Benchmark\PathLib.Benchmark.csproj", "{7193929E-326F-47AD-98DD-1AC3AB0FDBB1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PathLib", "PathLib\PathLib.csproj", "{D68D3477-112D-4D34-B255-FBEE778CD21F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PathLib.UnitTest.Posix", "PathLib.UnitTest.Posix\PathLib.UnitTest.Posix.csproj", "{3EB494F5-B992-47AD-BE63-01AE6DA6B6BC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -56,6 +57,14 @@ Global
 		{D68D3477-112D-4D34-B255-FBEE778CD21F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D68D3477-112D-4D34-B255-FBEE778CD21F}.Release-Mono|Any CPU.ActiveCfg = Release|Any CPU
 		{D68D3477-112D-4D34-B255-FBEE778CD21F}.Release-Mono|Any CPU.Build.0 = Release|Any CPU
+		{3EB494F5-B992-47AD-BE63-01AE6DA6B6BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3EB494F5-B992-47AD-BE63-01AE6DA6B6BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3EB494F5-B992-47AD-BE63-01AE6DA6B6BC}.Debug-Mono|Any CPU.ActiveCfg = Debug|Any CPU
+		{3EB494F5-B992-47AD-BE63-01AE6DA6B6BC}.Debug-Mono|Any CPU.Build.0 = Debug|Any CPU
+		{3EB494F5-B992-47AD-BE63-01AE6DA6B6BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3EB494F5-B992-47AD-BE63-01AE6DA6B6BC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3EB494F5-B992-47AD-BE63-01AE6DA6B6BC}.Release-Mono|Any CPU.ActiveCfg = Debug|Any CPU
+		{3EB494F5-B992-47AD-BE63-01AE6DA6B6BC}.Release-Mono|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

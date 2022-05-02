@@ -12,7 +12,7 @@ namespace PathLib
     /// they were designed for.
     /// </summary>
     [TypeConverter(typeof(PathFactoryConverter))]
-    public interface IPath : IPurePath
+    public interface IPath : IPurePath, IEquatable<IPath>
     {
         /// <summary>
         /// The size of the file.

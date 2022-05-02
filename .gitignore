@@ -119,3 +119,4 @@ clipr.sln.ide/
 !.vscode/launch.json
 !.vscode/extensions.json
 PathLib.Benchmark/BenchmarkDotNet.Artifacts/**
+.idea

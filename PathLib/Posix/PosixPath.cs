@@ -1,16 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using PathLib.Posix;
 
+// ReSharper disable once CheckNamespace
 namespace PathLib
 {
     /// <summary>
     /// Concrete path implementation for Posix machines (Linux, Unix, Mac).
     /// Unusable on other systems.
     /// </summary>
-    public class PosixPath : ConcretePath<PosixPath, PurePosixPath>
+    public sealed class PosixPath : ConcretePath<PosixPath, PurePosixPath>, IEquatable<PosixPath>
     {
         /// <summary>
         /// Create a new path object for Posix-compliant machines.
@@ -55,17 +58,17 @@ namespace PathLib
             var atim = epoch.AddSeconds(info.st_atim.tv_sec);
             if (info.st_atim.tv_nsec != 0)
             {
-                atim = atim.AddMilliseconds(info.st_atim.tv_nsec / 100000.0);
+                atim = atim.AddTicks((long)(info.st_atim.tv_nsec / 100));
             }
             var mtim = epoch.AddSeconds(info.st_mtim.tv_sec);
             if (info.st_mtim.tv_nsec != 0)
             {
-                mtim = mtim.AddMilliseconds(info.st_mtim.tv_nsec / 100000.0);
+                mtim = mtim.AddTicks((long)(info.st_mtim.tv_nsec / 100));
             }
             var ctim = epoch.AddSeconds(info.st_ctim.tv_sec);
             if (info.st_ctim.tv_nsec != 0)
             {
-                ctim = ctim.AddMilliseconds(info.st_ctim.tv_nsec / 100000.0);
+                ctim = ctim.AddTicks((long)(info.st_ctim.tv_nsec / 100));
             }
             var stat = new StatInfo
             {
@@ -77,13 +80,16 @@ namespace PathLib
                 Inode = (long)info.st_ino,
                 Gid = info.st_uid,
                 Uid = info.st_gid,
-                Mode = (int)info.st_mode
+                ModeDecimal = info.st_mode,
+                Mode = Convert.ToString(info.st_mode & (Native.SetBits | Native.UserBits | Native.GroupBits | Native.OtherBits), 8).PadLeft(4, '0'),
+                NumLinks = (long)info.st_nlink
             };
             try
             {
                 _cachedStat = stat;
             }
-            // Yes, this assignment throws a NRE if the struct alignment for pinvoke is wrong. 
+            // Yes, this assignment throws a NRE if the struct alignment for pinvoke is wrong.
+            // It overwrites 'this' in the stack with null.
             catch (NullReferenceException e)
             {
                 throw new NotImplementedException("Layout of stat call not supported on this platform (Only supports Ubuntu x86_64 and anything compatible).", e);
@@ -94,49 +100,136 @@ namespace PathLib
         /// <inheritdoc/>
         protected override PosixPath PathFactory(params string[] path)
         {
-            throw new NotImplementedException();
+            if (path == null)
+            {
+                throw new NullReferenceException("Path passed to factory cannot be null");
+            }
+
+            return new PosixPath(path);
         }
 
         /// <inheritdoc/>
         protected override PosixPath PathFactory(PurePosixPath path)
         {
-            throw new NotImplementedException();
+            if (path == null)
+            {
+                throw new NullReferenceException("Path passed to factory cannot be null");
+            }
+
+            return new PosixPath(path);
         }
 
         /// <inheritdoc/>
         protected override PosixPath PathFactory(IPurePath path)
         {
-            throw new NotImplementedException();
+            if (path == null)
+            {
+                throw new NullReferenceException("Path passed to factory cannot be null");
+            }
+
+            var purePath = path as PurePosixPath;
+            if (purePath != null)
+            {
+                return new PosixPath(purePath);
+            }
+
+            var parts = new List<string>();
+            parts.AddRange(path.Parts);
+            return new PosixPath(parts.ToArray());
         }
 
         /// <inheritdoc/>
         public override PosixPath Resolve()
         {
             throw new NotImplementedException();
+            //var size = Native.readlink(path, buf, 1024);
         }
 
         /// <inheritdoc/>
         public override bool IsSymlink()
         {
-            throw new NotImplementedException();
+            var fileType = GetFileType();
+            return fileType == FileType.SymbolicLink;
+        }
+
+        /// <summary>
+        /// Gets the type of the file in the filesystem. This is
+        /// unrelated to the extension/contents, rather it is an
+        /// enumeration between whether the path points to a directory,
+        /// file, symlink, socket, block device, etc.
+        /// This is currently only relevant to Posix/Linux systems.
+        /// </summary>
+        /// <returns></returns>
+        public FileType GetFileType()
+        {
+            var path = PurePath.ToString();
+            var err = Native.lstat(path, out var info);
+            if(err != 0)
+            {
+                var actualError = Marshal.GetLastWin32Error();
+                if (actualError == 2)
+                {
+                    return FileType.DoesNotExist;
+                }
+                throw new ApplicationException("Error: " + actualError);
+            }
+
+            var fmt = info.st_mode & Native.FileTypeFormat;
+            return fmt switch
+            {
+                Native.FileTypeSymlink => FileType.SymbolicLink,
+                Native.FileTypeDirectory => FileType.Directory,
+                Native.FileTypeCharacterDevice => FileType.CharacterDevice,
+                Native.FileTypeBlockDevice => FileType.BlockDevice,
+                Native.FileTypeFifo => FileType.Fifo,
+                Native.FileTypeSocket => FileType.Socket,
+                Native.FileTypeRegularFile => FileType.RegularFile,
+                _ => throw new ApplicationException($"Unknown file type {fmt}")
+            };
         }
 
         /// <inheritdoc/>
         public override PosixPath ExpandUser()
         {
-            throw new NotImplementedException();
-        }
+            var homeDir = new PurePosixPath("~");
+            if (homeDir < PurePath)
+            {
+                var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+                if (!String.IsNullOrEmpty(home))
+                {
+                    return new PosixPath(
+                        new PurePosixPath(home).Join(PurePath.RelativeTo(homeDir)));
+                }
 
-        /// <inheritdoc/>
-        public override IDisposable SetCurrentDirectory()
-        {
-            throw new NotImplementedException();
-        }
+                throw new ApplicationException("Unable to find home directory for user");
+            }
 
+            return this;
+        }
+        
         /// <inheritdoc/>
         public override IEnumerable<DirectoryContents<PosixPath>> WalkDir(Action<IOException> onError = null)
         {
             throw new NotImplementedException();
+        }
+
+        /// <inheritdoc/>
+        public bool Equals(PosixPath other)
+        {
+            if (other is null) return false;
+            return PurePath.Equals(other.PurePath);
+        }
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            return PurePath.GetHashCode();
+        }
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            return PurePath.ToString();
         }
     }
 }

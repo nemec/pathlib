@@ -720,10 +720,11 @@ namespace PathLib
             return builder.ToString();
         }
 
+        private string _cachedToString;
         /// <inheritdoc/>
         public override string ToString()
         {
-            return GetComponents(PathComponent.All);
+            return _cachedToString ??= GetComponents(PathComponent.All);
         }
 
         /// <inheritdoc/>

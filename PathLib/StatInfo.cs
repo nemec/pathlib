@@ -11,7 +11,12 @@ namespace PathLib
         /// protection bits
         /// st_mode
         /// </summary>
-        public int Mode { get; set; }
+        public uint ModeDecimal { get; set; }
+        
+        /// <summary>
+        /// st_mode Converted into an octal string
+        /// </summary>
+        public string Mode { get; set; }
 
         /// <summary>
         /// inode number
@@ -22,22 +27,22 @@ namespace PathLib
         /// <summary>
         /// st_dev
         /// </summary>
-        public int Device { get; set; }
+        public long Device { get; set; }
 
         /// <summary>
         /// st_nlink
         /// </summary>
-        public int NumLinks { get; set; }
+        public long NumLinks { get; set; }
 
         /// <summary>
         /// st_uid
         /// </summary>
-        public int Uid { get; set; }
+        public long Uid { get; set; }
 
         /// <summary>
         /// st_gid
         /// </summary>
-        public int Gid { get; set; }
+        public long Gid { get; set; }
 
         /// <summary>
         /// st_size
