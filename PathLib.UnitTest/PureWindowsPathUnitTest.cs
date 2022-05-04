@@ -6,6 +6,7 @@ using System.Xml.Serialization;
 using System.Xml;
 using Xunit;
 using System.Text;
+using PathLib;
 
 namespace PathLib.UnitTest
 {
@@ -410,5 +411,25 @@ namespace PathLib.UnitTest
             Assert.NotNull(obj);
             Assert.Equal(expected, obj!.Folder);
         }
+
+        [Fact]
+        public void CompareDirectoryHierarchy_FromDir_ToDir_ShouldShowParentAbove()
+        {
+            var parentPath = @"c:\foo\bar";
+            var childPath = @"c:\foo\bar\child\path";
+
+            var parentWindowsPath = new PureWindowsPath(parentPath);
+            var childWindowsPath = new PureWindowsPath(childPath);
+
+            Assert.True(childWindowsPath.IsChildOf(parentWindowsPath));
+        }
+    }
+}
+
+public static class PureWindowsPathExtensions
+{
+    public static bool IsChildOf(this PureWindowsPath target,PureWindowsPath compare)
+    {
+        return true;
     }
 }

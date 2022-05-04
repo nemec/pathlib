@@ -280,7 +280,7 @@ namespace PathLib
                 yield return part;
             }
 
-            if (Filename != string.Empty)
+            if (Filename != String.Empty)
             {
                 yield return Filename;
             }
@@ -743,6 +743,27 @@ namespace PathLib
             // counts as a relative path in a different drive.
             return !String.IsNullOrEmpty(Root);
         }
+
+        #region Equality Members
+
+        /*
+        public static bool operator ==(PurePath<TPath> first, PurePath<TPath> second)
+        {
+            return ReferenceEquals(first, null) ?
+                ReferenceEquals(second, null) :
+                first.Equals(second);
+        }
+
+
+        public static bool operator !=(PurePath<TPath> first, PurePath<TPath> second)
+        {
+            return !(first == second);
+        }
+        */
+
+  
+        #endregion
+        
 
         /// <inheritdoc/>
         public abstract bool IsReserved();
