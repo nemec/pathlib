@@ -421,15 +421,21 @@ namespace PathLib.UnitTest
             var parentWindowsPath = new PureWindowsPath(parentPath);
             var childWindowsPath = new PureWindowsPath(childPath);
 
-            Assert.True(childWindowsPath.IsChildOf(parentWindowsPath));
+            Assert.True(childWindowsPath > parentWindowsPath);
+        }
+
+        [Fact]
+        public void CompareDirectoryHierarchy_DifferentDrives_FromDir_ToDir_ShouldBeFalse()
+        {
+            var parentPath = @"c:\foo\bar";
+            var childPath = @"d:\foo\bar\child\path";
+
+            var parentWindowsPath = new PureWindowsPath(parentPath);
+            var childWindowsPath = new PureWindowsPath(childPath);
+
+            Assert.False(childWindowsPath > parentWindowsPath);
         }
     }
 }
 
-public static class PureWindowsPathExtensions
-{
-    public static bool IsChildOf(this PureWindowsPath target,PureWindowsPath compare)
-    {
-        return true;
-    }
-}
+ 

@@ -845,8 +845,10 @@ namespace PathLib.UnitTest
 
         #region Equality Testing
 
-        [Fact]
-        public void Compare_Directory_With_Directory_ShouldBeEqual()
+        #region Windows Paths
+
+          [Fact]
+        public void Compare_WindowsFormat_Directory_With_Directory_ShouldBeEqual()
         {
             var firstPath = @"C:\foo\bar";
             var secondPath = @"C:\foo\bar";
@@ -857,7 +859,7 @@ namespace PathLib.UnitTest
 
         }
         [Fact]
-        public void Compare_Directory_With_Directory_OneWithTrailingSlash_ShouldBeEqual()
+        public void Compare_WindowsFormat_Directory_With_Directory_OneWithTrailingSlash_ShouldBeEqual()
         {
             var firstPath = @"C:\foo\bar";
             var secondPath = @"C:\foo\bar\";
@@ -869,7 +871,7 @@ namespace PathLib.UnitTest
         }
 
         [Fact]
-        public void Compare_Directory_With_SubDirectory_ShouldBeNotEqual()
+        public void Compare_WindowsFormat_Directory_With_SubDirectory_ShouldBeNotEqual_ShouldBeTrue()
         {
             var firstPath = @"C:\foo\bar";
             var secondPath = @"C:\foo\bar\other";
@@ -882,7 +884,7 @@ namespace PathLib.UnitTest
 
         
         [Fact]
-        public void Compare_Directory_With_TopLevelFile_ShouldBeNotEqual()
+        public void Compare_WindowsFormat_Directory_With_TopLevelFile_ShouldBeNotEqual()
         {
             var firstPath = @"C:\foo\bar\";
             var secondPath = @"C:\foo\bar\file.txt";
@@ -892,7 +894,7 @@ namespace PathLib.UnitTest
         }
 
         [Fact]
-        public void Compare_ParentDirectory_IsLessThan_ChildDirectory()
+        public void Compare_WindowsFormat_ParentDirectory_IsLessThan_ChildDirectory_ShouldBeTrue()
         {
             var parentPath = @"C:\foo\bar";
             var childPath = @"C:\foo\bar\other";
@@ -906,7 +908,7 @@ namespace PathLib.UnitTest
 
 
         [Fact]
-        public void Compare_ChildDirectory_IsGreaterThan_ParentDirectory()
+        public void Compare_WindowsFormat_ChildDirectory_IsGreaterThan_ParentDirectory_ShouldBeTrue()
         {
             var parentPath = @"C:\foo\bar";
             var childPath = @"C:\foo\bar\other";
@@ -916,6 +918,108 @@ namespace PathLib.UnitTest
       
             Assert.True(childPurePath > parentPurePath );
         }
+
+
+        [Fact]
+        public void Compare_WindowsFormat_DifferentDrives_ChildDirectory_IsGreaterThan_ParentDirectory_ShouldBeFalse()
+        {
+            var parentPath = @"C:\foo\bar";
+            var childPath = @"D:\foo\bar\other";
+            var purePathFactory = new PurePathFactory();
+            var parentPurePath = PurePath.Create(parentPath);
+            var childPurePath = PurePath.Create(childPath);
+      
+            Assert.False(childPurePath > parentPurePath );
+        }
+
+        #endregion
+
+        #region Posix Paths
+
+          [Fact]
+        public void Compare_PosixFormat_Directory_With_Directory_ShouldBeEqual()
+        {
+            var firstPath = @"/mnt/dev/parent";
+            var secondPath = @"/mnt/dev/parent";
+            var firstPurePath = PurePath.Create(firstPath);
+            var secondPurePath = PurePath.Create(secondPath);
+            Assert.Equal(firstPurePath , secondPurePath);
+            
+
+        }
+        [Fact]
+        public void Compare_PosixFormat_Directory_With_Directory_OneWithTrailingSlash_ShouldBeEqual()
+        {
+            var firstPath = @"/mnt/dev/parent/";
+            var secondPath = @"/mnt/dev/parent";
+            var firstPurePath = PurePath.Create(firstPath);
+            var secondPurePath = PurePath.Create(secondPath);
+            Assert.Equal(firstPurePath , secondPurePath);
+            
+
+        }
+
+        [Fact]
+        public void Compare_PosixFormat_Directory_With_SubDirectory_ShouldBeNotEqual_ShouldBeTrue()
+        {
+            var parentPath = @"/mnt/dev/parent/";
+            var childPath = @"/mnt/dev/parent/someChild";
+            var firstPurePath = PurePath.Create(parentPath);
+            var secondPurePath = PurePath.Create(childPath);
+            Assert.NotEqual(firstPurePath , secondPurePath);
+            
+
+        }
+
+        
+        [Fact]
+        public void Compare_PosixFormat_Directory_With_TopLevelFile_ShouldBeNotEqual_ShouldBeTrue()
+        {
+            var parentPath = @"/mnt/dev/parent/";
+            var childPath = @"/mnt/dev/parent/someChild/someFile.txt";
+            var firstPurePath = PurePath.Create(parentPath);
+            var secondPurePath = PurePath.Create(childPath);
+            Assert.NotEqual(firstPurePath , secondPurePath);
+        }
+
+        [Fact]
+        public void Compare_PosixFormat_ParentDirectory_IsLessThan_ChildDirectory_ShouldBeTrue()
+        {
+            var parentPath = @"/mnt/dev/parent";
+            var childPath = @"/mnt/dev/parent/someChild";
+          
+
+            var parentPurePath = PurePath.Create(parentPath);
+            var childPurePath = PurePath.Create(childPath);
+      
+            Assert.True(parentPurePath < childPurePath);
+        }
+
+
+        [Fact]
+        public void Compare_PosixFormat_ChildDirectory_IsGreaterThan_ParentDirectory_ShouldBeTrue()
+        {
+            var parentPath = @"/mnt/dev/parent";
+            var childPath = @"/mnt/dev/parent/someChild";
+            var purePathFactory = new PurePathFactory();
+            var parentPurePath = PurePath.Create(parentPath);
+            var childPurePath = PurePath.Create(childPath);
+      
+            Assert.True(childPurePath > parentPurePath );
+        }
+        [Fact]
+        public void Compare_PosixFormat__DifferentRoots_ChildDirectory_IsGreaterThan_ParentDirectory_ShouldBeFalse()
+        {
+            var parentPath = @"/mnt/other/parent";
+            var childPath = @"/dev/other/parent/someChild";
+            var purePathFactory = new PurePathFactory();
+            var parentPurePath = PurePath.Create(parentPath);
+            var childPurePath = PurePath.Create(childPath);
+      
+            Assert.False(childPurePath > parentPurePath );
+        }
+
+        #endregion
 
     #endregion
     }
