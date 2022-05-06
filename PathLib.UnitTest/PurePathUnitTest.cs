@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using PathLib.Utils;
 using Xunit;
 
 namespace PathLib.UnitTest
@@ -59,12 +60,33 @@ namespace PathLib.UnitTest
             {
                 var currentDirectoryIdentifier = PathLib.Utils.PathUtils.CurrentDirectoryIdentifier;
 
-                return !String.IsNullOrEmpty(remainingPath)
-                    ? remainingPath != currentDirectoryIdentifier
-                        ?
-                        PathLib.Utils.PathUtils.GetFileNameWithoutExtension(remainingPath, PathSeparator)
-                        : currentDirectoryIdentifier
-                    : null;
+                if (String.IsNullOrEmpty(remainingPath) == false)
+                {
+
+                    return _getFileNameOrDirectoryName(remainingPath, currentDirectoryIdentifier);
+                    if (remainingPath != currentDirectoryIdentifier)
+                    {
+                        return PathUtils.GetFileNameWithoutExtension(remainingPath, PathSeparator);
+                    }
+                    else
+                    {
+                        return currentDirectoryIdentifier;
+                    }
+                }
+
+                return null;
+
+                string _getFileNameOrDirectoryName(string remainingPathString, string currentDirIdentifier)
+                {
+                    if (remainingPath != currentDirectoryIdentifier)
+                    {
+                        return PathUtils.GetFileNameWithoutExtension(remainingPath, PathSeparator);
+                    }
+                    else
+                    {
+                        return currentDirectoryIdentifier;
+                    }
+                }
             }
 
             public string? ParseExtension(string remainingPath)
@@ -551,7 +573,7 @@ namespace PathLib.UnitTest
             const int expected = 0;
             var path = new MockPath(@"c:\users\nemec\.bashrc");
 
-            var actual = path.Extensions.Count();
+            var actual = Enumerable.Count(path.Extensions);
 
             Assert.Equal(expected, actual);
         }
