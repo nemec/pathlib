@@ -62,16 +62,7 @@ namespace PathLib.UnitTest
 
                 if (String.IsNullOrEmpty(remainingPath) == false)
                 {
-
                     return _getFileNameOrDirectoryName(remainingPath, currentDirectoryIdentifier);
-                    if (remainingPath != currentDirectoryIdentifier)
-                    {
-                        return PathUtils.GetFileNameWithoutExtension(remainingPath, PathSeparator);
-                    }
-                    else
-                    {
-                        return currentDirectoryIdentifier;
-                    }
                 }
 
                 return null;
