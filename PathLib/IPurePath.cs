@@ -148,7 +148,7 @@ namespace PathLib
             }
             foreach (var parts in parent.Zip(child, (p, c) => new [] {p, c}))
             {
-                if (!String.Equals(parts[0], parts[1], StringComparison.InvariantCultureIgnoreCase))
+                if (!String.Equals(parts[0], parts[1], StringComparison.InvariantCulture))
                 {
                     return false;
                 }
