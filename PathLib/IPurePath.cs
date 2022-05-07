@@ -5,6 +5,8 @@ using System.Globalization;
 
 namespace PathLib
 {
+    using Utils;
+
     /// <summary>
     /// Pure paths do not implement any IO operations and may be
     /// used cross-platform.
@@ -117,6 +119,55 @@ namespace PathLib
         public static IPurePath operator/ (IPurePath lvalue, IPurePath rvalue)
         {
             return lvalue.Join(rvalue);
+        }
+
+        
+        /// <summary>   compares of the first path is less than the second path. </summary>
+        ///
+        /// <remarks>   Jeff Ward, 5/4/2022. </remarks>
+        ///
+        /// <param name="first">    The first instance to compare. </param>
+        /// <param name="second">   The second instance to compare. </param>
+        ///
+        /// <returns>   The result of the operation. </returns>
+        public static bool operator <(IPurePath first, IPurePath second)
+        {
+            if (ReferenceEquals(first, null) || ReferenceEquals(second, null))
+            {
+                return false;
+            }
+
+            // Resolve symlinks before comparing
+            var parent = new List<string>(first.NormCase().Parts);
+            var child = new List<string>(second.NormCase().Parts);
+
+            // Parent must be shorter than child
+            if (parent.Count() >= child.Count())
+            {
+                return false;
+            }
+            foreach (var parts in parent.Zip(child, (p, c) => new [] {p, c}))
+            {
+                if (!String.Equals(parts[0], parts[1], StringComparison.InvariantCulture))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        
+        /// <summary>   Compares if the first poth is greater than the second path. </summary>
+        ///
+        /// <remarks>   Jeff Ward, 5/4/2022. </remarks>
+        ///
+        /// <param name="first">    The first instance to compare. </param>
+        /// <param name="second">   The second instance to compare. </param>
+        ///
+        /// <returns>   The result of the operation. </returns>
+        public static bool operator >(IPurePath first, IPurePath second)
+        {
+            return second < first;
         }
 #endif
 
@@ -420,5 +471,8 @@ namespace PathLib
         /// <param name="newExtension"></param>
         /// <returns></returns>
         new TPath WithExtension(string newExtension);
+
+
+
     }
 }

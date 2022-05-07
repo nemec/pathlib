@@ -610,6 +610,14 @@ namespace PathLib
             return PurePath.GetComponents(components);
         }
 
+
+        #region IPurePath Equality
+
+  
+
+        #endregion
+
+
         #endregion
 
 

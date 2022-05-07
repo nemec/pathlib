@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using PathLib.Utils;
 using Xunit;
 
 namespace PathLib.UnitTest
@@ -29,7 +30,8 @@ namespace PathLib.UnitTest
             public string? ParseDrive(string path)
             {
                 return !String.IsNullOrEmpty(path)
-                    ? PathLib.Utils.PathUtils.GetPathRoot(path, PathSeparator).TrimEnd(PathSeparator[0])
+                    ? PathLib.Utils.PathUtils.GetPathRoot(path, PathSeparator)
+                        .TrimEnd(PathSeparator[0])
                     : null;
             }
 
@@ -45,9 +47,8 @@ namespace PathLib.UnitTest
                 {
                     return PathSeparator;
                 }
-                return root.EndsWith(PathSeparator)
-                           ? PathSeparator
-                           : null;
+
+                return root.EndsWith(PathSeparator) ? PathSeparator : null;
             }
 
             public string ParseDirname(string remainingPath)
@@ -58,11 +59,25 @@ namespace PathLib.UnitTest
             public string? ParseBasename(string remainingPath)
             {
                 var currentDirectoryIdentifier = PathLib.Utils.PathUtils.CurrentDirectoryIdentifier;
-                return !String.IsNullOrEmpty(remainingPath)
-                    ? remainingPath != currentDirectoryIdentifier
-                        ? PathLib.Utils.PathUtils.GetFileNameWithoutExtension(remainingPath, PathSeparator)
-                        : currentDirectoryIdentifier
-                    : null;
+
+                if (String.IsNullOrEmpty(remainingPath) == false)
+                {
+                    return _getFileNameOrDirectoryName(remainingPath, currentDirectoryIdentifier);
+                }
+
+                return null;
+
+                string _getFileNameOrDirectoryName(string remainingPathString, string currentDirIdentifier)
+                {
+                    if (remainingPath != currentDirectoryIdentifier)
+                    {
+                        return PathUtils.GetFileNameWithoutExtension(remainingPath, PathSeparator);
+                    }
+                    else
+                    {
+                        return currentDirectoryIdentifier;
+                    }
+                }
             }
 
             public string? ParseExtension(string remainingPath)
@@ -79,23 +94,29 @@ namespace PathLib.UnitTest
                     if (path.IndexOf(ch) >= 0)
                     {
                         reservedCharacter = ch;
+
                         return true;
                     }
                 }
+
                 reservedCharacter = default(char);
+
                 return false;
             }
         }
 
         private class MockPath : PurePath<MockPath>
         {
-            public MockPath(params string[] paths)
-                : base(new MockParser(@"\"), paths)
-            { }
+            public MockPath(params string[] paths) : base(new MockParser(@"\"), paths)
+            {
+            }
 
-            public MockPath(string drive, string root, string dirname, string basename, string extension)
-                : base(drive, root, dirname, basename, extension)
-            { }
+            public MockPath(
+                string drive, string root, string dirname,
+                string basename, string extension) : base(drive, root, dirname,
+                basename, extension)
+            {
+            }
 
             protected override string PathSeparator
             {
@@ -114,49 +135,46 @@ namespace PathLib.UnitTest
                 {
                     return false;
                 }
-                return Drive == other.Drive &&
-                       Root == other.Root &&
-                       Dirname == other.Dirname &&
-                       Basename == other.Basename &&
-                       Extension == other.Extension;
+
+                return Drive == other.Drive && Root == other.Root && Dirname == other.Dirname &&
+                       Basename == other.Basename && Extension == other.Extension;
             }
 
             public override int GetHashCode()
             {
-                return (Drive ?? "").GetHashCode() +
-                       (Root ?? "").GetHashCode() +
-                       (Dirname ?? "").GetHashCode() +
-                       (Basename ?? "").GetHashCode() +
-                       (Extension ?? "").GetHashCode();
+                return (Drive ?? "").GetHashCode() + (Root ?? "").GetHashCode() + (Dirname ?? "").GetHashCode() +
+                       (Basename ?? "").GetHashCode() + (Extension ?? "").GetHashCode();
             }
 
             public override bool IsReserved()
             {
-                throw new NotImplementedException(
-                    "A mock should not be used to test this.");
+                throw new NotImplementedException("A mock should not be used to test this.");
             }
 
             public override bool Match(string pattern)
             {
-                throw new NotImplementedException(
-                    "A mock should not be used to test this.");
+                throw new NotImplementedException("A mock should not be used to test this.");
             }
 
             public override MockPath NormCase(CultureInfo currentCulture)
             {
-                throw new NotImplementedException(
-                    "A mock should not be used to test this.");
+                throw new NotImplementedException("A mock should not be used to test this.");
             }
 
             protected override MockPath PurePathFactory(string path)
             {
-                return new MockPath(new [] {path});
+                return new MockPath(new[]
+                {
+                    path
+                });
             }
 
             protected override MockPath PurePathFactoryFromComponents(
-                string drive, string root, string dirname, string basename, string extension)
+                string drive, string root, string dirname,
+                string basename, string extension)
             {
-                return new MockPath(drive, root, dirname, basename, extension);
+                return new MockPath(drive, root, dirname,
+                    basename, extension);
             }
         }
 
@@ -176,6 +194,7 @@ namespace PathLib.UnitTest
 
             Assert.Equal(path1, path2);
         }
+
         [Fact]
         public void Constructor_WithSameInputAndDifferentSeparator_CreatesEqualPaths()
         {
@@ -208,7 +227,7 @@ namespace PathLib.UnitTest
         {
             var expected = new MockPath(@"a\b");
             var actual = new MockPath("a", "b");
-            
+
             Assert.Equal(expected, actual);
         }
 
@@ -217,7 +236,7 @@ namespace PathLib.UnitTest
         {
             var expected = new MockPath(@"a\b");
             var actual = new MockPath(@"a", @"b\");
-            
+
             Assert.Equal(expected, actual);
         }
 
@@ -235,7 +254,7 @@ namespace PathLib.UnitTest
         {
             var expected = new MockPath(@"a\\b\");
             var actual = new MockPath(@"a\b");
-            
+
             Assert.Equal(expected, actual);
         }
 
@@ -244,7 +263,7 @@ namespace PathLib.UnitTest
         {
             var expected = new MockPath(@"a\b");
             var actual = new MockPath("", "a", "b");
-            
+
             Assert.Equal(expected, actual);
         }
 
@@ -253,7 +272,7 @@ namespace PathLib.UnitTest
         {
             var expected = new MockPath(@"a\b");
             var actual = new MockPath("a", "", "b");
-            
+
             Assert.Equal(expected, actual);
         }
 
@@ -262,7 +281,7 @@ namespace PathLib.UnitTest
         {
             var expected = new MockPath(@"\b\c");
             var actual = new MockPath(@"a", @"\b", @"c");
-            
+
             Assert.Equal(expected, actual);
         }
 
@@ -271,7 +290,7 @@ namespace PathLib.UnitTest
         {
             var expected = new MockPath(@"\b\c");
             var actual = new MockPath(@"a", @"\b\\", @"c");
-            
+
             Assert.Equal(expected, actual);
         }
 
@@ -280,7 +299,7 @@ namespace PathLib.UnitTest
         {
             var expected = new MockPath(@"a\b");
             var actual = new MockPath("a", "b", "");
-            
+
             Assert.Equal(expected, actual);
         }
 
@@ -289,7 +308,7 @@ namespace PathLib.UnitTest
         {
             var expected = new MockPath(@"a\b");
             var actual = new MockPath(@"\a\b");
-            
+
             Assert.NotEqual(expected, actual);
         }
 
@@ -461,7 +480,8 @@ namespace PathLib.UnitTest
 
             var expected = new MockPath(@"C:\");
 
-            var parents = path.Parents().GetEnumerator();
+            var parents = path.Parents()
+                .GetEnumerator();
             parents.MoveNext();
             var actual = parents.Current;
 
@@ -474,10 +494,9 @@ namespace PathLib.UnitTest
             var path = new MockPath(@"C:\users\nemec");
 
             var expected = new[]
-                {
-                    new MockPath(@"C:\users"),
-                    new MockPath(@"C:\")
-                };
+            {
+                new MockPath(@"C:\users"), new MockPath(@"C:\")
+            };
 
             Assert.True(expected.SequenceEqual(path.Parents()));
         }
@@ -528,7 +547,10 @@ namespace PathLib.UnitTest
         [Fact]
         public void GetExtensions_WithMultipleExtensions_ReturnsExtensionsInOrder()
         {
-            var expected = new [] {".txt", ".tar", ".gz"};
+            var expected = new[]
+            {
+                ".txt", ".tar", ".gz"
+            };
             var path = new MockPath(@"c:\users\nemec\file.txt.tar.gz");
 
             var actual = path.Extensions;
@@ -542,7 +564,7 @@ namespace PathLib.UnitTest
             const int expected = 0;
             var path = new MockPath(@"c:\users\nemec\.bashrc");
 
-            var actual = path.Extensions.Count();
+            var actual = Enumerable.Count(path.Extensions);
 
             Assert.Equal(expected, actual);
         }
@@ -550,7 +572,7 @@ namespace PathLib.UnitTest
         [Fact]
         public void GetBasenameWithoutExtension_WithExtension_ReturnsBasename()
         {
-            
+
             var path = new MockPath(@"c:\users\nemec\file.txt");
 
             var expected = path.Basename;
@@ -825,14 +847,193 @@ namespace PathLib.UnitTest
             }
 
             const string path = @"C:\users\tmp";
-            var converter = TypeDescriptor.GetConverter(typeof (IPurePath));
-            var expected = isWindows
-                ? typeof (PureWindowsPath)
-                : typeof (PurePosixPath);
+            var converter = TypeDescriptor.GetConverter(typeof(IPurePath));
+            var expected = isWindows ? typeof(PureWindowsPath) : typeof(PurePosixPath);
 
             var actual = converter.ConvertFromInvariantString(path);
 
             Assert.IsType(expected, actual);
         }
+
+
+        #region Equality Testing
+
+        #region Windows Paths
+
+          [Fact]
+        public void Compare_WindowsFormat_Directory_With_Directory_ShouldBeEqual()
+        {
+            var firstPath = @"C:\foo\bar";
+            var secondPath = @"C:\foo\bar";
+            var firstPurePath = PurePath.Create(firstPath);
+            var secondPurePath = PurePath.Create(secondPath);
+            Assert.Equal(firstPurePath , secondPurePath);
+            
+
+        }
+        [Fact]
+        public void Compare_WindowsFormat_Directory_With_Directory_OneWithTrailingSlash_ShouldBeEqual()
+        {
+            var firstPath = @"C:\foo\bar";
+            var secondPath = @"C:\foo\bar\";
+            var firstPurePath = PurePath.Create(firstPath);
+            var secondPurePath = PurePath.Create(secondPath);
+            Assert.Equal(firstPurePath , secondPurePath);
+            
+
+        }
+
+        [Fact]
+        public void Compare_WindowsFormat_Directory_With_SubDirectory_ShouldBeNotEqual_ShouldBeTrue()
+        {
+            var firstPath = @"C:\foo\bar";
+            var secondPath = @"C:\foo\bar\other";
+            var firstPurePath = PurePath.Create(firstPath);
+            var secondPurePath = PurePath.Create(secondPath);
+            Assert.NotEqual(firstPurePath , secondPurePath);
+            
+
+        }
+
+        
+        [Fact]
+        public void Compare_WindowsFormat_Directory_With_TopLevelFile_ShouldBeNotEqual()
+        {
+            var firstPath = @"C:\foo\bar\";
+            var secondPath = @"C:\foo\bar\file.txt";
+            var firstPurePath = PurePath.Create(firstPath);
+            var secondPurePath = PurePath.Create(secondPath);
+            Assert.NotEqual(firstPurePath , secondPurePath);
+        }
+
+        [Fact]
+        public void Compare_WindowsFormat_ParentDirectory_IsLessThan_ChildDirectory_ShouldBeTrue()
+        {
+            var parentPath = @"C:\foo\bar";
+            var childPath = @"C:\foo\bar\other";
+          
+
+            var parentPurePath = PurePath.Create(parentPath);
+            var childPurePath = PurePath.Create(childPath);
+      
+            Assert.True(parentPurePath < childPurePath);
+        }
+
+
+        [Fact]
+        public void Compare_WindowsFormat_ChildDirectory_IsGreaterThan_ParentDirectory_ShouldBeTrue()
+        {
+            var parentPath = @"C:\foo\bar";
+            var childPath = @"C:\foo\bar\other";
+            var purePathFactory = new PurePathFactory();
+            var parentPurePath = PurePath.Create(parentPath);
+            var childPurePath = PurePath.Create(childPath);
+      
+            Assert.True(childPurePath > parentPurePath );
+        }
+
+
+        [Fact]
+        public void Compare_WindowsFormat_DifferentDrives_ChildDirectory_IsGreaterThan_ParentDirectory_ShouldBeFalse()
+        {
+            var parentPath = @"C:\foo\bar";
+            var childPath = @"D:\foo\bar\other";
+            var purePathFactory = new PurePathFactory();
+            var parentPurePath = PurePath.Create(parentPath);
+            var childPurePath = PurePath.Create(childPath);
+      
+            Assert.False(childPurePath > parentPurePath );
+        }
+
+        #endregion
+
+        #region Posix Paths
+
+          [Fact]
+        public void Compare_PosixFormat_Directory_With_Directory_ShouldBeEqual()
+        {
+            var firstPath = @"/mnt/dev/parent";
+            var secondPath = @"/mnt/dev/parent";
+            var firstPurePath = PurePath.Create(firstPath);
+            var secondPurePath = PurePath.Create(secondPath);
+            Assert.Equal(firstPurePath , secondPurePath);
+            
+
+        }
+        [Fact]
+        public void Compare_PosixFormat_Directory_With_Directory_OneWithTrailingSlash_ShouldBeEqual()
+        {
+            var firstPath = @"/mnt/dev/parent/";
+            var secondPath = @"/mnt/dev/parent";
+            var firstPurePath = PurePath.Create(firstPath);
+            var secondPurePath = PurePath.Create(secondPath);
+            Assert.Equal(firstPurePath , secondPurePath);
+            
+
+        }
+
+        [Fact]
+        public void Compare_PosixFormat_Directory_With_SubDirectory_ShouldBeNotEqual_ShouldBeTrue()
+        {
+            var parentPath = @"/mnt/dev/parent/";
+            var childPath = @"/mnt/dev/parent/someChild";
+            var firstPurePath = PurePath.Create(parentPath);
+            var secondPurePath = PurePath.Create(childPath);
+            Assert.NotEqual(firstPurePath , secondPurePath);
+            
+
+        }
+
+        
+        [Fact]
+        public void Compare_PosixFormat_Directory_With_TopLevelFile_ShouldBeNotEqual_ShouldBeTrue()
+        {
+            var parentPath = @"/mnt/dev/parent/";
+            var childPath = @"/mnt/dev/parent/someChild/someFile.txt";
+            var firstPurePath = PurePath.Create(parentPath);
+            var secondPurePath = PurePath.Create(childPath);
+            Assert.NotEqual(firstPurePath , secondPurePath);
+        }
+
+        [Fact]
+        public void Compare_PosixFormat_ParentDirectory_IsLessThan_ChildDirectory_ShouldBeTrue()
+        {
+            var parentPath = @"/mnt/dev/parent";
+            var childPath = @"/mnt/dev/parent/someChild";
+          
+
+            var parentPurePath = PurePath.Create(parentPath);
+            var childPurePath = PurePath.Create(childPath);
+      
+            Assert.True(parentPurePath < childPurePath);
+        }
+
+
+        [Fact]
+        public void Compare_PosixFormat_ChildDirectory_IsGreaterThan_ParentDirectory_ShouldBeTrue()
+        {
+            var parentPath = @"/mnt/dev/parent";
+            var childPath = @"/mnt/dev/parent/someChild";
+            var purePathFactory = new PurePathFactory();
+            var parentPurePath = PurePath.Create(parentPath);
+            var childPurePath = PurePath.Create(childPath);
+      
+            Assert.True(childPurePath > parentPurePath );
+        }
+        [Fact]
+        public void Compare_PosixFormat__DifferentRoots_ChildDirectory_IsGreaterThan_ParentDirectory_ShouldBeFalse()
+        {
+            var parentPath = @"/mnt/other/parent";
+            var childPath = @"/dev/other/parent/someChild";
+            var purePathFactory = new PurePathFactory();
+            var parentPurePath = PurePath.Create(parentPath);
+            var childPurePath = PurePath.Create(childPath);
+      
+            Assert.False(childPurePath > parentPurePath );
+        }
+
+        #endregion
+
+    #endregion
     }
 }

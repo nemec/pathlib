@@ -21,6 +21,9 @@ TestResults
 *.sln.docstates
 *.ide
 
+# Visual Studio cache/options directory
+*.vs
+
 # Build results
 [Dd]ebug/
 [Rr]elease/
