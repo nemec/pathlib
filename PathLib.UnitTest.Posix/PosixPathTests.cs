@@ -112,7 +112,7 @@ public class PosixPathTests : IClassFixture<PosixPathTestsFixture>
         var expected = new PosixPath(root, "tmp");
 
         var actual = new PosixPath("~/tmp").ExpandUser();
-        
+
         Assert.Equal(expected, actual);
     }
 
@@ -124,7 +124,7 @@ public class PosixPathTests : IClassFixture<PosixPathTestsFixture>
         Environment.SetEnvironmentVariable("HOME", null);
 
         var actual = new PosixPath("~/tmp").ExpandUser();
-        
+
         Assert.Equal(expected, actual);
     }
 
@@ -194,11 +194,11 @@ public class PosixPathTests : IClassFixture<PosixPathTestsFixture>
         var fname = Guid.NewGuid().ToString();
         var path = Path.Combine(_fixture.TempFolder, fname);
         var pipeServer = new NamedPipeServerStream(path, PipeDirection.InOut);
-        
+
         var fileType = new PosixPath(path).GetFileType();
         Assert.Equal(PathLib.Posix.FileType.Socket, fileType);
     }
-    
+
 
     [Fact]
     public void FileType_WithPipe_ReturnsFifo()
@@ -211,7 +211,7 @@ public class PosixPathTests : IClassFixture<PosixPathTestsFixture>
             var actualError = Marshal.GetLastWin32Error();
             throw new ApplicationException("Error: " + actualError);
         }
-        
+
         var fileType = new PosixPath(path).GetFileType();
         Assert.Equal(PathLib.Posix.FileType.Fifo, fileType);
     }
@@ -224,7 +224,7 @@ public class PosixPathTests : IClassFixture<PosixPathTestsFixture>
     {
         var fname = Guid.NewGuid().ToString();
         var path = Path.Combine(_fixture.TempFolder, fname);
-        
+
         var fileType = new PosixPath(path).GetFileType();
         Assert.Equal(PathLib.Posix.FileType.DoesNotExist, fileType);
     }
@@ -246,7 +246,7 @@ public class PosixPathTests : IClassFixture<PosixPathTestsFixture>
         var oldCwd = Environment.CurrentDirectory;
         var path = new PosixPath(@"/");
         var tmp = path.SetCurrentDirectory();
-            
+
         tmp.Dispose();
 
         Assert.Equal(oldCwd, Environment.CurrentDirectory);
@@ -294,5 +294,82 @@ public class PosixPathTests : IClassFixture<PosixPathTestsFixture>
         var final = path / other;
 
         Assert.True(final is PosixPath);
+    }
+
+    [Fact]
+    public void ResolvePosixPath_Dot_ReturnsWorkingDirectory()
+    {
+        var path = new PosixPath(".");
+        var expected = new PosixPath(Environment.CurrentDirectory);
+        var actual = path.Resolve();
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    public void ResolvePosixPath_DotDot_ReturnsParentOfWorkingDirectory()
+    {
+        var path = new PosixPath("..");
+        var expected = new PosixPath(Environment.CurrentDirectory).Parent();
+        var actual = path.Resolve();
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    public void ResolvePosixPath_IntermediateDotDot_IsRemoved()
+    {
+        var path = new PosixPath("/tmp/../tmp");
+        var expected = new PosixPath("/tmp");
+        var actual = path.Resolve();
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    public async void ResolvePosixPath_SymlinkFile_ReturnsResolvedPath()
+    {
+        var tempFolder = new PosixPath(_fixture.TempFolder);
+        var target = tempFolder.Join("target");
+        var link = tempFolder.Join("link");
+
+        await File.WriteAllTextAsync(target.ToString(), string.Empty);
+        File.CreateSymbolicLink(link.ToString(), target.ToString());
+
+        try
+        {
+            Assert.Equal(target, link.Resolve());
+        }
+        finally
+        {
+            link.Delete();
+            target.Delete();
+        }
+    }
+
+    [Fact]
+    public async void ResolvePosixPath_SymlinkDirectory_ReturnsResolvedPath()
+    {
+        // /tmp/foo/folder1/target/hello.txt
+        // /tmp/foo/folder2 -> folder1
+        var tempFolder = new PosixPath(_fixture.TempFolder);
+        var folder1 = tempFolder.Join("folder1");
+        Directory.CreateDirectory(folder1.ToString());
+
+        var target = folder1.Join("hello.txt");
+        await File.WriteAllTextAsync(target.ToString(), "hello world");
+
+        var folder2 = tempFolder.Join("folder2");
+        Directory.CreateSymbolicLink(folder2.ToString(), folder1.ToString());
+
+        var link = folder2.Join("hello.txt");
+
+        try
+        {
+            Assert.Equal(target, link.Resolve());
+        }
+        finally
+        {
+            folder2.Delete();
+            target.Delete();
+            folder1.Delete();
+        }
     }
 }

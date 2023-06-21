@@ -140,12 +140,17 @@ namespace PathLib.Posix
         [DllImport("libc", EntryPoint = "realpath", SetLastError = true, CharSet = CharSet.Auto, CallingConvention=CallingConvention.Cdecl)]
         private static extern IntPtr _realpath(string path, IntPtr resolved_path);
 
+        [DllImport("libc", EntryPoint = "strerror", SetLastError = true, CharSet = CharSet.Auto, CallingConvention=CallingConvention.Cdecl)]
+        private static extern IntPtr _strerror(int errnum);
+
         public static string realpath(string path)
         {
             var ptr = _realpath(path, IntPtr.Zero);
             if (ptr == IntPtr.Zero)
             {
-                throw new Exception("realpath failed");
+                var errno = Marshal.GetLastWin32Error();
+                var error = Marshal.PtrToStringAuto(_strerror(errno));
+                throw new Exception($"realpath failed: {error} ({errno})");
             }
 
             var result = Marshal.PtrToStringAuto(ptr);
