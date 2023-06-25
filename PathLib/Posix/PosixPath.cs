@@ -141,8 +141,9 @@ namespace PathLib
         /// <inheritdoc/>
         public override PosixPath Resolve()
         {
-            throw new NotImplementedException();
-            //var size = Native.readlink(path, buf, 1024);
+            var path = ExpandUser().ExpandEnvironmentVars().ToString();
+            var realpath = Native.realpath(path) ?? throw new ApplicationException($"Resolve failed: realpath returned null");
+            return new PosixPath(realpath);
         }
 
         /// <inheritdoc/>
@@ -206,7 +207,7 @@ namespace PathLib
 
             return this;
         }
-        
+
         /// <inheritdoc/>
         public override IEnumerable<DirectoryContents<PosixPath>> WalkDir(Action<IOException> onError = null)
         {

@@ -1,4 +1,5 @@
 
+using System;
 using System.Runtime.InteropServices;
 using System.Text;
 // ReSharper disable MemberCanBePrivate.Global
@@ -47,7 +48,7 @@ namespace PathLib.Posix
     // Get typedef mappings for struct fields
     // gcc -E /usr/include/x86_64-linux-gnu/sys/types.h
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
-    public struct StatNative 
+    public struct StatNative
     {
         public ulong st_dev;
         public ulong st_ino;
@@ -129,12 +130,33 @@ namespace PathLib.Posix
     internal static class Native {
         [DllImport("libc", SetLastError = true, CharSet = CharSet.Auto, CallingConvention=CallingConvention.Cdecl)]
         public static extern int stat64(string path, out StatNative info);
-        
+
         [DllImport("libc", SetLastError = true, CharSet = CharSet.Auto, CallingConvention=CallingConvention.Cdecl)]
         public static extern int lstat(string path, out StatNative info);
-        
+
         [DllImport("libc", SetLastError = true, CharSet = CharSet.Auto, CallingConvention=CallingConvention.Cdecl)]
         public static extern long readlink(string path, StringBuilder buf, ulong bufsize);
+
+        [DllImport("libc", EntryPoint = "realpath", SetLastError = true, CharSet = CharSet.Auto, CallingConvention=CallingConvention.Cdecl)]
+        private static extern IntPtr _realpath(string path, IntPtr resolved_path);
+
+        [DllImport("libc", EntryPoint = "strerror", SetLastError = true, CharSet = CharSet.Auto, CallingConvention=CallingConvention.Cdecl)]
+        private static extern IntPtr _strerror(int errnum);
+
+        public static string realpath(string path)
+        {
+            var ptr = _realpath(path, IntPtr.Zero);
+            if (ptr == IntPtr.Zero)
+            {
+                var errno = Marshal.GetLastWin32Error();
+                var error = Marshal.PtrToStringAuto(_strerror(errno));
+                throw new Exception($"realpath failed: {error} ({errno})");
+            }
+
+            var result = Marshal.PtrToStringAuto(ptr);
+            Marshal.FreeHGlobal(ptr);
+            return result;
+        }
 
         /// <summary>
         /// S_IRUSR
@@ -152,7 +174,7 @@ namespace PathLib.Posix
         /// <summary>
         /// S_IRWXU
         /// </summary>
-        internal const uint UserBits = UserRead | UserWrite | UserExecute;  
+        internal const uint UserBits = UserRead | UserWrite | UserExecute;
         /// <summary>
         /// S_IRGRP
         /// </summary>
