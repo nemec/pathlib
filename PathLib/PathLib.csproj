@@ -5,17 +5,25 @@
     <langversion>8.0</langversion>
     <RootNamespace>PathLib</RootNamespace>
     <AssemblyName>PathLib</AssemblyName>
+    <Title>PathLib</Title>
+    <RepositoryUrl>https://github.com/nemec/pathlib</RepositoryUrl>
   </PropertyGroup>
 
   <PropertyGroup>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Description>Path manipulation library for .Net</Description>
     <Authors>Dan Nemec</Authors>
-    <Copyright>Copyright 2022</Copyright>
+    <Copyright>Copyright 2023</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <license>MIT</license>
     <PackageProjectUrl>https://github.com/nemec/pathlib</PackageProjectUrl>
-    <Company></Company>
-    <Version>0.9.7.0</Version>
+    <Company>Dan Nemec</Company>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <Version>0.9.8.0</Version>
   </PropertyGroup>
+  
+  <ItemGroup>
+    <None Include="..\README.md" Pack="true" PackagePath="." />
+  </ItemGroup>
 
 </Project>

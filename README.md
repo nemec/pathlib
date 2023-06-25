@@ -7,9 +7,9 @@ We're on [NuGet](https://www.nuget.org/packages/PathLib/)!
 
 ## Changelog
 
-### Master
+### 0.9.8.0
 
-* Correct the XML Serializer, fixes #9
+* Added support for `PosixPath.Resolve()` (thanks [@asasine](https://github.com/asasine))
 
 [Full Changelog](CHANGELOG.md)
 
