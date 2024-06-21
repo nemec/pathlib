@@ -85,7 +85,7 @@ namespace PathLib.UnitTest
         {
             var rootFilename = Guid.NewGuid().ToString();
             var rootPath = Path.Combine(_fixture.TempFolder, rootFilename);
-            File.Create(rootPath);
+            File.Create(rootPath).Dispose();
             IPath expected = _fixture.IsWindows
                 ? new WindowsPath(rootPath)
                 : new PosixPath(rootPath);
