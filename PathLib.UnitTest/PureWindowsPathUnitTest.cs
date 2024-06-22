@@ -387,11 +387,12 @@ namespace PathLib.UnitTest
             const string expected = @"<?xml version=""1.0"" encoding=""utf-16""?>
 <XmlSerialize xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">
   <Folder>c:\users\nemec</Folder>
-</XmlSerialize>".Replace("\r\n", "\n");
+</XmlSerialize>";
             var data = new XmlSerialize { Folder = new PureWindowsPath(@"c:\users\nemec") };
             var writer = new StringWriter(new StringBuilder());
 
-            XmlWriterSettings ws = new XmlWriterSettings{ Indent = true};
+            XmlWriterSettings ws = new XmlWriterSettings{ Indent = true, NewLineChars = @"
+"};
             using(var xmlWriter = XmlWriter.Create(writer, ws)){
                 new XmlSerializer(typeof(XmlSerialize))
                     .Serialize(xmlWriter, data);
