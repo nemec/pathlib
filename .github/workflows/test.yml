@@ -1,0 +1,38 @@
+# Run unit tests on GitHub actions manually, and for each pull request
+on:
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch: null
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os.runs-on }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: 
+          - runs-on: windows-latest
+            arch: win-x64
+          - runs-on: macos-13
+            arch: osx-x64
+          - runs-on: ubuntu-latest
+            arch: linux-x64
+
+    steps:
+    - uses: actions/checkout@v1
+
+    - uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '6.0.x'
+
+    - name: Run general tests
+      run: dotnet test PathLib.UnitTest
+  
+    - name: run Windows specific tests
+      if: ${{ matrix.os.runs-on == 'windows-latest' }}
+      run: dotnet test PathLib.UnitTest.Windows
+    
+    - name: run Posix specific tests
+      if: ${{ matrix.os.runs-on != 'windows-latest' }}
+      run: dotnet test PathLib.UnitTest.Posix

@@ -391,7 +391,8 @@ namespace PathLib.UnitTest
             var data = new XmlSerialize { Folder = new PureWindowsPath(@"c:\users\nemec") };
             var writer = new StringWriter(new StringBuilder());
 
-            XmlWriterSettings ws = new XmlWriterSettings{ Indent = true};
+            XmlWriterSettings ws = new XmlWriterSettings{ Indent = true, NewLineChars = @"
+"};
             using(var xmlWriter = XmlWriter.Create(writer, ws)){
                 new XmlSerializer(typeof(XmlSerialize))
                     .Serialize(xmlWriter, data);
