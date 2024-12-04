@@ -264,12 +264,12 @@ public class PosixPathTests : IClassFixture<PosixPathTestsFixture>
     }
 
     [Fact]
-    public void JoinIPath_WithAnotherPathByDiv_ReturnsWindowsPath()
+    public void JoinIPath_WithAnotherPath_ReturnsPosixPath()
     {
         IPath path = new PosixPath(@"/tmp");
         IPath other = new PosixPath(@"/tmp");
 
-        var final = path / other;
+        var final = path.Join(other);
 
         Assert.True(final is PosixPath);
     }
