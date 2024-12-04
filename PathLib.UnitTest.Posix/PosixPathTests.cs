@@ -280,7 +280,7 @@ public class PosixPathTests : IClassFixture<PosixPathTestsFixture>
         IPath path = new PosixPath(@"/tmp");
         var other = @"/tmp";
 
-        var final = path / other;
+        var final = path.Join(other);
 
         Assert.True(final is PosixPath);
     }
