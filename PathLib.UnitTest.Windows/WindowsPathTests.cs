@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using Xunit;
 using PathLib;
@@ -105,34 +105,34 @@ namespace PathLib.UnitTest.Windows
         }
 
         [Fact]
-        public void JoinIPath_WithAnotherPathByDiv_ReturnsWindowsPath()
+        public void JoinIPath_WithAnotherPath_ReturnsWindowsPath()
         {
             IPath path = new WindowsPath(@"C:\tmp");
             IPath other = new WindowsPath(@"C:\tmp");
 
-            var final = path / other;
+            var final = path.Join(other);
 
             Assert.True(final is WindowsPath);
         }
 
         [Fact]
-        public void JoinIPath_WithStringByDiv_ReturnsWindowsPath()
+        public void JoinIPath_WithString_ReturnsWindowsPath()
         {
             IPath path = new WindowsPath(@"C:\tmp");
             var other = @"C:\tmp";
 
-            var final = path / other;
+            var final = path.Join(other);
 
             Assert.True(final is WindowsPath);
         }
 
         [Fact]
-        public void JoinWindowsPath_WithStringByDiv_ReturnsWindowsPath()
+        public void JoinWindowsPath_WithString_ReturnsWindowsPath()
         {
             var path = new WindowsPath(@"C:\tmp");
             var other = @"C:\tmp";
 
-            var final = path / other;
+            var final = path.Join(other);
 
             Assert.True(final is WindowsPath);
         }
