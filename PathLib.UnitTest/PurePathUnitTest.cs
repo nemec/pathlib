@@ -907,42 +907,42 @@ namespace PathLib.UnitTest
         }
 
         [Fact]
-        public void Compare_WindowsFormat_ParentDirectory_IsLessThan_ChildDirectory_ShouldBeTrue()
+        public void Compare_WindowsFormat_ParentDirectory_IsParentOf_ChildDirectory_ShouldBeTrue()
         {
             var parentPath = @"C:\foo\bar";
             var childPath = @"C:\foo\bar\other";
-          
+
 
             var parentPurePath = PurePath.Create(parentPath);
             var childPurePath = PurePath.Create(childPath);
-      
-            Assert.True(parentPurePath < childPurePath);
+
+            Assert.True(parentPurePath.IsParentOf(childPurePath));
         }
 
 
         [Fact]
-        public void Compare_WindowsFormat_ChildDirectory_IsGreaterThan_ParentDirectory_ShouldBeTrue()
+        public void Compare_WindowsFormat_ChildDirectory_IsChildOf_ParentDirectory_ShouldBeTrue()
         {
             var parentPath = @"C:\foo\bar";
             var childPath = @"C:\foo\bar\other";
             var purePathFactory = new PurePathFactory();
             var parentPurePath = PurePath.Create(parentPath);
             var childPurePath = PurePath.Create(childPath);
-      
-            Assert.True(childPurePath > parentPurePath );
+
+            Assert.True(childPurePath.IsChildOf(parentPurePath));
         }
 
 
         [Fact]
-        public void Compare_WindowsFormat_DifferentDrives_ChildDirectory_IsGreaterThan_ParentDirectory_ShouldBeFalse()
+        public void Compare_WindowsFormat_DifferentDrives_ChildDirectory_IsChildOf_ParentDirectory_ShouldBeFalse()
         {
             var parentPath = @"C:\foo\bar";
             var childPath = @"D:\foo\bar\other";
             var purePathFactory = new PurePathFactory();
             var parentPurePath = PurePath.Create(parentPath);
             var childPurePath = PurePath.Create(childPath);
-      
-            Assert.False(childPurePath > parentPurePath );
+
+            Assert.False(childPurePath.IsChildOf(parentPurePath));
         }
 
         #endregion
@@ -996,40 +996,40 @@ namespace PathLib.UnitTest
         }
 
         [Fact]
-        public void Compare_PosixFormat_ParentDirectory_IsLessThan_ChildDirectory_ShouldBeTrue()
+        public void Compare_PosixFormat_ParentDirectory_IsParentOf_ChildDirectory_ShouldBeTrue()
         {
             var parentPath = @"/mnt/dev/parent";
             var childPath = @"/mnt/dev/parent/someChild";
-          
+
 
             var parentPurePath = PurePath.Create(parentPath);
             var childPurePath = PurePath.Create(childPath);
-      
-            Assert.True(parentPurePath < childPurePath);
+
+            Assert.True(parentPurePath.IsParentOf(childPurePath));
         }
 
 
         [Fact]
-        public void Compare_PosixFormat_ChildDirectory_IsGreaterThan_ParentDirectory_ShouldBeTrue()
+        public void Compare_PosixFormat_ChildDirectory_IsChildOf_ParentDirectory_ShouldBeTrue()
         {
             var parentPath = @"/mnt/dev/parent";
             var childPath = @"/mnt/dev/parent/someChild";
             var purePathFactory = new PurePathFactory();
             var parentPurePath = PurePath.Create(parentPath);
             var childPurePath = PurePath.Create(childPath);
-      
-            Assert.True(childPurePath > parentPurePath );
+
+            Assert.True(childPurePath.IsChildOf(parentPurePath));
         }
         [Fact]
-        public void Compare_PosixFormat__DifferentRoots_ChildDirectory_IsGreaterThan_ParentDirectory_ShouldBeFalse()
+        public void Compare_PosixFormat__DifferentRoots_ChildDirectory_IsChildOf_ParentDirectory_ShouldBeFalse()
         {
             var parentPath = @"/mnt/other/parent";
             var childPath = @"/dev/other/parent/someChild";
             var purePathFactory = new PurePathFactory();
             var parentPurePath = PurePath.Create(parentPath);
             var childPurePath = PurePath.Create(childPath);
-      
-            Assert.False(childPurePath > parentPurePath );
+
+            Assert.False(childPurePath.IsChildOf(parentPurePath));
         }
 
         #endregion
