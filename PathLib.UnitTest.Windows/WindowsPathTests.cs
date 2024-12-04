@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using Xunit;
 using PathLib;
@@ -110,7 +110,7 @@ namespace PathLib.UnitTest.Windows
             IPath path = new WindowsPath(@"C:\tmp");
             IPath other = new WindowsPath(@"C:\tmp");
 
-            var final = path / other;
+            var final = path.Join(other);
 
             Assert.True(final is WindowsPath);
         }
@@ -121,7 +121,7 @@ namespace PathLib.UnitTest.Windows
             IPath path = new WindowsPath(@"C:\tmp");
             var other = @"C:\tmp";
 
-            var final = path / other;
+            var final = path.Join(other);
 
             Assert.True(final is WindowsPath);
         }
@@ -132,7 +132,7 @@ namespace PathLib.UnitTest.Windows
             var path = new WindowsPath(@"C:\tmp");
             var other = @"C:\tmp";
 
-            var final = path / other;
+            var final = path.Join(other);
 
             Assert.True(final is WindowsPath);
         }
