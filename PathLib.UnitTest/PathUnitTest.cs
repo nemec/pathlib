@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using FluentAssertions;
 using Xunit;
 
 namespace PathLib.UnitTest
@@ -93,7 +94,31 @@ namespace PathLib.UnitTest
             var actual = expected.Resolve();
             Assert.Equal(expected, actual);
         }
-        
+
+        [Fact]
+        public void ListDir_with_pattern()
+        {
+            // Arrange
+            var tmpDir = Paths.Create(_fixture.TempFolder);
+            Assert.True(tmpDir.IsDir());
+
+            var file1 = tmpDir / "file1";
+            Assert.False(file1.IsFile());
+            file1.Open(FileMode.CreateNew).Dispose();
+            Assert.True(file1.IsFile());
+
+            var dir1 = tmpDir / "dir1";
+            Assert.False(dir1.IsDir());
+            dir1.Mkdir();
+            Assert.True(dir1.IsDir());
+
+            // Assertions
+            tmpDir.ListDir("non-existent").Should().BeEmpty();
+
+            tmpDir.ListDir("file*").Select(f => f.FileInfo.FullName).Should()
+                .BeEquivalentTo(file1.FileInfo.FullName);
+        }
+
         // sym1 => ../../real2
         // sym2 => ../real3
         // sym3 => /abs/path/real2/absfile.txt
@@ -103,6 +128,5 @@ namespace PathLib.UnitTest
         // /real2/real4/anotherfile.txt
         // /real2/absfile.txt
         // /sym3
-        
     }
 }
