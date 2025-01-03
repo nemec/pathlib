@@ -11,6 +11,7 @@ using System.IO.Pipes;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using FluentAssertions;
 using Xunit.Sdk;
 
 namespace PathLib.UnitTest.Posix;
@@ -47,7 +48,7 @@ public class PosixPathTests : IClassFixture<PosixPathTestsFixture>
     public void Stat_With_MissingFile_GivesError()
     {
         var path = new PosixPath(Path.Combine(_fixture.TempFolder, "does_not_exist"));
-        Assert.False(path.Exists());
+        path.Exists().Should().BeFalse();
 
         Assert.Throws<FileNotFoundException>(() => path.Stat());
     }
