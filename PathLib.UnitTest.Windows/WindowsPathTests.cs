@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using FluentAssertions;
 using Xunit;
 using PathLib;
 using Path = System.IO.Path;
@@ -88,9 +89,7 @@ namespace PathLib.UnitTest.Windows
             var path = new WindowsPath("~/tmp");
             var expected = homeDir.Join("tmp");
 
-            var actual = path.ExpandUser(homeDir);
-
-            Assert.Equal(expected, actual);
+            path.ExpandUser(homeDir).Should().Be(expected);
         }
 
         [Fact]

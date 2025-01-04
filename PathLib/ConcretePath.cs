@@ -149,7 +149,7 @@ namespace PathLib
             {
                 throw new ArgumentException("Glob may only be called on directories.");
             }
-            foreach (var dir in DirectoryInfo.GetDirectories())
+            foreach (var dir in DirectoryInfo.GetDirectories(pattern, scope))
             {
                 yield return PathFactory(dir.FullName);
             }
